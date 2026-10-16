@@ -1,3 +1,4 @@
+import fs from "node:fs/promises";
 import path from "node:path";
 import { PGlite } from "@electric-sql/pglite";
 import { Pool } from "@neondatabase/serverless";
@@ -23,6 +24,10 @@ export function createNeonDb(url: string): { db: Db; close: () => Promise<void> 
  * Migrasi langsung dijalankan supaya lokal tidak perlu langkah tambahan.
  */
 export async function createPgliteDb(dataDir?: string): Promise<{ db: Db; close: () => Promise<void> }> {
+  // PGlite bikin folder terakhir saja, bukan induknya, jadi clone baru gagal tanpa ini.
+  if (dataDir && !dataDir.includes("://")) {
+    await fs.mkdir(dataDir, { recursive: true });
+  }
   const client = new PGlite(dataDir);
   const db = drizzlePglite({ client, schema });
   await migratePglite(db, { migrationsFolder: MIGRATIONS_FOLDER });
