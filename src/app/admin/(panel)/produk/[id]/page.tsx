@@ -6,11 +6,14 @@ import { getDb } from "@/db";
 import { wajibIzin } from "@/lib/auth/current";
 import { punyaIzin } from "@/lib/auth/roles";
 import { formatRupiah } from "@/lib/domain/produk";
+import { kunciUsulan } from "@/lib/domain/usulan";
+import { usulanMenungguUntuk } from "@/lib/pengaturan/data";
 import { ambilProduk, getAmbangStok, opsiFilter } from "@/lib/produk/data";
 import { simpanProduk } from "../actions";
 import { FormProduk } from "../form-produk";
 import { BarisSize } from "./baris-size";
 import { FormSizeBaru } from "./form-size-baru";
+import { FormUsulFee } from "./form-usul-fee";
 
 export const dynamic = "force-dynamic";
 
@@ -26,12 +29,18 @@ export default async function HalamanDetailProduk({ params, searchParams }: { pa
   const user = await wajibIzin("produk.kelola");
   if (!UUID.test(params.id)) notFound();
   const db = await getDb();
-  const [produk, opsi, ambang] = await Promise.all([ambilProduk(db, params.id), opsiFilter(db), getAmbangStok(db)]);
+  const [produk, opsi, ambang, usulanFee] = await Promise.all([
+    ambilProduk(db, params.id),
+    opsiFilter(db),
+    getAmbangStok(db),
+    usulanMenungguUntuk(db, kunciUsulan("fee_produk", params.id)),
+  ]);
   if (!produk) notFound();
 
+  const bolehUbahFee = punyaIzin(user.peran, "fee.atur");
   const infoFee = produk.feePerPasang
-    ? `${formatRupiah(produk.feePerPasang)} khusus model ini. Diatur pemilik web.`
-    : "Ikut tier harga. Fee khusus per model diatur pemilik web.";
+    ? `${formatRupiah(produk.feePerPasang)} khusus model ini. Perubahan fee lewat usulan di bawah.`
+    : "Ikut tier harga. Untuk fee khusus model ini, kirim usulan di bawah.";
 
   return (
     <div className="space-y-6">
@@ -84,12 +93,35 @@ export default async function HalamanDetailProduk({ params, searchParams }: { pa
             aktif: produk.aktif,
           }}
           labelSimpan="Simpan perubahan"
-          bolehUbahFee={punyaIzin(user.peran, "fee.atur")}
+          bolehUbahFee={bolehUbahFee}
           infoFee={infoFee}
           brands={opsi.brands}
           kategori={opsi.kategori}
         />
       </section>
+
+      {usulanFee ? (
+        <section aria-labelledby="judul-usul-fee" className="space-y-3 rounded-label border-[1.5px] border-tinta bg-white p-3">
+          <h2 id="judul-usul-fee" className="font-bold">
+            Ada usulan fee untuk model ini
+          </h2>
+          <p className="text-sm">{bolehUbahFee ? "Admin toko mengusulkan fee khusus baru. Fee di atas belum berubah." : "Menunggu persetujuan pemilik web. Fee di atas belum berubah."}</p>
+          <Link href={`/admin/pengaturan/usulan/${usulanFee.id}`} className={bolehUbahFee ? "tombol-utama" : "tombol-garis"}>
+            {bolehUbahFee ? "Periksa usulan" : "Lihat usulan"}
+          </Link>
+        </section>
+      ) : (
+        !bolehUbahFee &&
+        punyaIzin(user.peran, "usulan.ajukan") && (
+          <section aria-labelledby="judul-usul-fee" className="space-y-3">
+            <h2 id="judul-usul-fee" className="text-lg font-bold">
+              Usulkan fee khusus
+            </h2>
+            <p className="text-sm text-redup">Fee khusus menimpa tier untuk model ini saja, dan baru berlaku setelah disetujui pemilik web.</p>
+            <FormUsulFee productId={produk.id} awal={produk.feePerPasang?.toLocaleString("id-ID") ?? ""} />
+          </section>
+        )
+      )}
     </div>
   );
 }

@@ -34,8 +34,8 @@ Tiga peran dengan hak akses berbeda. Login admin memakai akun per orang, bukan s
 | Peran | Siapa | Bisa apa |
 |---|---|---|
 | Pembeli | Publik | Lihat katalog, pakai keranjang, isi data checkout, login opsional untuk simpan data |
-| Admin toko | Retailer | Kelola produk dan stok, ubah status order, isi nomor resi dan foto resi, lihat pelanggan. Tidak bisa mengubah aturan fee |
-| Pemilik web | Pemilik proyek | Semua akses admin toko, ditambah pengaturan fee, laporan fee, kelola akun admin, dan analitik traffic |
+| Admin toko | Retailer | Kelola produk dan stok, ubah status order, isi nomor resi dan foto resi, lihat pelanggan, ubah nomor WhatsApp dan ambang stok. Aturan fee dan rekening tampil tidak bisa diubah langsung: admin toko mengusulkan, dan perubahan baru berlaku setelah disetujui pemilik web |
+| Pemilik web | Pemilik proyek | Semua akses admin toko, ditambah mengubah fee dan rekening tampil secara langsung, menyetujui atau menolak usulan admin toko, laporan fee, kelola akun admin, dan analitik traffic |
 
 ## Alur order lewat WhatsApp
 
@@ -69,7 +69,7 @@ Dibuat untuk HP seperti admin web kanopi, dengan tab bawah. Semua perubahan stat
 | Pengaturan | Nama toko, nomor WhatsApp, nama dan nomor rekening yang ditampilkan, aturan fee per pasang (rentang harga dan pengecualian per produk), ambang status stok, area kirim, kebijakan retur |
 | Akun dan log | Akun admin per orang, peran, riwayat perubahan |
 
-Hak akses: Pengaturan fee dan Laporan fee hanya untuk pemilik web. Admin toko mengelola Produk, Order, dan Pelanggan.
+Hak akses: Laporan fee hanya untuk pemilik web. Admin toko mengelola Produk, Order, dan Pelanggan. Di Pengaturan, admin toko mengubah nomor WhatsApp dan ambang stok secara langsung, sedangkan perubahan tier fee, fee khusus per produk, dan rekening tampil diajukan sebagai usulan yang baru berlaku setelah disetujui pemilik web. Semua perubahan pengaturan bisa dilihat kedua pihak di riwayat perubahan.
 
 ## Status order dan aturan fee
 
@@ -189,7 +189,7 @@ Urutan kerja usulan: coding baru mulai setelah retailer meng-ACC mockup, dan has
 
 **Masih terbuka**
 
-- [ ] Cara menentukan fee per pasang: per rentang harga (makin mahal sepatunya makin besar fee) atau per model sepatu? Minta tabel angkanya dari retailer.
+- [ ] Angka tier fee per rentang harga dan fee khusus per model dari retailer. Cara menentukannya sudah diputuskan: dua-duanya dipakai (tier untuk umum, fee khusus menimpa tier), angkanya ditentukan retailer dan masuk lewat usulan yang disetujui pemilik web.
 - [ ] Pelanggan lama retailer yang diarahkan ke web tetap kena fee, atau dikecualikan?
 - [ ] Order yang diretur setelah berstatus Dikirim: fee dibatalkan atau tetap?
 - [ ] Jumlah SKU awal dan bentuk data retailer saat ini (Sheet, ekspor marketplace, atau lainnya) untuk format import CSV.

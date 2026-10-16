@@ -36,6 +36,8 @@ PGlite hanya bisa dibuka satu proses: hentikan `npm run dev` sebelum menjalankan
 - `src/lib/produk/`: `data.ts` (query) dan `mutasi.ts` (tulis + `audit_log` dalam satu transaksi). Semua perubahan stok wajib lewat sini.
 - `src/components/ikon.tsx`: ikon buatan sendiri. Jangan pakai Lucide atau library ikon lain (permintaan pemilik).
 - `DESIGN.md`: arah tampilan sementara (token warna di `tailwind.config.ts`). Baca sebelum kerja UI.
+- `src/lib/domain/pengaturan.ts`: editor tier (batas → rentang rapat), nomor WA, rekening, ambang stok. `usulan.ts`: jenis/status usulan, deteksi usulan basi, dampak tier ke produk. `waktu.ts`: tampilan waktu WIB.
+- `src/lib/pengaturan/`: `data.ts` (query pengaturan, usulan, riwayat), `mutasi.ts` (ubah langsung + ajukan/putuskan/tarik usulan, semua dengan `audit_log`), `ringkasan.ts` (teks daftar usulan dan riwayat).
 - `src/lib/auth/`: `roles.ts` (peran → izin, murni), `password.ts` (scrypt), `session.ts` (akun & sesi, tanpa Next), `current.ts` (helper Next: `wajibLogin`, `wajibIzin`).
 - `src/app/admin/`: login dan panel admin (mobile, tab bawah). `src/middleware.ts` hanya cek ada-tidaknya cookie; validasi sesi asli di layout panel.
 - `tests/unit/`: test fungsi murni. `tests/db/`: test integrasi dengan PGlite in-memory.
@@ -44,6 +46,7 @@ PGlite hanya bisa dibuka satu proses: hentikan `npm run dev` sebelum menjalankan
 
 - Akun per orang di tabel `users`, peran `pemilik` atau `admin_toko`. Tidak ada pendaftaran publik; akun pertama dibuat lewat `npm run user:create`, akun berikutnya dari halaman Akun (pemilik saja).
 - Sesi: token acak di cookie httpOnly `argashoes_sesi`, yang disimpan di DB hanya hash sha256-nya. Berlaku 14 hari.
+- Admin toko: `pengaturan.ubah` (nomor WA, ambang stok) dan `usulan.ajukan`. Khusus pemilik: `fee.atur`, `rekening.atur` (ubah langsung) dan `usulan.putuskan`.
 - Cek izin dengan `wajibIzin("fee.atur")` dsb. Daftar izin per peran ada di `src/lib/auth/roles.ts`; jangan cek `peran === "pemilik"` langsung di halaman.
 
 ## Keputusan teknis (di luar yang tertulis di PRD)
@@ -52,13 +55,16 @@ PGlite hanya bisa dibuka satu proses: hentikan `npm run dev` sebelum menjalankan
 - **Transisi status**: lead → dikonfirmasi/batal; dikonfirmasi → dikirim/batal; dikirim → selesai. Selesai dan batal adalah status akhir. Dikirim → batal (retur) belum diizinkan karena aturan fee retur masih pertanyaan terbuka di PRD.
 - **Dikirim wajib resi** dijaga dua lapis: `transisiStatus` dan CHECK constraint di tabel `orders`. `dikirim_pada` diisi saat pindah ke Dikirim dan tidak berubah saat Selesai.
 - **Tidak ada tier yang cocok** → `tentukanFeePerPasang` mengembalikan `null`; alur checkout nanti harus memutuskan (tolak, atau pakai default) setelah tabel fee dari retailer jelas.
-- Tambahan tabel di luar PRD: `sessions`, `fee_tiers`, `audit_log` (riwayat perubahan stok/produk/akun, append-only).
-- Fee per produk hanya bisa diubah pemilik (izin `fee.atur`), termasuk lewat import CSV.
+- Tambahan tabel di luar PRD: `sessions`, `fee_tiers`, `audit_log` (riwayat perubahan stok/produk/akun/pengaturan, append-only), `usulan`.
+- Fee per produk hanya bisa diubah langsung oleh pemilik (izin `fee.atur`), termasuk lewat import CSV. Admin toko mengusulkan lewat halaman produk.
+- **Usulan** (tabel `usulan`): tier fee, fee khusus produk, dan rekening tampil yang diajukan admin toko baru berlaku setelah disetujui pemilik. Satu sasaran hanya boleh punya satu usulan menunggu (indeks unik parsial pada `kunci`). Usulan menyimpan nilai saat diajukan (`dasar`); kalau nilai sekarang sudah beda, usulan basi dan tidak bisa disetujui, supaya perubahan yang lebih baru tidak tertimpa diam-diam.
+- **Tier disimpan rapat**: editor menerima batas atas per tier, tier pertama mulai Rp 0 dan tier terakhir tanpa batas atas, jadi tidak ada rentang bolong. Tier ditulis ulang seluruhnya dalam satu transaksi dengan advisory lock.
+- Setting `nomor_wa` disimpan sebagai `{ nomor }`, bukan string polos: string angka di jsonb terbaca balik sebagai number.
 - `customers.user_id` disiapkan untuk login pelanggan nanti, belum punya FK.
 
 ## Belum dibangun
 
-Halaman publik (katalog, produk, keranjang, checkout, WhatsApp), upload foto, daftar & detail order, pelanggan, laporan fee, pengaturan, halaman audit log, Redis, rate limit login. Catatan per tahap ada di `notes/`.
+Halaman publik (katalog, produk, keranjang, checkout, WhatsApp), upload foto, daftar & detail order, pelanggan, laporan fee, pengaturan nama toko/area kirim/kebijakan retur, halaman audit log untuk stok dan akun, Redis, rate limit login. Catatan per tahap ada di `notes/`.
 
 <!-- antislop:start -->
 ## antislop

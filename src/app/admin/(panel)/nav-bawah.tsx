@@ -2,15 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { IkonKardus, IkonKartuNama, IkonSepatu } from "@/components/ikon";
+import { IkonKardus, IkonKartuNama, IkonPengaturan, IkonSepatu } from "@/components/ikon";
 
 const SEMUA_TAB = [
   { href: "/admin", label: "Beranda", Ikon: IkonKardus, pemilikSaja: false },
   { href: "/admin/produk", label: "Produk", Ikon: IkonSepatu, pemilikSaja: false },
+  { href: "/admin/pengaturan", label: "Pengaturan", Ikon: IkonPengaturan, pemilikSaja: false },
   { href: "/admin/akun", label: "Akun", Ikon: IkonKartuNama, pemilikSaja: true },
 ];
 
-export function NavBawah({ pemilik }: { pemilik: boolean }) {
+/** usulanMenunggu: hanya diisi untuk pemilik, yang memutuskan usulan. */
+export function NavBawah({ pemilik, usulanMenunggu = 0 }: { pemilik: boolean; usulanMenunggu?: number }) {
   const path = usePathname();
   const tabs = SEMUA_TAB.filter((t) => pemilik || !t.pemilikSaja);
   return (
@@ -27,7 +29,15 @@ export function NavBawah({ pemilik }: { pemilik: boolean }) {
                   aktif ? "text-bata" : "text-redup hover:text-tinta"
                 }`}
               >
-                <Ikon />
+                <span className="relative">
+                  <Ikon />
+                  {href === "/admin/pengaturan" && usulanMenunggu > 0 && (
+                    <span className="angka absolute -right-3 -top-1.5 min-w-5 rounded-label bg-bata px-1 text-center text-[11px] font-bold leading-4 text-white">
+                      {usulanMenunggu}
+                      <span className="sr-only"> usulan menunggu</span>
+                    </span>
+                  )}
+                </span>
                 <span className={aktif ? "underline decoration-2 underline-offset-4" : ""}>{label}</span>
               </Link>
             </li>

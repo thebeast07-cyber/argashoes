@@ -16,6 +16,7 @@ import {
 import { FEE_MAX, FEE_MIN } from "../lib/domain/fee";
 import { PERAN } from "../lib/auth/roles";
 import { STATUS_ORDER } from "../lib/domain/order-status";
+import { JENIS_USULAN, STATUS_USULAN } from "../lib/domain/usulan";
 
 // Semua nominal uang disimpan sebagai integer rupiah (tanpa desimal).
 // Semua waktu disimpan dengan zona waktu; konversi ke WIB dilakukan di kode.
@@ -231,3 +232,35 @@ export const settings = pgTable("settings", {
   kunci: text("kunci").primaryKey(),
   nilai: jsonb("nilai").notNull(),
 });
+
+export const jenisUsulanEnum = pgEnum("jenis_usulan", JENIS_USULAN);
+export const statusUsulanEnum = pgEnum("status_usulan", STATUS_USULAN);
+
+// Usulan admin toko (tier fee, fee per produk, rekening) yang baru berlaku setelah disetujui pemilik.
+export const usulan = pgTable(
+  "usulan",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    jenis: jenisUsulanEnum("jenis").notNull(),
+    kunci: text("kunci").notNull(),
+    productId: uuid("product_id").references(() => products.id),
+    // Dibungkus { nilai } supaya nilai null ("ikut tier", "belum ada rekening") tetap bisa disimpan.
+    isi: jsonb("isi").$type<{ nilai: unknown }>().notNull(),
+    // Nilai yang berlaku saat diusulkan, untuk menolak persetujuan usulan yang sudah basi.
+    dasar: jsonb("dasar").$type<{ nilai: unknown }>().notNull(),
+    alasan: text("alasan"),
+    status: statusUsulanEnum("status").notNull().default("menunggu"),
+    diajukanOleh: uuid("diajukan_oleh")
+      .notNull()
+      .references(() => users.id),
+    diajukanPada: timestamp("diajukan_pada", { withTimezone: true }).notNull().defaultNow(),
+    diputuskanOleh: uuid("diputuskan_oleh").references(() => users.id),
+    diputuskanPada: timestamp("diputuskan_pada", { withTimezone: true }),
+    catatanKeputusan: text("catatan_keputusan"),
+  },
+  (t) => [
+    uniqueIndex("usulan_satu_menunggu_uq").on(t.kunci).where(sql`${t.status} = 'menunggu'`),
+    index("usulan_status_idx").on(t.status, t.diajukanPada),
+    check("usulan_keputusan_check", sql`(${t.status} = 'menunggu') = (${t.diputuskanPada} is null)`),
+  ],
+);
