@@ -9,7 +9,7 @@ function TombolMasuk() {
     <button
       type="submit"
       disabled={pending}
-      className="w-full rounded-lg bg-neutral-900 py-3 font-semibold text-white disabled:opacity-60"
+      className="tombol-utama w-full"
     >
       {pending ? "Memeriksa..." : "Masuk"}
     </button>
@@ -21,15 +21,15 @@ export function FormLogin() {
   return (
     <form action={action} className="space-y-4">
       <label className="block">
-        <span className="mb-1 block text-sm font-medium">Email</span>
+        <span className="label-form">Email</span>
         <input name="email" type="email" autoComplete="username" required className="input" />
       </label>
       <label className="block">
-        <span className="mb-1 block text-sm font-medium">Password</span>
+        <span className="label-form">Password</span>
         <input name="password" type="password" autoComplete="current-password" required className="input" />
       </label>
       {state.error && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm font-semibold text-bata">
           {state.error}
         </p>
       )}

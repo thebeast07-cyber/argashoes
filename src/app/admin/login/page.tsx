@@ -9,7 +9,7 @@ export default async function HalamanLogin() {
   return (
     <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-4">
       <h1 className="mb-1 text-2xl font-bold">Masuk admin</h1>
-      <p className="mb-6 text-sm text-neutral-600">Pakai akun masing-masing, jangan berbagi password.</p>
+      <p className="mb-6 text-sm text-redup">Pakai akun masing-masing, jangan berbagi password.</p>
       <FormLogin />
     </main>
   );

@@ -32,6 +32,10 @@ PGlite hanya bisa dibuka satu proses: hentikan `npm run dev` sebelum menjalankan
 - `src/lib/domain/fee.ts`: tier fee, fee per pasang, syarat kena fee, periode WIB, rekap bulanan.
 - `src/lib/domain/order-status.ts`: daftar status dan transisi yang sah, aturan wajib resi.
 - `src/lib/orders/ubah-status.ts`: ubah status + catat `order_events` dalam satu transaksi.
+- `src/lib/domain/stok.ts`, `produk.ts`, `import.ts`: status stok, urutan size, validasi produk/SKU, rencana import CSV (murni).
+- `src/lib/produk/`: `data.ts` (query) dan `mutasi.ts` (tulis + `audit_log` dalam satu transaksi). Semua perubahan stok wajib lewat sini.
+- `src/components/ikon.tsx`: ikon buatan sendiri. Jangan pakai Lucide atau library ikon lain (permintaan pemilik).
+- `DESIGN.md`: arah tampilan sementara (token warna di `tailwind.config.ts`). Baca sebelum kerja UI.
 - `src/lib/auth/`: `roles.ts` (peran → izin, murni), `password.ts` (scrypt), `session.ts` (akun & sesi, tanpa Next), `current.ts` (helper Next: `wajibLogin`, `wajibIzin`).
 - `src/app/admin/`: login dan panel admin (mobile, tab bawah). `src/middleware.ts` hanya cek ada-tidaknya cookie; validasi sesi asli di layout panel.
 - `tests/unit/`: test fungsi murni. `tests/db/`: test integrasi dengan PGlite in-memory.
@@ -49,11 +53,12 @@ PGlite hanya bisa dibuka satu proses: hentikan `npm run dev` sebelum menjalankan
 - **Dikirim wajib resi** dijaga dua lapis: `transisiStatus` dan CHECK constraint di tabel `orders`. `dikirim_pada` diisi saat pindah ke Dikirim dan tidak berubah saat Selesai.
 - **Tidak ada tier yang cocok** → `tentukanFeePerPasang` mengembalikan `null`; alur checkout nanti harus memutuskan (tolak, atau pakai default) setelah tabel fee dari retailer jelas.
 - Tambahan tabel di luar PRD: `sessions`, `fee_tiers`, `audit_log` (riwayat perubahan stok/produk/akun, append-only).
+- Fee per produk hanya bisa diubah pemilik (izin `fee.atur`), termasuk lewat import CSV.
 - `customers.user_id` disiapkan untuk login pelanggan nanti, belum punya FK.
 
 ## Belum dibangun
 
-Halaman publik (katalog, produk, keranjang, checkout, WhatsApp), CRUD produk/varian, import CSV, daftar & detail order, pelanggan, laporan fee, pengaturan, Redis, Vercel Blob, rate limit login.
+Halaman publik (katalog, produk, keranjang, checkout, WhatsApp), upload foto, daftar & detail order, pelanggan, laporan fee, pengaturan, halaman audit log, Redis, rate limit login. Catatan per tahap ada di `notes/`.
 
 <!-- antislop:start -->
 ## antislop

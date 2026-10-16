@@ -17,21 +17,21 @@ export default async function HalamanAkun() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold">Akun admin</h1>
-      <ul className="divide-y divide-neutral-200 rounded-lg border border-neutral-200 bg-white">
+      <h1 className="text-2xl font-bold">Akun admin</h1>
+      <ul className="divide-y divide-tinta/15 border-y border-tinta/15">
         {daftar.map((u) => (
-          <li key={u.id} className="px-4 py-3">
+          <li key={u.id} className="py-3">
             <p className="font-medium">
-              {u.nama} {!u.aktif && <span className="text-xs text-red-600">(nonaktif)</span>}
+              {u.nama} {!u.aktif && <span className="text-xs font-semibold text-bata">(nonaktif)</span>}
             </p>
-            <p className="text-sm text-neutral-600">
+            <p className="text-sm text-redup">
               {u.email} · {LABEL_PERAN[u.peran]}
             </p>
           </li>
         ))}
       </ul>
       <section>
-        <h2 className="mb-3 font-semibold">Tambah akun</h2>
+        <h2 className="mb-3 text-lg font-bold">Tambah akun</h2>
         <FormAkun />
       </section>
     </div>

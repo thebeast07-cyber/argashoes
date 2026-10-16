@@ -11,7 +11,7 @@ function TombolSimpan() {
     <button
       type="submit"
       disabled={pending}
-      className="w-full rounded-lg bg-neutral-900 py-3 font-semibold text-white disabled:opacity-60"
+      className="tombol-utama w-full"
     >
       {pending ? "Menyimpan..." : "Tambah akun"}
     </button>
@@ -27,23 +27,55 @@ export function FormAkun() {
 
   return (
     <form ref={formRef} action={action} className="space-y-4">
-      <input name="nama" placeholder="Nama" required className="input" />
-      <input name="email" type="email" placeholder="Email" required className="input" />
-      <input
-        name="password"
-        type="password"
-        placeholder={`Password awal (min. ${PASSWORD_MIN} karakter)`}
-        minLength={PASSWORD_MIN}
-        autoComplete="new-password"
-        required
-        className="input"
-      />
-      <select name="peran" defaultValue="admin_toko" className="input">
-        <option value="admin_toko">Admin toko</option>
-        <option value="pemilik">Pemilik web</option>
-      </select>
-      {state.error && <p role="alert" className="text-sm text-red-600">{state.error}</p>}
-      {state.sukses && <p className="text-sm text-green-700">{state.sukses}</p>}
+      <div>
+        <label htmlFor="akun-nama" className="label-form">
+          Nama
+        </label>
+        <input id="akun-nama" name="nama" required className="input" />
+      </div>
+      <div>
+        <label htmlFor="akun-email" className="label-form">
+          Email
+        </label>
+        <input id="akun-email" name="email" type="email" required autoComplete="off" className="input" />
+      </div>
+      <div>
+        <label htmlFor="akun-password" className="label-form">
+          Password awal
+        </label>
+        <input
+          id="akun-password"
+          name="password"
+          type="password"
+          minLength={PASSWORD_MIN}
+          autoComplete="new-password"
+          required
+          aria-describedby="akun-password-bantuan"
+          className="input"
+        />
+        <p id="akun-password-bantuan" className="mt-1 text-xs text-redup">
+          Minimal {PASSWORD_MIN} karakter. Berikan langsung ke orangnya, jangan lewat grup chat.
+        </p>
+      </div>
+      <div>
+        <label htmlFor="akun-peran" className="label-form">
+          Peran
+        </label>
+        <select id="akun-peran" name="peran" defaultValue="admin_toko" className="input">
+          <option value="admin_toko">Admin toko: produk, stok, order, pelanggan</option>
+          <option value="pemilik">Pemilik web: semua, termasuk fee dan akun</option>
+        </select>
+      </div>
+      {state.error && (
+        <p role="alert" className="text-sm font-semibold text-bata">
+          {state.error}
+        </p>
+      )}
+      {state.sukses && (
+        <p role="status" className="text-sm font-semibold">
+          {state.sukses}
+        </p>
+      )}
       <TombolSimpan />
     </form>
   );

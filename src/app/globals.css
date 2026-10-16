@@ -3,11 +3,41 @@
 @tailwind utilities;
 
 body {
-  @apply bg-neutral-50 text-neutral-900 antialiased;
+  @apply bg-kertas text-tinta antialiased;
+}
+
+/* Fokus keyboard yang jelas di semua elemen interaktif (R-32). */
+:focus-visible {
+  outline: 2px solid theme("colors.bata");
+  outline-offset: 2px;
 }
 
 @layer components {
   .input {
-    @apply w-full rounded-lg border border-neutral-300 bg-white px-3 py-3 text-base outline-none focus:border-neutral-900;
+    @apply min-h-11 w-full rounded-kontrol border border-tinta/40 bg-white px-3 py-2 text-base text-tinta placeholder:text-redup focus:border-tinta;
+  }
+
+  .label-form {
+    @apply mb-1 block text-sm font-semibold;
+  }
+
+  .tombol {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-kontrol px-4 font-semibold disabled:opacity-60;
+  }
+
+  .tombol-utama {
+    @apply tombol bg-bata text-white hover:bg-[#9A2E17] active:bg-[#82260F];
+  }
+
+  .tombol-garis {
+    @apply tombol border border-tinta bg-white text-tinta hover:bg-kertas active:bg-tinta/10;
+  }
+
+  .angka {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .sempit {
+    font-variation-settings: "wdth" 75;
   }
 }

@@ -5,7 +5,7 @@ Urutan ini mengikuti dependensi: order butuh produk, laporan fee butuh order. Ti
 | # | Tahap | Isi | Butuh dari retailer |
 |---|---|---|---|
 | 1 | Fondasi | Selesai, lihat `01-fondasi.md` | – |
-| 2 | Produk & stok (admin) | Daftar + cari + filter produk, form produk (termasuk fee per pasang), varian size + stok, tombol Tandai habis, import/ekspor CSV `sku,size,stok`, audit log stok | Contoh data produk (Sheet/ekspor marketplace) |
+| 2 | Produk & stok (admin) | Selesai, lihat `03-produk-stok.md`. Sisa: upload foto | Contoh data produk untuk memastikan format CSV katalog |
 | 3 | Pengaturan & tier fee | Nomor WA, rekening tampil, ambang stok, editor tier fee (khusus pemilik) | Tabel fee per rentang harga |
 | 4 | Katalog publik | Grid produk, cari, filter brand/kategori/size/harga, halaman produk dengan status Ready/Sisa sedikit/Habis | Foto produk |
 | 5 | Keranjang, checkout, WhatsApp | Keranjang di browser, form checkout + persetujuan data, order `WEB-xxxx` tersimpan dulu baru redirect WA, halaman konfirmasi, rate limit + honeypot | Nomor WA toko |
