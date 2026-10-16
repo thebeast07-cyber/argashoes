@@ -1,0 +1,15 @@
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# env lokal
+.env
+.env*.local
+
+# database PGlite lokal
+.data/
+
+.DS_Store
+npm-debug.log*

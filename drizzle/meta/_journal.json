@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1792169023552,
+      "tag": "0000_fondasi",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792169026623,
+      "tag": "0001_log_append_only",
+      "breakpoints": true
+    }
+  ]
+}
