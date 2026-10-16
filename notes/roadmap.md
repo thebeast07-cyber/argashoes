@@ -4,7 +4,7 @@ Urutan ini mengikuti dependensi: order butuh produk, laporan fee butuh order. Ti
 
 | # | Tahap | Isi | Butuh dari retailer |
 |---|---|---|---|
-| 1 | Fondasi | ✅ Selesai, lihat `01-fondasi.md` | – |
+| 1 | Fondasi | Selesai, lihat `01-fondasi.md` | – |
 | 2 | Produk & stok (admin) | Daftar + cari + filter produk, form produk (termasuk fee per pasang), varian size + stok, tombol Tandai habis, import/ekspor CSV `sku,size,stok`, audit log stok | Contoh data produk (Sheet/ekspor marketplace) |
 | 3 | Pengaturan & tier fee | Nomor WA, rekening tampil, ambang stok, editor tier fee (khusus pemilik) | Tabel fee per rentang harga |
 | 4 | Katalog publik | Grid produk, cari, filter brand/kategori/size/harga, halaman produk dengan status Ready/Sisa sedikit/Habis | Foto produk |

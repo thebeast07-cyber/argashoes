@@ -4,6 +4,7 @@ Web sepatu Nike/Adidas untuk satu retailer: katalog → checkout → order terca
 
 ## Aturan kerja
 
+- Sebelum kerja UI, copy, aksesibilitas, layout mobile, atau komentar kode: baca antislop dulu (lihat blok `antislop` di akhir file ini).
 - Jangan push ke `main`. Kerja di branch, uji di Preview Vercel dulu.
 - Bahasa domain pakai Bahasa Indonesia, sama dengan PRD (`peran`, `status`, `resiNomor`, `feePerPasang`). Kode teknis umum tetap Inggris (`db`, `schema`, `token`).
 - Uang selalu integer rupiah. Waktu disimpan `timestamptz`; periode fee dihitung dalam WIB (UTC+7).
@@ -53,3 +54,17 @@ PGlite hanya bisa dibuka satu proses: hentikan `npm run dev` sebelum menjalankan
 ## Belum dibangun
 
 Halaman publik (katalog, produk, keranjang, checkout, WhatsApp), CRUD produk/varian, import CSV, daftar & detail order, pelanggan, laporan fee, pengaturan, Redis, Vercel Blob, rate limit login.
+
+<!-- antislop:start -->
+## antislop
+For UI, copy, people, mobile layout, or code comments work, read `.claude/skills/antislop/SKILL.md` (core) and then the skill for the task:
+- UI / visual: `.claude/skills/antislop-ui/SKILL.md`
+- Copy & text: `.claude/skills/antislop-copywriting/SKILL.md`
+- People: `.claude/skills/antislop-human/SKILL.md`
+- Mobile / responsive: `.claude/skills/antislop-layoutmobile/SKILL.md`
+- Code comments: `.claude/skills/antislop-code/SKILL.md`
+Before starting, follow the core's "Two Usage Modes" section in strict order: explicit session instruction first, then global preference, then ask. A session instruction always wins. For a resolved mode, say `antislop active: <mode> (session override).` or `antislop active: <mode> (global preference).` once before presenting findings or making edits, using the actual mode and source. Acknowledging the user's request without naming the source does not replace this notice.
+Only an explicit choice of antislop during or after selects a session mode. A request to review, audit, or avoid file edits does not select a mode; read the global preference in that case. Another skill's mode does not select antislop's mode.
+If the mode is unresolved, ask during/after and end the response; wait for the answer before any UI review, planning, or concept. For read-only tasks, put the active-mode notice only at the start of the final answer, never in progress messages. For editing tasks, announce before the first edit and omit it from the final answer.
+To update antislop later: copy the `skills/` folders from https://github.com/miqdadbadjuber/anti-slop into `.claude/skills/` again (see `notes/02-antislop.md`).
+<!-- antislop:end -->
