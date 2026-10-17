@@ -7,7 +7,7 @@ import { getDb } from "@/db";
 import { auditLog } from "@/db/schema";
 import { wajibIzin } from "@/lib/auth/current";
 import { isPeran } from "@/lib/auth/roles";
-import { buatSesi, buatUser, cekLogin, hapusSesi, SESSION_COOKIE } from "@/lib/auth/session";
+import { buatPemilikPertama, buatSesi, buatUser, cekLogin, hapusSesi, SESSION_COOKIE } from "@/lib/auth/session";
 
 export type StateForm = { error?: string; sukses?: string };
 
@@ -17,7 +17,9 @@ export async function login(_prev: StateForm, form: FormData): Promise<StateForm
   if (!email || !password) return { error: "Email dan password wajib diisi." };
 
   const db = await getDb();
-  const user = await cekLogin(db, email, password);
+  const user =
+    (await cekLogin(db, email, password)) ??
+    (await buatPemilikPertama(db, { email, password, sandiAwal: process.env.ADMIN_PASSWORD }));
   if (!user) return { error: "Email atau password salah." };
 
   const { token, kedaluwarsa } = await buatSesi(db, user.id);

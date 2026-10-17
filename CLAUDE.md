@@ -46,7 +46,7 @@ PGlite hanya bisa dibuka satu proses: hentikan `npm run dev` sebelum menjalankan
 
 ## Auth
 
-- Akun per orang di tabel `users`, peran `pemilik` atau `admin_toko`. Tidak ada pendaftaran publik; akun pertama dibuat lewat `npm run user:create`, akun berikutnya dari halaman Akun (pemilik saja).
+- Akun per orang di tabel `users`, peran `pemilik` atau `admin_toko`. Tidak ada pendaftaran publik. Akun pertama: login dengan email apa saja + sandi = env `ADMIN_PASSWORD` selama tabel `users` masih kosong (`buatPemilikPertama`, dikunci advisory lock), atau lewat `npm run user:create`. Akun berikutnya dari halaman Akun (pemilik saja). `ADMIN_PASSWORD` tidak boleh ditulis di repo (repo publik).
 - Sesi: token acak di cookie httpOnly `argashoes_sesi`, yang disimpan di DB hanya hash sha256-nya. Berlaku 14 hari.
 - Admin toko: `pengaturan.ubah` (nomor WA, ambang stok) dan `usulan.ajukan`. Khusus pemilik: `fee.atur`, `rekening.atur` (ubah langsung) dan `usulan.putuskan`.
 - Cek izin dengan `wajibIzin("fee.atur")` dsb. Daftar izin per peran ada di `src/lib/auth/roles.ts`; jangan cek `peran === "pemilik"` langsung di halaman.
