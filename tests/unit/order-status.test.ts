@@ -49,7 +49,18 @@ describe("transisiStatus", () => {
     assert.deepEqual(hasil, {
       ok: true,
       perubahan: { status: "dikonfirmasi", resiNomor: null, dikirimPada: null },
-      event: { dariStatus: "lead", keStatus: "dikonfirmasi", waktu: WAKTU },
+      event: { dariStatus: "lead", keStatus: "dikonfirmasi", waktu: WAKTU, catatan: null },
+    });
+  });
+
+  it("batal wajib alasan; alasan dirapikan dan ikut tercatat di event", () => {
+    assert.deepEqual(transisiStatus({ order: order(), ke: "batal", waktu: WAKTU }), { ok: false, error: "ALASAN_WAJIB" });
+    assert.deepEqual(transisiStatus({ order: order(), ke: "batal", alasanBatal: "   ", waktu: WAKTU }), { ok: false, error: "ALASAN_WAJIB" });
+    const hasil = transisiStatus({ order: order(), ke: "batal", alasanBatal: "  Stok   habis ", waktu: WAKTU });
+    assert.deepEqual(hasil, {
+      ok: true,
+      perubahan: { status: "batal", resiNomor: null, dikirimPada: null, alasanBatal: "Stok habis" },
+      event: { dariStatus: "lead", keStatus: "batal", waktu: WAKTU, catatan: "Stok habis" },
     });
   });
 

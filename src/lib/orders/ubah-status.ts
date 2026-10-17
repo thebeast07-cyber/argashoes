@@ -11,7 +11,7 @@ export type HasilUbahStatus = { ok: true } | { ok: false; error: GagalTransisi |
  */
 export async function ubahStatusOrder(
   db: Db,
-  input: { orderId: string; ke: StatusOrder; resiNomor?: string | null; olehUserId: string; waktu?: Date },
+  input: { orderId: string; ke: StatusOrder; resiNomor?: string | null; alasanBatal?: string | null; olehUserId: string; waktu?: Date },
 ): Promise<HasilUbahStatus> {
   const waktu = input.waktu ?? new Date();
 
@@ -24,7 +24,7 @@ export async function ubahStatusOrder(
       .for("update");
     if (!order) return { ok: false, error: "ORDER_TIDAK_ADA" } as const;
 
-    const hasil = transisiStatus({ order, ke: input.ke, resiNomor: input.resiNomor, waktu });
+    const hasil = transisiStatus({ order, ke: input.ke, resiNomor: input.resiNomor, alasanBatal: input.alasanBatal, waktu });
     if (!hasil.ok) return hasil;
 
     await tx.update(orders).set(hasil.perubahan).where(eq(orders.id, input.orderId));

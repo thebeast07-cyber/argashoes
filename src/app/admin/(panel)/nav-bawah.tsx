@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { IkonKardus, IkonKartuNama, IkonPengaturan, IkonSepatu } from "@/components/ikon";
+import { IkonKardus, IkonKartuNama, IkonNota, IkonPengaturan, IkonSepatu } from "@/components/ikon";
 
 const SEMUA_TAB = [
   { href: "/admin", label: "Beranda", Ikon: IkonKardus, pemilikSaja: false },
   { href: "/admin/produk", label: "Produk", Ikon: IkonSepatu, pemilikSaja: false },
+  { href: "/admin/order", label: "Order", Ikon: IkonNota, pemilikSaja: false },
   { href: "/admin/pengaturan", label: "Pengaturan", Ikon: IkonPengaturan, pemilikSaja: false },
   { href: "/admin/akun", label: "Akun", Ikon: IkonKartuNama, pemilikSaja: true },
 ];

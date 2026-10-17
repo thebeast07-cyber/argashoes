@@ -156,7 +156,7 @@ export async function unggahFoto(productId: string, form: FormData): Promise<Has
 
   let url: string;
   try {
-    url = await simpanFoto(productId, file, file.type);
+    url = await simpanFoto(`produk/${productId}`, file, file.type);
   } catch (e) {
     if (e instanceof PenyimpananBelumSiap) return { error: "Penyimpanan foto belum disiapkan di server. Kabari pemilik web." };
     return { error: "Foto gagal diunggah. Coba lagi." };

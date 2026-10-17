@@ -110,6 +110,16 @@ export function IkonCoret(p: Props) {
   );
 }
 
+/** Order: nota dengan sobekan bawah bergerigi. */
+export function IkonNota(p: Props) {
+  return (
+    <Dasar {...p}>
+      <path d="M5 3h14v18l-2.5-2-2.5 2-2-2-2 2-2.5-2L5 21z" />
+      <path d="M9 8h6M9 12h6M9 16h3" />
+    </Dasar>
+  );
+}
+
 /** Keranjang: troli dengan sudut siku. */
 export function IkonKeranjang(p: Props) {
   return (

@@ -22,6 +22,9 @@ const TRANSISI: Record<StatusOrder, readonly StatusOrder[]> = {
   batal: [],
 };
 
+/** Pilihan cepat alasan batal; "Lainnya" diisi sendiri. Alasan wajib supaya pemilik tahu kenapa Lead tidak jadi. */
+export const ALASAN_BATAL = ["Stok habis", "Pembeli tidak membalas", "Pembeli batal", "Lainnya"] as const;
+
 export function isStatusOrder(nilai: unknown): nilai is StatusOrder {
   return typeof nilai === "string" && (STATUS_ORDER as readonly string[]).includes(nilai);
 }
@@ -45,6 +48,8 @@ export type InputTransisi = {
   ke: StatusOrder;
   // Wajib (atau sudah tersimpan di order) saat pindah ke Dikirim.
   resiNomor?: string | null;
+  // Wajib saat pindah ke Batal.
+  alasanBatal?: string | null;
   waktu: Date;
 };
 
@@ -52,18 +57,20 @@ export type PerubahanOrder = {
   status: StatusOrder;
   resiNomor: string | null;
   dikirimPada: Date | null;
+  alasanBatal?: string;
 };
 
-export type GagalTransisi = "STATUS_SAMA" | "TRANSISI_TIDAK_VALID" | "RESI_WAJIB";
+export type GagalTransisi = "STATUS_SAMA" | "TRANSISI_TIDAK_VALID" | "RESI_WAJIB" | "ALASAN_WAJIB";
 
 export type HasilTransisi =
-  | { ok: true; perubahan: PerubahanOrder; event: { dariStatus: StatusOrder; keStatus: StatusOrder; waktu: Date } }
+  | { ok: true; perubahan: PerubahanOrder; event: { dariStatus: StatusOrder; keStatus: StatusOrder; waktu: Date; catatan: string | null } }
   | { ok: false; error: GagalTransisi };
 
 export const PESAN_GAGAL_TRANSISI: Record<GagalTransisi, string> = {
   STATUS_SAMA: "Status order sudah sama.",
   TRANSISI_TIDAK_VALID: "Perubahan status ini tidak diizinkan.",
   RESI_WAJIB: "Nomor resi wajib diisi sebelum status Dikirim.",
+  ALASAN_WAJIB: "Alasan batal wajib diisi.",
 };
 
 function rapikanResi(resi: string | null | undefined): string | null {
@@ -75,7 +82,7 @@ function rapikanResi(resi: string | null | undefined): string | null {
  * Hitung perubahan order untuk satu transisi status, plus event audit-nya.
  * Tidak menyimpan apa pun; pemanggil yang menulis ke database.
  */
-export function transisiStatus({ order, ke, resiNomor, waktu }: InputTransisi): HasilTransisi {
+export function transisiStatus({ order, ke, resiNomor, alasanBatal, waktu }: InputTransisi): HasilTransisi {
   const dari = order.status;
   if (dari === ke) return { ok: false, error: "STATUS_SAMA" };
   if (!bisaTransisi(dari, ke)) return { ok: false, error: "TRANSISI_TIDAK_VALID" };
@@ -89,9 +96,19 @@ export function transisiStatus({ order, ke, resiNomor, waktu }: InputTransisi): 
     dikirimPada = waktu;
   }
 
+  if (ke === "batal") {
+    const alasan = alasanBatal?.trim().replace(/\s+/g, " ").slice(0, 200);
+    if (!alasan) return { ok: false, error: "ALASAN_WAJIB" };
+    return {
+      ok: true,
+      perubahan: { status: ke, resiNomor: resi, dikirimPada, alasanBatal: alasan },
+      event: { dariStatus: dari, keStatus: ke, waktu, catatan: alasan },
+    };
+  }
+
   return {
     ok: true,
     perubahan: { status: ke, resiNomor: resi, dikirimPada },
-    event: { dariStatus: dari, keStatus: ke, waktu },
+    event: { dariStatus: dari, keStatus: ke, waktu, catatan: null },
   };
 }

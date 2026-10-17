@@ -148,6 +148,8 @@ export const orders = pgTable(
     resiNomor: text("resi_nomor"),
     resiFoto: text("resi_foto"),
     dikirimPada: timestamp("dikirim_pada", { withTimezone: true }),
+    // Wajib saat Batal (dijaga transisiStatus dan CHECK di bawah).
+    alasanBatal: text("alasan_batal"),
     utmSource: text("utm_source"),
     dibuat: dibuat(),
   },
@@ -160,6 +162,7 @@ export const orders = pgTable(
       "orders_resi_check",
       sql`${t.status} not in ('dikirim', 'selesai') or (${t.resiNomor} is not null and length(trim(${t.resiNomor})) > 0 and ${t.dikirimPada} is not null)`,
     ),
+    check("orders_alasan_batal_check", sql`${t.status} <> 'batal' or (${t.alasanBatal} is not null and length(trim(${t.alasanBatal})) > 0)`),
   ],
 );
 
@@ -198,6 +201,8 @@ export const orderEvents = pgTable(
     // Null berarti otomatis oleh sistem (mis. order baru jadi Lead).
     olehUserId: uuid("oleh_user_id").references(() => users.id),
     waktu: timestamp("waktu", { withTimezone: true }).notNull().defaultNow(),
+    // Alasan batal, supaya tetap terbaca di riwayat yang tidak bisa diubah.
+    catatan: text("catatan"),
   },
   (t) => [index("order_events_order_idx").on(t.orderId)],
 );

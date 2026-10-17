@@ -16,10 +16,11 @@ const folderLokal = () => path.resolve(process.env.FOTO_DIR ?? ".data/foto");
 /** Nama file lokal yang sah: uuid + ekstensi foto. Menutup path traversal di route penyaji. */
 export const POLA_NAMA_LOKAL = /^[0-9a-f-]{36}\.(jpg|webp|png)$/;
 
-export async function simpanFoto(productId: string, isi: Blob, tipe: TipeFoto): Promise<string> {
+/** `folder` hanya mengelompokkan file di Blob, mis. "produk/<id>" atau "resi/<id>". */
+export async function simpanFoto(folder: string, isi: Blob, tipe: TipeFoto): Promise<string> {
   const nama = `${randomUUID()}.${TIPE_FOTO[tipe]}`;
   if (pakaiBlob()) {
-    const hasil = await put(`produk/${productId}/${nama}`, isi, { access: "public", contentType: tipe, cacheControlMaxAge: 31_536_000 });
+    const hasil = await put(`${folder}/${nama}`, isi, { access: "public", contentType: tipe, cacheControlMaxAge: 31_536_000 });
     return hasil.url;
   }
   // Filesystem di Vercel hanya-baca: tanpa token Blob, upload di Preview/Production pasti gagal.

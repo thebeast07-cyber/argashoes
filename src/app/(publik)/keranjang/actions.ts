@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getDb } from "@/db";
 import { parseItemDiminta, validasiPembeli, type MasalahItem } from "@/lib/domain/checkout";
+import { kirimNotifikasiOrderBaru } from "@/lib/notifikasi/order-baru";
 import { buatOrder } from "@/lib/orders/buat-order";
 import { getNomorWa, getTiers } from "@/lib/pengaturan/data";
 
@@ -27,7 +28,8 @@ export async function kirimPesanan(_prev: StateCheckout, form: FormData): Promis
   // Kolom jebakan: tersembunyi dari orang, biasanya diisi bot.
   if (String(form.get("situs") ?? "") !== "") return { pesan: "Pesanan tidak bisa dikirim. Muat ulang halaman lalu coba lagi." };
 
-  const ip = headers().get("x-forwarded-for")?.split(",")[0]?.trim() || "tanpa-ip";
+  const h = headers();
+  const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || "tanpa-ip";
   if (lewatBatasIp(ip, Date.now())) return { pesan: "Terlalu banyak percobaan. Tunggu 10 menit lalu coba lagi." };
 
   const pembeli = validasiPembeli({
@@ -52,5 +54,9 @@ export async function kirimPesanan(_prev: StateCheckout, form: FormData): Promis
     if (hasil.alasan === "batas") return { pesan: "Nomor WhatsApp ini sudah mengirim 3 pesanan dalam 1 jam. Lanjutkan di WhatsApp toko, atau coba lagi nanti." };
     return { masalah: hasil.masalah };
   }
+  // Ditunggu (maksimal 5 detik di kirimEmail) karena di Vercel proses berhenti begitu respons terkirim.
+  // Gagal kirim email tidak membatalkan order.
+  const asal = `${h.get("x-forwarded-proto") ?? "https"}://${h.get("x-forwarded-host") ?? h.get("host")}`;
+  await kirimNotifikasiOrderBaru(db, hasil.kode, asal).catch((e) => console.error("Notifikasi order gagal:", e));
   redirect(`/pesanan/${hasil.kode}?baru=1`);
 }

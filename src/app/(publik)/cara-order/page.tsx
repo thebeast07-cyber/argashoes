@@ -2,6 +2,8 @@ import Link from "next/link";
 import { IkonKembali } from "@/components/ikon";
 
 export const metadata = { title: "Cara order · Argashoes" };
+// Footer membaca brand dari database; tanpa ini halaman dibangun statis dan nama brand-nya beku sejak build.
+export const dynamic = "force-dynamic";
 
 // Empat langkah karena prosesnya memang empat (PRD: alur order lewat WhatsApp).
 const LANGKAH = [

@@ -3,6 +3,8 @@ import { IkonCari, IkonMasukKardus } from "@/components/ikon";
 import { getDb } from "@/db";
 import { wajibLogin } from "@/lib/auth/current";
 import { punyaIzin } from "@/lib/auth/roles";
+import { awalHariWib, umur } from "@/lib/domain/order-admin";
+import { ringkasanBerandaOrder } from "@/lib/orders/data";
 import { jumlahUsulanMenunggu } from "@/lib/pengaturan/data";
 import { daftarSizeHabis } from "@/lib/produk/data";
 
@@ -15,9 +17,11 @@ export default async function BerandaAdmin({ searchParams }: { searchParams: { a
   const user = await wajibLogin();
   const db = await getDb();
   const kelolaProduk = punyaIzin(user.peran, "produk.kelola");
-  const [usulanMenunggu, habis] = await Promise.all([
+  const sekarang = new Date();
+  const [usulanMenunggu, habis, order] = await Promise.all([
     punyaIzin(user.peran, "usulan.putuskan") ? jumlahUsulanMenunggu(db) : 0,
     kelolaProduk ? daftarSizeHabis(db, BATAS_HABIS) : null,
+    punyaIzin(user.peran, "order.kelola") ? ringkasanBerandaOrder(db, awalHariWib(sekarang), sekarang) : null,
   ]);
 
   return (
@@ -35,6 +39,38 @@ export default async function BerandaAdmin({ searchParams }: { searchParams: { a
             Periksa usulan
           </Link>
         </div>
+      )}
+
+      {order && (
+        <section aria-labelledby="judul-order" className="space-y-2">
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 id="judul-order" className="text-lg font-bold">
+              Order hari ini <span className="angka font-normal text-redup">({order.hariIni})</span>
+            </h2>
+            <Link href="/admin/order" className="inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-2">
+              Semua order
+            </Link>
+          </div>
+          {order.terbengkalai.length > 0 ? (
+            <div className="space-y-2 rounded-label border-[1.5px] border-sedikit-teks bg-sedikit-latar p-3">
+              <p className="text-sm font-bold text-sedikit-teks">{order.terbengkalai.length} Lead belum diproses lebih dari 24 jam</p>
+              <ul className="divide-y divide-sedikit-teks/30">
+                {order.terbengkalai.map((o) => (
+                  <li key={o.kode}>
+                    <Link href={`/admin/order/${o.kode}`} className="flex min-h-11 items-center justify-between gap-3 py-1.5 text-sm">
+                      <span>
+                        <span className="sempit angka font-bold">{o.kode}</span> {o.nama}
+                      </span>
+                      <span className="shrink-0 text-sedikit-teks">{umur(o.dibuat, sekarang)}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <p className="text-sm text-redup">Tidak ada Lead yang dibiarkan lebih dari 24 jam.</p>
+          )}
+        </section>
       )}
 
       {kelolaProduk && habis && (
