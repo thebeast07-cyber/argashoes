@@ -19,7 +19,7 @@ npm run typecheck
 npm run lint
 npm run build
 npm run db:generate  # buat file migrasi setelah mengubah src/db/schema.ts
-npm run db:migrate   # Neon kalau DATABASE_URL terisi, selain itu PGlite lokal
+npm run db:migrate   # Neon kalau DATABASE_URL terisi, selain itu PGlite lokal. Di Vercel jalan otomatis (skrip vercel-build)
 ADMIN_PASSWORD=... npm run user:create -- --nama "Nama" --email a@b.com --peran pemilik
 ```
 

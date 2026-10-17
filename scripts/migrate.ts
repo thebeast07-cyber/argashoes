@@ -4,7 +4,8 @@ import { drizzle } from "drizzle-orm/neon-serverless";
 import { migrate } from "drizzle-orm/neon-serverless/migrator";
 import { createPgliteDb, MIGRATIONS_FOLDER } from "@/db";
 
-// Neon: jalankan sebelum deploy (DATABASE_URL terisi).
+// Neon: dijalankan otomatis oleh Vercel lewat skrip "vercel-build" sebelum next build, jadi tiap deploy
+// membawa migrasinya sendiri. Migrasi Drizzle hanya menjalankan file yang belum tercatat, aman diulang.
 // Lokal (PGlite): migrasi juga otomatis jalan saat aplikasi membuka database.
 async function main() {
   const url = process.env.DATABASE_URL;

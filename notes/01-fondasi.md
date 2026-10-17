@@ -96,7 +96,7 @@ npm test
 
 PGlite cuma bisa dibuka satu proses. Matikan `npm run dev` dulu sebelum `user:create` atau `db:migrate`.
 
-Deploy ke Vercel: isi `DATABASE_URL` (Neon), jalankan `npm run db:migrate` sekali, lalu `user:create` untuk akun pemilik.
+Deploy ke Vercel: isi `DATABASE_URL` (Neon). Migrasi jalan otomatis di setiap deploy (skrip `vercel-build`). Akun pemilik pertama dibuat lewat login dengan sandi `ADMIN_PASSWORD`.
 
 ## Yang sudah dicek manual
 
