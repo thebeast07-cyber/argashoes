@@ -10,7 +10,7 @@
 <style>
 /*
   Mockup halaman publik Argashoes. Arah visual dari DESIGN.md (kertas, tinta, bata, Archivo, label kardus).
-  Design Read: katalog sepatu mobile untuk pembeli lokal yang mau cepat cek size dan pesan lewat WhatsApp,
+  Design Read: katalog sepatu (HP dulu, lalu desktop) untuk pembeli lokal yang mau cepat cek size dan pesan lewat WhatsApp,
   dial ENERGY 2 / RHYTHM 3 / MOTION 1.
   Alasan tiap keputusan ada di komentar dekat aturannya. Semua isi contoh ditandai di layar.
 */
@@ -46,9 +46,15 @@ a { color: inherit; }
 .sempit { font-stretch: 75%; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-/* Bingkai mockup: satu kolom selebar HP. Layout desktop belum didesain. */
-.bingkai { max-width: 460px; margin: 0 auto; min-height: 100vh; background: var(--kertas); position: relative; }
-@media (min-width: 520px) { .bingkai { border-inline: 1.5px solid var(--tinta); } }
+/*
+  Tiga keadaan layout, dipatok di titik isi mulai tidak pas, bukan daftar ukuran HP:
+  < 600px satu kolom (HP), 600-899px kartu 3 kolom dan deret size satu baris,
+  >= 900px hero, produk, dan keranjang jadi dua kolom. Isi dibatasi 1200px; latar hero dan footer tetap selebar layar.
+*/
+:root { --sisi: 16px; --lebar: 1200px; }
+@media (min-width: 600px) { :root { --sisi: 24px; } }
+@media (min-width: 900px) { :root { --sisi: 40px; } }
+.bingkai { min-height: 100vh; background: var(--kertas); position: relative; }
 
 /* Panel mockup di luar desain toko: legenda isi contoh + pindah layar. */
 .panel-mockup { padding: 10px 16px 12px; background: var(--putih); border-bottom: 1.5px solid var(--tinta); font-size: 13px; }
@@ -124,6 +130,9 @@ svg.ik { display: block; fill: none; stroke: currentColor; stroke-width: 1.75; s
 
 /* Semua kartu seukuran: belum ada aturan model mana yang ditonjolkan, jadi tidak ada kartu "unggulan". */
 .grid-kartu { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0; padding: 0; list-style: none; }
+/* Kartu dalam satu baris sama tinggi walau ada yang punya harga coret. */
+.grid-kartu > li { display: flex; }
+.grid-kartu .kartu { flex: 1; }
 .kosong { padding: 18px; border: 1.5px solid var(--tinta); border-radius: 2px; background: var(--putih); }
 .kosong p { margin: 0 0 12px; }
 
@@ -207,6 +216,55 @@ form { margin-top: 22px; }
 .kode b { display: block; font-stretch: 75%; font-weight: 800; font-size: 40px; letter-spacing: 0.02em; line-height: 1.05; }
 .kode span { display: inline-block; margin-top: 8px; padding: 3px 8px; border: 1.5px solid var(--sedikit-teks); border-radius: 2px; background: var(--sedikit-latar); color: var(--sedikit-teks); font-weight: 700; font-size: 14px; }
 
+/* ---- Lebar layar ---- */
+.panel-mockup, .kepala, .cari, .daftar, .toko, .halaman { padding-inline: max(var(--sisi), calc((100% - var(--lebar)) / 2)); }
+.halaman.tengah { padding-inline: max(var(--sisi), calc((100% - 640px) / 2)); }
+.kepala-kanan { display: flex; align-items: center; gap: 20px; }
+.ke-cara-kepala { display: none; min-height: 44px; align-items: center; font-weight: 700; text-underline-offset: 3px; }
+.ke-cara-kepala:hover { text-decoration-thickness: 2px; }
+
+@media (min-width: 600px) {
+  .ke-cara-kepala { display: inline-flex; }
+  .deret-size { grid-template-columns: repeat(8, 1fr); }
+  .grid-kartu { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .toko dl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 24px; }
+}
+
+@media (min-width: 900px) {
+  /* Hero: judul kiri, deret size kanan. Satu fokus tetap: pencari size. */
+  .cari { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 520px); column-gap: 56px; align-items: end; padding-block: 56px 48px; }
+  .cari h1 { font-size: clamp(64px, 7vw, 96px); }
+  .cari .sub { margin-bottom: 0; font-size: 18px; }
+  .deret-size { grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .cari .lbl { min-height: 76px; }
+  .daftar { padding-top: 48px; }
+  .daftar h2 { font-size: 32px; }
+  .grid-kartu { grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  /* Foto 4:5 di kolom selebar 280px bikin kartu setinggi layar; sepatu dilihat dari samping, jadi persegi cukup. */
+  .grid-kartu .foto { aspect-ratio: 1 / 1; }
+  .toko { padding-block: 40px 56px; }
+
+  /* Produk: foto menempel di kiri, info dan tombol pesan di kanan. Bar bawah tidak perlu menempel di layar lebar. */
+  .produk { padding-inline: max(var(--sisi), calc((100% - var(--lebar)) / 2)); padding-bottom: 56px; }
+  .produk .jalan { padding-left: 0; }
+  .produk-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 56px; align-items: start; }
+  .produk-foto { position: sticky; top: 16px; }
+  .produk-info { display: flex; flex-direction: column; }
+  .produk .kepala-produk { order: 1; padding: 0; }
+  .produk h1 { font-size: 44px; }
+  .pilih { order: 2; padding: 24px 0 0; }
+  .bar-bawah { order: 3; position: static; padding: 16px 0 0; border: 0; background: none; }
+  .bar-bawah .total { display: none; }
+  details.panduan { order: 4; margin: 24px 0 0; }
+  .deskripsi { order: 5; margin: 20px 0 0; }
+  .ruang-bar { display: none; }
+
+  /* Keranjang: isi pesanan kiri, data pengiriman kanan, jadi tombol kirim terlihat tanpa scroll jauh. */
+  .halaman h1 { font-size: 44px; }
+  .keranjang-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 460px); gap: 56px; align-items: start; }
+  .keranjang-grid form { margin-top: 0; }
+}
+
 .toast { position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%); z-index: 20; width: calc(100% - 32px); max-width: 420px; padding: 12px 14px; border-radius: 4px; background: var(--tinta); color: var(--kertas); font-weight: 600; font-size: 15px; }
 .toast[hidden] { display: none; }
 @media (hover: none) { .tombol:hover, .lbl:hover, .tombol-keranjang:hover { background: revert-layer; } }
@@ -262,7 +320,10 @@ function kepala() {
   const n = state.keranjang.reduce((a, i) => a + i.jumlah, 0);
   return `<header class="kepala">
     <a class="merek" href="#/" aria-label="Argashoes, ke katalog">Argashoes</a>
-    <a class="tombol-keranjang" href="#/keranjang" aria-label="Keranjang, ${n} pasang">${IK.keranjang}<span class="teks" aria-hidden="true">Keranjang</span><span class="jumlah angka" aria-hidden="true">${n}</span></a>
+    <div class="kepala-kanan">
+      <a class="ke-cara-kepala" href="#/cara-order">Cara order</a>
+      <a class="tombol-keranjang" href="#/keranjang" aria-label="Keranjang, ${n} pasang">${IK.keranjang}<span class="teks" aria-hidden="true">Keranjang</span><span class="jumlah angka" aria-hidden="true">${n}</span></a>
+    </div>
   </header>`;
 }
 const foto = (teks = "[FOTO PRODUK]") => `<div class="foto" role="img" aria-label="Foto produk belum ada, ini penanda tempat">${teks}</div>`;
@@ -298,9 +359,9 @@ function kaki() {
   return `<footer class="toko" aria-labelledby="judul-toko">
     <h2 id="judul-toko">Siapa yang menjual</h2>
     <dl>
-      <dt>Toko</dt><dd><span class="ph">[NAMA TOKO]</span></dd>
-      <dt>Alamat</dt><dd><span class="ph">[ALAMAT TOKO]</span></dd>
-      <dt>Retur</dt><dd><span class="ph">[KEBIJAKAN RETUR]</span></dd>
+      <div><dt>Toko</dt><dd><span class="ph">[NAMA TOKO]</span></dd></div>
+      <div><dt>Alamat</dt><dd><span class="ph">[ALAMAT TOKO]</span></dd></div>
+      <div><dt>Retur</dt><dd><span class="ph">[KEBIJAKAN RETUR]</span></dd></div>
     </dl>
     <a class="ke-cara" href="#/cara-order">Cara order</a>
   </footer>`;
@@ -334,12 +395,16 @@ function layarBeranda() {
   return `${kepala()}
   <main>
     <section class="cari gelap" aria-labelledby="judul-cari">
-      <h1 id="judul-cari">Cari size kamu.</h1>
-      <p class="sub">Pilih size, kami tampilkan model Nike dan Adidas yang masih ada stoknya.</p>
+      <div class="cari-teks">
+        <h1 id="judul-cari">Cari size kamu.</h1>
+        <p class="sub">Pilih size, kami tampilkan model Nike dan Adidas yang masih ada stoknya.</p>
+      </div>
+      <div class="cari-size">
       <ul class="deret-size" aria-label="Pilih size">
         ${SIZES.map((s) => `<li><button class="lbl" type="button" data-aksi="cari-size" data-size="${s}" aria-pressed="${state.sizeCari === s}"><span class="no angka">${s}</span></button></li>`).join("")}
       </ul>
       <div role="status" aria-live="polite">${hasil}</div>
+      </div>
     </section>
 
     <section class="daftar" aria-labelledby="judul-daftar">
@@ -357,7 +422,7 @@ function layarBeranda() {
 
 function layarCaraOrder() {
   return `${kepala()}
-  <main class="halaman">
+  <main class="halaman tengah">
     <a class="jalan" style="padding-left:0" href="#/">${IK.kembali}Katalog</a>
     <h1>Cara order</h1>
     <ol class="langkah">
@@ -395,7 +460,9 @@ function layarProduk(id) {
   return `${kepala()}
   <main class="produk">
     <a class="jalan" href="#/">${IK.kembali}Katalog</a>
-    ${foto("[FOTO PRODUK]")}
+    <div class="produk-grid">
+    <div class="produk-foto">${foto("[FOTO PRODUK]")}</div>
+    <div class="produk-info">
     <div class="kepala-produk">
       <p class="merek-kecil">${p.brand}</p>
       <h1>${p.nama}</h1>
@@ -424,6 +491,8 @@ function layarProduk(id) {
       <div class="total"><small>Harga</small><b class="angka">${rp(p.harga)}</b></div>
       <button class="tombol utama" type="button" data-aksi="pesan" ${mati ? "disabled" : ""}>${label}</button>
     </div>
+    </div>
+    </div>
   </main>`;
 }
 
@@ -443,6 +512,8 @@ function layarKeranjang() {
   <main class="halaman">
     <a class="jalan" style="padding-left:0" href="#/">${IK.kembali}Tambah model lain</a>
     <h1>Keranjang</h1>
+    <div class="keranjang-grid">
+    <div class="keranjang-isi">
     ${k.map((i, idx) => { const p = cariProduk(i.id); return `<article class="item">
       ${foto("[FOTO]")}
       <div>
@@ -459,6 +530,7 @@ function layarKeranjang() {
       </div></article>`; }).join("")}
     <div class="ringkas"><span>Subtotal</span><span class="angka">${rp(total)}</span></div>
     <p class="ringkas-catatan">Belum termasuk ongkir.</p>
+    </div>
 
     <form id="form-pesan" novalidate>
       <h2 style="margin:0 0 12px;font-size:22px;font-weight:800">Data pengiriman</h2>
@@ -474,6 +546,7 @@ function layarKeranjang() {
       <button class="tombol utama penuh" type="submit">${IK.wa}Kirim pesanan ke WhatsApp</button>
       <p class="belum-bayar">Belum bayar. Stok dan ongkir dicek dulu di WhatsApp.</p>
     </form>
+    </div>
   </main>`;
 }
 
@@ -481,7 +554,7 @@ function layarTerkirim() {
   const sampel = !state.pesanan;
   const o = state.pesanan || { nama: "[NAMA PEMBELI]", item: [{ id: "samba-og", size: 42, jumlah: 1 }], total: cariProduk("samba-og").harga };
   return `${kepala()}
-  <main class="halaman">
+  <main class="halaman tengah">
     <h1>Pesananmu sudah tercatat</h1>
     ${sampel ? `<p class="ringkas-catatan"><span class="ph">[CONTOH]</span> Begini tampilan setelah pesanan dikirim.</p>` : ""}
     <p class="kode"><small>Kode pesanan</small><b class="angka">WEB-xxxx</b><span>Menunggu balasan toko</span></p>
