@@ -1,6 +1,6 @@
 # Asisten AI untuk stok dan produk
 
-Status: draf, belum dibangun. Keputusan pemilik: MVP hanya tanya jawab stok (baca saja). Tambah dan ubah produk tetap lewat form dan import CSV, karena AI tidak bisa dijamin tidak salah baca.
+Status: MVP tanya stok dibangun (halaman Admin, Produk, Tanya stok). Keputusan pemilik: MVP hanya tanya jawab stok (baca saja). Tambah dan ubah produk tetap lewat form dan import CSV, karena AI tidak bisa dijamin tidak salah baca.
 
 ## Masalah
 
@@ -29,7 +29,7 @@ Pertanyaan bisa juga diketik lewat fitur suara di keyboard HP. Asisten tidak per
 
 1. **AI hanya membaca maksud, angka selalu dari database.** Gemini mengubah pertanyaan jadi data terstruktur (model yang dimaksud, size, jenis pertanyaan). Pencocokan ke produk dan angka stok dihitung server dari database dan disusun dengan template, bukan dikarang AI.
 2. **Hanya membaca.** Asisten tidak punya akses ke fungsi mutasi apa pun.
-3. **Ragu berarti bertanya.** Kalau "af1 putih" cocok ke lebih dari satu model, asisten menampilkan pilihan, bukan menebak. Kalau tidak ada yang cocok, asisten bilang tidak ketemu.
+3. **Ragu berarti bertanya.** Kalau "af1 putih" cocok ke lebih dari satu model, asisten menampilkan semuanya (maksimal 5) dengan nama lengkap, bukan memilih salah satu. Kalau tidak ada yang cocok, asisten bilang tidak ketemu.
 4. **Tetap jalan tanpa AI.** Kalau Gemini gagal atau kuota habis, muncul pesan jelas. Daftar produk, filter, dan pencarian admin tetap bisa dipakai.
 
 ## Kode artikel dan SKU
@@ -71,7 +71,8 @@ Memakai fungsi pencarian yang sama dengan nomor 1, dengan batas:
 
 ## Konfigurasi
 
-- `GEMINI_API_KEY` di env Vercel (Production dan Preview). Kosong berarti asisten tidak tampil dan sisa admin tetap jalan.
+- `GEMINI_API_KEY` di env Vercel (Production dan Preview). Kosong berarti halaman Tanya stok hanya menampilkan pemberitahuan, sisa admin tetap jalan.
+- `GEMINI_MODEL` (opsional): nama model Gemini. Kalau kosong atau modelnya tidak ada, dipakai `gemini-flash-latest` lalu `gemini-2.5-flash`.
 - `/api/sehat` menampilkan apakah key terisi (ya/tidak, tanpa nilainya).
 
 ## Keputusan

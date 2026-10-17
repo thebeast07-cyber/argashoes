@@ -22,6 +22,7 @@ export async function GET() {
     envTerisi: {
       ADMIN_PASSWORD: env("ADMIN_PASSWORD"),
       RESEND_API_KEY: env("RESEND_API_KEY"),
+      GEMINI_API_KEY: env("GEMINI_API_KEY"),
     },
   };
   try {

@@ -13,6 +13,6 @@ Urutan ini mengikuti dependensi: order butuh produk, laporan fee butuh order. Ti
 | 7 | Laporan fee | Selesai: ringkasan semua bulan, rekap per bulan WIB dari tanggal Dikirim, order pendukung, tandai dibayar (dengan deteksi selisih), ekspor CSV. Cut-off memakai bulan kalender sampai retailer menentukan lain | Tanggal cut-off, aturan retur |
 | 8 | Beranda admin & analitik | Ringkasan hari ini, order Lead > 1 jam, size habis, klik WA 7/30 hari (Redis) | – |
 | 9 | Halaman pendukung & SEO | Cara order, retur, privasi, sitemap, link UTM | Kebijakan retur, nama brand, domain |
-| 10 | Asisten AI (admin) | Draf, lihat `docs/asisten-ai.md`: MVP hanya tanya jawab stok (Gemini, baca saja). Ubah/tambah produk lewat AI dinilai nanti | Masukan pemilik atas draf, `GEMINI_API_KEY` |
+| 10 | Asisten AI (admin) | Tanya stok selesai (`docs/asisten-ai.md`): sisa per model, model per size, yang mau habis (Gemini, baca saja). Ubah/tambah produk lewat AI dinilai nanti | Masukan pemilik atas draf, `GEMINI_API_KEY` |
 
 Tahap 2 dan 3 bisa jalan tanpa nunggu mockup publik di-ACC. Tahap 4–5 sebaiknya nunggu ACC mockup (sesuai PRD).

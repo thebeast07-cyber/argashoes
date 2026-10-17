@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { IkonCari, IkonMasukKardus, IkonTambah } from "@/components/ikon";
+import { IkonCari, IkonChat, IkonMasukKardus, IkonTambah } from "@/components/ikon";
 import { getDb } from "@/db";
 import { wajibIzin } from "@/lib/auth/current";
 import { formatRupiah } from "@/lib/domain/produk";
@@ -37,7 +37,11 @@ export default async function HalamanProduk({ searchParams }: { searchParams: Ca
       {/* Tambah model dan import jarang dipakai dibanding cari + ubah stok, jadi tombol garis, bukan tombol utama. */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-bold">Produk</h1>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Link href="/admin/produk/tanya" className="tombol-garis px-3 text-sm">
+            <IkonChat ukuran={18} />
+            Tanya stok
+          </Link>
           <Link href="/admin/produk/import" className="tombol-garis px-3 text-sm">
             <IkonMasukKardus ukuran={18} />
             Import
