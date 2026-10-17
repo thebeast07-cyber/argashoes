@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { getDb } from "@/db";
 import { kalimatMerek } from "@/lib/domain/katalog";
@@ -16,8 +17,8 @@ export default async function LayoutPublik({ children }: { children: React.React
   return (
     <div className="flex min-h-screen flex-col">
       <header className="wadah flex min-h-[60px] items-center justify-between gap-4 py-1.5">
-        <Link href="/" className="lebar inline-flex min-h-11 items-center text-[22px] font-black tracking-tight">
-          Argashoes
+        <Link href="/" className="inline-flex min-h-11 items-center">
+          <Image src="/logo-argashoes.png" alt="Argashoes, ke beranda" width={70} height={56} priority className="h-14 w-auto" />
         </Link>
         <div className="flex items-center gap-5">
           {/* Cara order di header hanya mulai 600px; di HP cukup di footer supaya header tidak sesak. */}

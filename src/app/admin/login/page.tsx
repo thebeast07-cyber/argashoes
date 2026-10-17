@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import { getDb } from "@/db";
 import { getUserSaatIni } from "@/lib/auth/current";
@@ -13,6 +14,7 @@ export default async function HalamanLogin() {
   const akunPertama = !(await adaAkun(await getDb()));
   return (
     <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-4">
+      <Image src="/logo-argashoes.png" alt="Argashoes" width={90} height={72} priority className="mb-6 h-[72px] w-auto self-start" />
       <h1 className="mb-1 text-2xl font-bold">Masuk admin</h1>
       <p className="mb-6 text-sm text-redup">
         {akunPertama
