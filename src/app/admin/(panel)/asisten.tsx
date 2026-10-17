@@ -1,20 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { Fragment, useEffect, useRef, useState, useTransition } from "react";
 import { IkonChat, IkonKirim, IkonTutup } from "@/components/ikon";
 import { LabelSize } from "@/components/label-size";
 import { PesanGalat } from "@/components/pesan";
-import {
-  BATAS_PERTANYAAN,
-  BATAS_RIWAYAT,
-  TEKS_TIDAK_PAHAM,
-  TEKS_UBAH_DATA,
-  type BarisModel,
-  type Giliran,
-  type Jawaban,
-  type ModelStok,
-} from "@/lib/domain/asisten-stok";
+import { BATAS_PERTANYAAN, BATAS_RIWAYAT, uraiTeks, type BarisModel, type Giliran } from "@/lib/domain/asisten-stok";
 import type { AmbangStok } from "@/lib/domain/stok";
 import { tanyaAsisten, type HasilTanya } from "./asisten-actions";
 
@@ -23,111 +14,127 @@ import { tanyaAsisten, type HasilTanya } from "./asisten-actions";
 // Dosis kaca dibatasi ke panel ini saja (R-10); tombol pembukanya tetap padat supaya kontrasnya aman di atas halaman apa pun.
 // Putih 85%: teks redup tetap di atas 4.5:1 walau yang di belakang panel elemen gelap (mis. foto sepatu hitam).
 
-const CONTOH = ["Apa yang mau habis?", "Size 42 apa aja yang ready?", "Ide caption IG buat sepatu baru"];
+const CONTOH = ["Stok keseluruhan berapa?", "Size apa yang mau habis?", "Ide caption IG buat sepatu baru"];
 
 type Pesan = { kunci: number; peran: "user" | "asisten"; teks: string; hasil?: HasilTanya };
 
-function NamaModel({ model, tutup }: { model: ModelStok; tutup: () => void }) {
-  return (
-    <Link href={`/admin/produk/${model.id}`} onClick={tutup} className="inline-flex min-h-11 items-center font-semibold underline underline-offset-2">
-      {model.brand} {model.nama}
-      {!model.aktif && <span className="ml-1.5 font-normal no-underline">(nonaktif)</span>}
-    </Link>
-  );
-}
-
-function DaftarSize({ baris, ambang }: { baris: BarisModel; ambang: AmbangStok }) {
-  return (
-    <ul className="flex flex-wrap gap-1.5">
-      {baris.size.map((s) => (
-        <li key={s.size}>
-          <LabelSize size={s.size} stok={s.stok} ambang={ambang} keterangan={s.stok > 0 ? `${s.stok} psg` : "Habis"} />
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function IsiJawaban({ jawaban, ambang, tutup }: { jawaban: Jawaban; ambang: AmbangStok; tutup: () => void }) {
-  switch (jawaban.jenis) {
-    case "model":
-      return (
-        <div className="space-y-3">
-          {jawaban.baris.map((b) => (
-            <div key={b.model.id} className="space-y-1">
-              <NamaModel model={b.model} tutup={tutup} />
-              {b.size.length > 0 ? (
-                <>
-                  <DaftarSize baris={b} ambang={ambang} />
-                  <p className="angka">Total {b.total} pasang</p>
-                </>
-              ) : (
-                <p>{jawaban.size ? `Size ${jawaban.size} tidak tercatat di model ini.` : "Belum ada size yang tercatat."}</p>
-              )}
-            </div>
-          ))}
-        </div>
+function TeksBalasan({ teks }: { teks: string }) {
+  const baris = uraiTeks(teks);
+  const isi = (b: (typeof baris)[number]) =>
+    b.isi.map((p, i) => (p.tebal ? <strong key={i}>{p.teks}</strong> : <Fragment key={i}>{p.teks}</Fragment>));
+  // Butir daftar yang berurutan digabung jadi satu <ul>.
+  const blok: React.ReactNode[] = [];
+  for (let i = 0; i < baris.length; i++) {
+    if (baris[i].daftar) {
+      const butir = [];
+      while (i < baris.length && baris[i].daftar) butir.push(<li key={i}>{isi(baris[i++])}</li>);
+      i--;
+      blok.push(
+        <ul key={`d${i}`} className="list-disc space-y-0.5 pl-5">
+          {butir}
+        </ul>,
       );
-    case "size":
-      return (
-        <div className="space-y-1">
-          <p className="font-semibold">Size {jawaban.size} yang masih ada:</p>
-          <ul className="divide-y divide-tinta/20">
-            {jawaban.baris.map((b) => (
-              <li key={b.model.id} className="flex items-center justify-between gap-3">
-                <NamaModel model={b.model} tutup={tutup} />
-                <span className="angka shrink-0">{b.stok} psg</span>
-              </li>
-            ))}
-          </ul>
-          {jawaban.lebih > 0 && <p>Dan {jawaban.lebih} model lagi. Sebut brandnya supaya lebih sempit.</p>}
-        </div>
-      );
-    case "mau_habis":
-      return (
-        <div className="space-y-3">
-          <p className="font-semibold">Size yang Sisa sedikit atau Habis:</p>
-          {jawaban.baris.map((b) => (
-            <div key={b.model.id} className="space-y-1">
-              <NamaModel model={b.model} tutup={tutup} />
-              <DaftarSize baris={b} ambang={ambang} />
-            </div>
-          ))}
-          {jawaban.lebih > 0 && <p>Dan {jawaban.lebih} model lagi. Sebut brand atau modelnya supaya lebih sempit.</p>}
-        </div>
-      );
-    case "tidak_ketemu":
-      return <p>{jawaban.pesan}</p>;
-    case "obrolan":
-      return (
-        <div className="space-y-1">
-          <p className="whitespace-pre-line">{jawaban.teks}</p>
-          <p className="text-xs text-redup">Jawaban umum dari AI, bisa keliru.</p>
-        </div>
-      );
-    case "ubah_data":
-      return <p>{TEKS_UBAH_DATA}</p>;
-    case "tidak_paham":
-      return <p>{TEKS_TIDAK_PAHAM}</p>;
+    } else if (baris[i].isi.length > 0) {
+      blok.push(<p key={i}>{isi(baris[i])}</p>);
+    }
   }
+  return <div className="space-y-2 break-words">{blok}</div>;
+}
+
+function DataStok({ data, ambang, tutup }: { data: BarisModel[]; ambang: AmbangStok; tutup: () => void }) {
+  return (
+    <details className="group mt-2 border-t border-tinta/10 pt-1">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 text-xs font-semibold text-redup [&::-webkit-details-marker]:hidden">
+        <span className="flex-1">Cek data stok dari database ({data.length} model)</span>
+        <span aria-hidden="true" className="w-3 text-center text-base leading-none">
+          <span className="group-open:hidden">+</span>
+          <span className="hidden group-open:inline">−</span>
+        </span>
+      </summary>
+      <div className="space-y-3 pb-1">
+        {data.map((b) => (
+          <div key={b.model.id} className="space-y-1">
+            <Link href={`/admin/produk/${b.model.id}`} onClick={tutup} className="inline-flex min-h-11 items-center font-semibold underline underline-offset-2">
+              {b.model.brand} {b.model.nama}
+              {!b.model.aktif && <span className="ml-1.5 font-normal no-underline">(nonaktif)</span>}
+            </Link>
+            {b.size.length > 0 ? (
+              <>
+                <ul className="flex flex-wrap gap-1.5">
+                  {b.size.map((s) => (
+                    <li key={s.size}>
+                      <LabelSize size={s.size} stok={s.stok} ambang={ambang} keterangan={s.stok > 0 ? `${s.stok} psg` : "Habis"} />
+                    </li>
+                  ))}
+                </ul>
+                <p className="angka text-xs">Total {b.total} pasang</p>
+              </>
+            ) : (
+              <p className="text-xs">Belum ada size yang tercatat.</p>
+            )}
+          </div>
+        ))}
+      </div>
+    </details>
+  );
+}
+
+/**
+ * Di HP, keyboard menutupi bagian bawah layar tanpa mengecilkan halaman (terutama Safari iPhone), sehingga panel
+ * setinggi layar terdorong dan headernya hilang. Selama panel terbuka, tinggi dan posisinya mengikuti visualViewport.
+ */
+function useUkuranPanelHp(terbuka: boolean): React.CSSProperties | undefined {
+  const [gaya, setGaya] = useState<React.CSSProperties>();
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!terbuka || !vv) return setGaya(undefined);
+    const hp = window.matchMedia("(max-width: 639px)");
+    const atur = () => {
+      if (!hp.matches) return setGaya(undefined);
+      const keyboardTerbuka = vv.height < window.innerHeight * 0.8;
+      const tinggi = keyboardTerbuka ? vv.height - 16 : Math.min(vv.height * 0.85, 640);
+      setGaya({ top: vv.offsetTop + vv.height - tinggi - 8, height: tinggi, bottom: "auto" });
+    };
+    atur();
+    vv.addEventListener("resize", atur);
+    vv.addEventListener("scroll", atur);
+    hp.addEventListener("change", atur);
+    return () => {
+      vv.removeEventListener("resize", atur);
+      vv.removeEventListener("scroll", atur);
+      hp.removeEventListener("change", atur);
+    };
+  }, [terbuka]);
+  return gaya;
 }
 
 export function Asisten() {
   const dialog = useRef<HTMLDialogElement>(null);
   const tombolBuka = useRef<HTMLButtonElement>(null);
-  const input = useRef<HTMLInputElement>(null);
+  const input = useRef<HTMLTextAreaElement>(null);
   const bawah = useRef<HTMLDivElement>(null);
   const urutan = useRef(0);
+  const [terbuka, setTerbuka] = useState(false);
   const [teks, setTeks] = useState("");
   const [pesan, setPesan] = useState<Pesan[]>([]);
   const [sedang, mulai] = useTransition();
+  const gayaHp = useUkuranPanelHp(terbuka);
 
   useEffect(() => {
     bawah.current?.scrollIntoView({ block: "end" });
-  }, [pesan, sedang]);
+  }, [pesan, sedang, gayaHp?.height]);
+
+  // Kolom ketik ikut tinggi isinya sampai 5 baris, lalu menggulir.
+  useEffect(() => {
+    const el = input.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 132)}px`;
+  }, [teks]);
 
   function buka() {
     dialog.current?.showModal();
+    setTerbuka(true);
     input.current?.focus();
   }
   function tutup() {
@@ -137,12 +144,11 @@ export function Asisten() {
   function kirim(pertanyaan: string) {
     const q = pertanyaan.trim();
     if (!q || sedang) return;
-    // Riwayat untuk Gemini: pertanyaan + ringkasan jawaban dari server, bukan tampilan lengkapnya.
     const riwayat: Giliran[] = pesan
-      .filter((p) => p.peran === "user" || p.hasil?.ringkas)
-      .map((p) => ({ peran: p.peran, teks: p.peran === "user" ? p.teks : p.hasil!.ringkas! }))
+      .filter((p) => p.peran === "user" || p.hasil?.teks)
+      .map((p) => ({ peran: p.peran, teks: p.peran === "user" ? p.teks : p.hasil!.teks! }))
       .slice(-BATAS_RIWAYAT);
-    const tambah = (p: Omit<Pesan, "kunci">) => setPesan((s) => [...s, { ...p, kunci: ++urutan.current }].slice(-40));
+    const tambah = (p: Omit<Pesan, "kunci">) => setPesan((s) => [...s, { ...p, kunci: ++urutan.current }].slice(-60));
     tambah({ peran: "user", teks: q });
     setTeks("");
     mulai(async () => {
@@ -174,17 +180,21 @@ export function Asisten() {
       <dialog
         ref={dialog}
         aria-labelledby="judul-asisten"
-        onClose={() => tombolBuka.current?.focus()}
+        onClose={() => {
+          setTerbuka(false);
+          tombolBuka.current?.focus();
+        }}
         onClick={(e) => e.target === dialog.current && tutup()}
-        className="fixed inset-x-2 bottom-2 top-auto m-0 h-[min(85dvh,640px)] max-h-none w-auto max-w-none overflow-hidden rounded-2xl border border-white/70 bg-white/85 p-0 text-tinta shadow-2xl ring-1 ring-tinta/10 backdrop-blur-2xl backdrop-saturate-150 backdrop:bg-tinta/30 backdrop:backdrop-blur-sm sm:left-auto sm:right-[max(1rem,calc((100vw-42rem)/2+1rem))] sm:bottom-4 sm:w-[400px]"
+        style={gayaHp}
+        className="fixed inset-x-2 bottom-2 top-auto m-0 h-[min(85dvh,640px)] max-h-none w-auto max-w-none overflow-hidden rounded-2xl border border-white/70 bg-white/85 p-0 text-tinta shadow-2xl ring-1 ring-tinta/10 backdrop-blur-2xl backdrop-saturate-150 backdrop:bg-tinta/30 backdrop:backdrop-blur-sm sm:left-auto sm:right-[max(1rem,calc((100vw-42rem)/2+1rem))] sm:bottom-4 sm:w-[420px]"
       >
         <div className="flex h-full flex-col">
-          <header className="flex items-start gap-2 border-b border-tinta/10 px-4 py-3">
+          <header className="flex items-center gap-1 border-b border-tinta/10 py-1 pl-4 pr-1">
             <div className="min-w-0 flex-1">
-              <h2 id="judul-asisten" className="text-lg font-bold">
+              <h2 id="judul-asisten" className="text-base font-bold">
                 Asisten
               </h2>
-              <p className="text-xs text-redup">Stok dibaca langsung dari data toko. Jangan ketik data pembeli di sini.</p>
+              <p className="truncate text-xs text-redup">Hanya baca, tidak ubah data</p>
             </div>
             {pesan.length > 0 && (
               <button type="button" onClick={() => setPesan([])} disabled={sedang} className="min-h-11 px-2 text-sm font-semibold underline underline-offset-2">
@@ -196,10 +206,10 @@ export function Asisten() {
             </button>
           </header>
 
-          <div aria-live="polite" className="flex-1 space-y-3 overflow-y-auto px-4 py-3 text-sm">
+          <div aria-live="polite" className="flex-1 space-y-3 overflow-y-auto overscroll-contain px-4 py-3 text-[15px] leading-relaxed">
             {pesan.length === 0 && (
               <div className="space-y-3">
-                <p>Halo! Tanya soal stok, atau apa saja yang bisa bantu kerjaan toko.</p>
+                <p>Mau cek stok, cari ide, atau sekadar ngobrol? Tanya aja. Jangan ketik data pembeli di sini ya.</p>
                 <div className="flex flex-wrap gap-2">
                   {CONTOH.map((c) => (
                     <button key={c} type="button" onClick={() => kirim(c)} className="tombol-garis min-h-11 rounded-xl bg-white/80 px-3 text-sm">
@@ -219,14 +229,17 @@ export function Asisten() {
                   {p.hasil?.galat ? (
                     <PesanGalat>{p.hasil.galat}</PesanGalat>
                   ) : (
-                    p.hasil?.jawaban && p.hasil.ambang && <IsiJawaban jawaban={p.hasil.jawaban} ambang={p.hasil.ambang} tutup={tutup} />
+                    <>
+                      {p.hasil?.teks && <TeksBalasan teks={p.hasil.teks} />}
+                      {p.hasil?.data && p.hasil.data.length > 0 && p.hasil.ambang && <DataStok data={p.hasil.data} ambang={p.hasil.ambang} tutup={tutup} />}
+                    </>
                   )}
                 </div>
               ),
             )}
             {sedang && (
               <p role="status" className="w-fit rounded-2xl rounded-bl-md border border-tinta/10 bg-white px-3 py-2 text-redup">
-                Sebentar, aku cek dulu...
+                Lagi ngecek...
               </p>
             )}
             <div ref={bawah} />
@@ -242,16 +255,24 @@ export function Asisten() {
             <label htmlFor="tanya-asisten" className="sr-only">
               Pesan untuk asisten
             </label>
-            <input
+            <textarea
               ref={input}
               id="tanya-asisten"
+              rows={1}
               value={teks}
               onChange={(e) => setTeks(e.target.value)}
+              onKeyDown={(e) => {
+                // Enter kirim, Shift+Enter baris baru (keyboard fisik). Di HP, tombol kirim dipakai.
+                if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+                  e.preventDefault();
+                  kirim(teks);
+                }
+              }}
               maxLength={BATAS_PERTANYAAN}
               autoComplete="off"
               enterKeyHint="send"
-              placeholder="mis. af1 putih sisa berapa?"
-              className="input rounded-xl bg-white"
+              placeholder="Tulis pesan..."
+              className="input resize-none rounded-xl bg-white leading-snug"
             />
             <button type="submit" disabled={sedang || !teks.trim()} aria-label="Kirim" className="tombol-utama size-11 shrink-0 rounded-xl px-0">
               <IkonKirim ukuran={20} />

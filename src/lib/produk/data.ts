@@ -194,11 +194,19 @@ export async function barisEkspor(db: Db) {
   );
 }
 
-/** Untuk asisten tanya stok: semua model (aktif dan nonaktif) dan stok per size. */
+/** Untuk asisten admin: semua model (aktif dan nonaktif), harga, dan stok per size. Tanpa fee. */
 export async function dataStokAsisten(db: Db): Promise<{ model: ModelStok[]; varian: VarianStok[] }> {
   const [model, varian] = await Promise.all([
     db
-      .select({ id: products.id, brand: products.brand, nama: products.nama, aktif: products.aktif })
+      .select({
+        id: products.id,
+        brand: products.brand,
+        nama: products.nama,
+        kategori: products.kategori,
+        harga: products.harga,
+        hargaCoret: products.hargaCoret,
+        aktif: products.aktif,
+      })
       .from(products)
       .orderBy(asc(products.brand), asc(products.nama)),
     db.select({ productId: variants.productId, size: variants.size, stok: variants.stok }).from(variants),
