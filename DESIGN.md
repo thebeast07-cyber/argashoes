@@ -12,6 +12,10 @@ Design Read: dashboard stok mobile untuk retailer sepatu dan pemilik web, gaya l
 - **RHYTHM 2**: daftar konsisten, tapi bagian yang beda tugas (form, daftar size, import) boleh beda komposisi.
 - **MOTION 1**: hanya umpan balik hover/tekan dan fokus. Tidak ada animasi masuk.
 
+## Logo
+
+Logo toko (17 Okt 2026): tulisan grafiti "ARGA SHOESS!" pink dengan bingkai pink muda, file `public/logo-argashoes.png` (latar transparan) dan ikon tab `src/app/icon.png`. Dipakai di header publik dan halaman login admin. Palet di bawah belum disesuaikan dengan pink logo.
+
 ## Motif identitas
 
 **Label size kardus**: setiap size tampil sebagai kotak bersudut hampir siku, angka size besar, status stok tertulis di bawahnya. Size yang habis dicoret, bukan cuma dipudarkan. Motif ini dipakai di daftar produk, detail produk, dan nanti di halaman publik.
