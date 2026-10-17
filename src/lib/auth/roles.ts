@@ -15,6 +15,7 @@ export const IZIN = [
   "pelanggan.lihat",
   "pengaturan.ubah",
   "usulan.ajukan",
+  "banner.kelola",
   // Fee dan rekening tampil: pemilik mengubah langsung dan memutuskan usulan admin toko.
   "fee.atur",
   "rekening.atur",
@@ -31,6 +32,7 @@ const IZIN_ADMIN_TOKO: readonly Izin[] = [
   "pelanggan.lihat",
   "pengaturan.ubah",
   "usulan.ajukan",
+  "banner.kelola",
 ];
 
 const IZIN_PER_PERAN: Record<Peran, readonly Izin[]> = {

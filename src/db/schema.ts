@@ -238,6 +238,29 @@ export const settings = pgTable("settings", {
   nilai: jsonb("nilai").notNull(),
 });
 
+// Banner promo di beranda publik (mis. 11.11). Tampil otomatis selama mulai <= sekarang < selesai dan aktif.
+export const banner = pgTable(
+  "banner",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    judul: text("judul").notNull(),
+    keterangan: text("keterangan"),
+    gambarUrl: text("gambar_url"),
+    // Path internal (/produk/...) atau URL https. Null berarti banner tanpa tombol.
+    tautan: text("tautan"),
+    teksTombol: text("teks_tombol"),
+    mulai: timestamp("mulai", { withTimezone: true }).notNull(),
+    selesai: timestamp("selesai", { withTimezone: true }).notNull(),
+    aktif: boolean("aktif").notNull().default(true),
+    dibuatPada: timestamp("dibuat_pada", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("banner_jadwal_idx").on(t.aktif, t.mulai, t.selesai),
+    check("banner_jadwal_check", sql`${t.selesai} > ${t.mulai}`),
+    check("banner_tombol_check", sql`(${t.tautan} is null) = (${t.teksTombol} is null)`),
+  ],
+);
+
 export const jenisUsulanEnum = pgEnum("jenis_usulan", JENIS_USULAN);
 export const statusUsulanEnum = pgEnum("status_usulan", STATUS_USULAN);
 

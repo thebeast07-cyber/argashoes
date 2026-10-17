@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { BannerPromo } from "@/components/banner-promo";
 import { Gambar } from "@/components/gambar";
 import { getDb } from "@/db";
+import { bannerBeranda } from "@/lib/banner/data";
 import {
   halamanKatalog,
   kalimatMerek,
@@ -27,7 +29,7 @@ export const metadata = { title: "Argashoes · cari size, pesan lewat WhatsApp" 
 export default async function Beranda({ searchParams }: { searchParams: Record<string, string | string[] | undefined> }) {
   const cari = parseCariKatalog(searchParams);
   const db = await getDb();
-  const [semua, ambang] = await Promise.all([semuaProdukAktif(db), getAmbangStok(db)]);
+  const [semua, ambang, promo] = await Promise.all([semuaProdukAktif(db), getAmbangStok(db), bannerBeranda(db)]);
   const opsi = opsiKatalog(semua);
   const hasil = saringKatalog(semua, cari);
   const halaman = halamanKatalog(hasil, cari.hal);
@@ -37,6 +39,7 @@ export default async function Beranda({ searchParams }: { searchParams: Record<s
 
   return (
     <main>
+      {promo && <BannerPromo banner={promo} />}
       {/* Satu fokus: pencari size. Size adalah hambatan terbesar sebelum beli. */}
       <section aria-labelledby="judul-cari" className="wadah bg-tinta pb-6 pt-7 text-kertas min-[900px]:grid min-[900px]:grid-cols-[minmax(0,1fr)_minmax(0,520px)] min-[900px]:items-end min-[900px]:gap-x-14 min-[900px]:py-14">
         <div>
