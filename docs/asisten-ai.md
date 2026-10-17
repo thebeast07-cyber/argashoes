@@ -19,10 +19,14 @@ Versi pertama memakai template (Gemini hanya memilah pertanyaan, jawaban disusun
 - Tidak ada batas per menit untuk pemilik dan admin. Yang membatasi hanya kuota harian Gemini. Batas per pengunjung baru dibuat untuk asisten pembeli (fase 2).
 - Konsekuensi yang diterima: angka di kalimat jawaban ditulis AI dari data asli dan tidak dijamin 100%. Model yang dibahas AI ditampilkan lagi dari database di bawah jawaban ("Cek data stok dari database") sebagai pembanding.
 
+## Pengetahuan tentang web (18 Okt 2026)
+
+Pemilik ingin asisten bisa menjawab cara pakai fitur seperti chat biasa, lengkap dengan langkah dan tautan. Gemini menerima `src/lib/asisten/pengetahuan.ts`: semua halaman admin dan publik, label tombol persis, alur order dan import, banner, akun, laporan fee, dan daftar fitur yang belum ada. Jawaban cara pakai berupa langkah bernomor dengan tautan `[Nama halaman](/path)`; hanya tautan ke halaman web ini yang dirender jadi tautan. File ini wajib diperbarui setiap ada fitur baru, kalau tidak asisten akan menjelaskan versi lama.
+
 ## Yang tetap dijaga
 
 1. **Hanya membaca.** Gemini tidak punya jalan untuk menulis apa pun. Perubahan stok dan produk tetap lewat form dan import CSV.
-2. **Data yang dikirim ke Gemini**: obrolan (12 giliran terakhir) dan katalog: brand, nama, kategori, harga, harga coret, status tampil, stok per size, total. **Tidak dikirim**: order, data pembeli, fee, rekening, akun. Free tier Gemini boleh memakai data yang dikirim untuk melatih model, jadi data pembeli tidak boleh ikut.
+2. **Data yang dikirim ke Gemini**: obrolan (12 giliran terakhir), pengetahuan tentang fitur web, dan katalog: brand, nama, kategori, harga, harga coret, status tampil, stok per size, total. **Tidak dikirim**: order, data pembeli, fee, rekening, akun. Free tier Gemini boleh memakai data yang dikirim untuk melatih model, jadi data pembeli tidak boleh ikut.
 3. **Tetap jalan tanpa AI.** Kalau Gemini gagal atau kuota habis, muncul pesan jelas. Sisa admin tetap bisa dipakai.
 
 ## Kuota

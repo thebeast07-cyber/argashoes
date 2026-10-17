@@ -14,25 +14,43 @@ import { tanyaAsisten, type HasilTanya } from "./asisten-actions";
 // Dosis kaca dibatasi ke panel ini saja (R-10); tombol pembukanya tetap padat supaya kontrasnya aman di atas halaman apa pun.
 // Putih 85%: teks redup tetap di atas 4.5:1 walau yang di belakang panel elemen gelap (mis. foto sepatu hitam).
 
-const CONTOH = ["Stok keseluruhan berapa?", "Size apa yang mau habis?", "Ide caption IG buat sepatu baru"];
+const CONTOH = ["Stok keseluruhan berapa?", "Cara pasang banner promo?", "Gimana nandain order udah dikirim?"];
 
 type Pesan = { kunci: number; peran: "user" | "asisten"; teks: string; hasil?: HasilTanya };
 
-function TeksBalasan({ teks }: { teks: string }) {
+function TeksBalasan({ teks, tutup }: { teks: string; tutup: () => void }) {
   const baris = uraiTeks(teks);
   const isi = (b: (typeof baris)[number]) =>
-    b.isi.map((p, i) => (p.tebal ? <strong key={i}>{p.teks}</strong> : <Fragment key={i}>{p.teks}</Fragment>));
-  // Butir daftar yang berurutan digabung jadi satu <ul>.
+    b.isi.map((p, i) =>
+      p.jenis === "tautan" ? (
+        // Pindah halaman sambil menutup panel; riwayat obrolan tetap ada saat dibuka lagi.
+        <Link key={i} href={p.href} onClick={tutup} className="font-semibold underline underline-offset-2">
+          {p.teks}
+        </Link>
+      ) : p.jenis === "tebal" ? (
+        <strong key={i}>{p.teks}</strong>
+      ) : (
+        <Fragment key={i}>{p.teks}</Fragment>
+      ),
+    );
+  // Butir atau langkah yang berurutan digabung jadi satu daftar.
   const blok: React.ReactNode[] = [];
   for (let i = 0; i < baris.length; i++) {
-    if (baris[i].daftar) {
+    const jenis = baris[i].daftar;
+    if (jenis) {
       const butir = [];
-      while (i < baris.length && baris[i].daftar) butir.push(<li key={i}>{isi(baris[i++])}</li>);
+      while (i < baris.length && baris[i].daftar === jenis) butir.push(<li key={i}>{isi(baris[i++])}</li>);
       i--;
       blok.push(
-        <ul key={`d${i}`} className="list-disc space-y-0.5 pl-5">
-          {butir}
-        </ul>,
+        jenis === "nomor" ? (
+          <ol key={`d${i}`} className="list-decimal space-y-1 pl-5">
+            {butir}
+          </ol>
+        ) : (
+          <ul key={`d${i}`} className="list-disc space-y-0.5 pl-5">
+            {butir}
+          </ul>
+        ),
       );
     } else if (baris[i].isi.length > 0) {
       blok.push(<p key={i}>{isi(baris[i])}</p>);
@@ -209,7 +227,7 @@ export function Asisten() {
           <div aria-live="polite" className="flex-1 space-y-3 overflow-y-auto overscroll-contain px-4 py-3 text-[15px] leading-relaxed">
             {pesan.length === 0 && (
               <div className="space-y-3">
-                <p>Mau cek stok, cari ide, atau sekadar ngobrol? Tanya aja. Jangan ketik data pembeli di sini ya.</p>
+                <p>Mau cek stok, tanya cara pakai fitur web, cari ide, atau sekadar ngobrol? Tanya aja. Jangan ketik data pembeli di sini ya.</p>
                 <div className="flex flex-wrap gap-2">
                   {CONTOH.map((c) => (
                     <button key={c} type="button" onClick={() => kirim(c)} className="tombol-garis min-h-11 rounded-xl bg-white/80 px-3 text-sm">
@@ -230,7 +248,7 @@ export function Asisten() {
                     <PesanGalat>{p.hasil.galat}</PesanGalat>
                   ) : (
                     <>
-                      {p.hasil?.teks && <TeksBalasan teks={p.hasil.teks} />}
+                      {p.hasil?.teks && <TeksBalasan teks={p.hasil.teks} tutup={tutup} />}
                       {p.hasil?.data && p.hasil.data.length > 0 && p.hasil.ambang && <DataStok data={p.hasil.data} ambang={p.hasil.ambang} tutup={tutup} />}
                     </>
                   )}
