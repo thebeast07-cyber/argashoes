@@ -1,5 +1,6 @@
 import "server-only";
 import type { Giliran } from "@/lib/domain/asisten-stok";
+import { PENGETAHUAN_WEB } from "./pengetahuan";
 
 // Panggilan ke Gemini lewat REST, tanpa SDK. Gemini hanya bisa membaca data yang dikirim di sini dan tidak punya
 // jalan untuk menulis apa pun. Yang dikirim: obrolan dan ringkasan katalog + stok. Tanpa order, data pembeli, atau fee.
@@ -22,11 +23,13 @@ export function asistenAktif(): boolean {
   return Boolean(process.env.GEMINI_API_KEY);
 }
 
-const INSTRUKSI = `Kamu asisten di panel admin Argashoes, toko sepatu Nike dan Adidas. Yang mengajakmu ngobrol adalah pemilik atau admin toko. Ngobrol seperti teman kerja: santai, sopan, natural, Bahasa Indonesia. Boleh membahas apa saja, tidak harus soal sepatu.
+const INSTRUKSI = `Kamu asisten di panel admin Argashoes, toko sepatu Nike dan Adidas. Yang mengajakmu ngobrol adalah pemilik web atau admin toko. Ngobrol seperti rekan kerja yang paham betul web ini: santai, sopan, hangat, Bahasa Indonesia sehari-hari. Variasikan kalimatmu, jangan membuka setiap balasan dengan cara yang sama, dan langsung ke inti. Boleh membahas apa saja, tidak harus soal sepatu.
 
-Di bawah ada data katalog dan stok terbaru dari database toko. Kamu hanya bisa membaca data ini, tidak bisa mengubah apa pun. Kalau diminta mengubah, bilang perubahan dilakukan lewat halaman Produk.
+Kamu hanya bisa membaca: PENGETAHUAN WEB di bawah (cara kerja semua fitur) dan DATA TOKO (katalog dan stok terbaru dari database). Kamu tidak bisa mengubah apa pun. Kalau diminta mengubah sesuatu, jelaskan caranya.
 
-Isi balasan dengan jawabanmu. Boleh pakai baris baru, daftar dengan "- ", dan **tebal**. Isi nomorModel dengan nomor model dari data yang kamu bahas (maksimal 5), atau kosong.`;
+Kalau ditanya cara melakukan sesuatu di web, jawab dengan langkah bernomor (1. 2. 3.), sebut nama tombol persis seperti di pengetahuan, dan sertakan tautan ke halamannya dengan format [Nama halaman](/path). Pakai hanya path yang tertulis di pengetahuan. Untuk sepatu tertentu jangan buat tautan sendiri; isi nomorModel, sistem akan menampilkan tautan ke halamannya. Jangan mengarang menu, tombol, atau fitur; kalau sesuatu belum ada, bilang terus terang.
+
+Isi balasan dengan jawabanmu. Boleh pakai baris baru, daftar "- ", langkah "1. ", **tebal**, dan [tautan](/path). Isi nomorModel dengan nomor model dari DATA TOKO yang kamu bahas (maksimal 5), atau kosong.`;
 
 const SKEMA = {
   type: "OBJECT",
@@ -43,7 +46,7 @@ export async function tanyaGemini(pertanyaan: string, riwayat: readonly Giliran[
 
   const model = [...new Set([process.env.GEMINI_MODEL?.trim(), ...MODEL_CADANGAN].filter((m): m is string => Boolean(m)))];
   const body = JSON.stringify({
-    systemInstruction: { parts: [{ text: `${INSTRUKSI}\n\nDATA TOKO:\n${dataToko}` }] },
+    systemInstruction: { parts: [{ text: `${INSTRUKSI}\n\nPENGETAHUAN WEB:\n${PENGETAHUAN_WEB}\n\nDATA TOKO:\n${dataToko}` }] },
     contents: [
       ...riwayat.map((g) => ({ role: g.peran === "user" ? "user" : "model", parts: [{ text: g.teks }] })),
       { role: "user", parts: [{ text: pertanyaan }] },

@@ -76,17 +76,32 @@ describe("bacaRiwayat", () => {
 });
 
 describe("uraiTeks", () => {
-  it("butir daftar dan teks tebal", () => {
-    assert.deepEqual(uraiTeks("Stok:\n- **AF1** 8 pasang\n* Samba"), [
-      { daftar: false, isi: [{ tebal: false, teks: "Stok:" }] },
+  it("butir, langkah bernomor, teks tebal, tautan internal", () => {
+    assert.deepEqual(uraiTeks("Caranya:\n1. Buka [Banner promo](/admin/pengaturan/banner)\n2) Ketuk **Banner baru**\n- catatan"), [
+      { daftar: null, isi: [{ jenis: "teks", teks: "Caranya:" }] },
       {
-        daftar: true,
+        daftar: "nomor",
         isi: [
-          { tebal: true, teks: "AF1" },
-          { tebal: false, teks: " 8 pasang" },
+          { jenis: "teks", teks: "Buka " },
+          { jenis: "tautan", teks: "Banner promo", href: "/admin/pengaturan/banner" },
         ],
       },
-      { daftar: true, isi: [{ tebal: false, teks: "Samba" }] },
+      {
+        daftar: "nomor",
+        isi: [
+          { jenis: "teks", teks: "Ketuk " },
+          { jenis: "tebal", teks: "Banner baru" },
+        ],
+      },
+      { daftar: "butir", isi: [{ jenis: "teks", teks: "catatan" }] },
+    ]);
+  });
+
+  it("tautan ke situs lain jadi teks biasa", () => {
+    assert.deepEqual(uraiTeks("[klik](https://jahat.com) [ini](//jahat.com)")[0].isi, [
+      { jenis: "teks", teks: "klik" },
+      { jenis: "teks", teks: " " },
+      { jenis: "teks", teks: "ini" },
     ]);
   });
 });

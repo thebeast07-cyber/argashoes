@@ -84,18 +84,31 @@ export function bacaRiwayat(mentah: unknown): Giliran[] {
     .map((g) => ({ peran: g.peran, teks: g.teks.slice(0, BATAS_BALASAN) }));
 }
 
-export type PotonganTeks = { tebal: boolean; teks: string };
-export type BarisTeks = { daftar: boolean; isi: PotonganTeks[] };
+export type PotonganTeks = { jenis: "teks" | "tebal"; teks: string } | { jenis: "tautan"; teks: string; href: string };
+export type BarisTeks = { daftar: "butir" | "nomor" | null; isi: PotonganTeks[] };
 
-/** Format ringan untuk balasan: baris "- " jadi butir daftar, **teks** jadi tebal. Sisanya teks biasa. */
+/** Tautan di balasan hanya ke halaman web ini sendiri. "//domain" dibaca browser sebagai situs lain, jadi ditolak. */
+export function tautanInternal(href: string): boolean {
+  return href.startsWith("/") && !href.startsWith("//");
+}
+
+function uraiBaris(teks: string): PotonganTeks[] {
+  return teks
+    .split(/(\*\*[^*]+\*\*|\[[^\]]+\]\([^)\s]+\))/)
+    .filter(Boolean)
+    .map((p): PotonganTeks => {
+      if (p.startsWith("**") && p.endsWith("**") && p.length > 4) return { jenis: "tebal", teks: p.slice(2, -2) };
+      const m = p.match(/^\[([^\]]+)\]\(([^)\s]+)\)$/);
+      if (m) return tautanInternal(m[2]) ? { jenis: "tautan", teks: m[1], href: m[2] } : { jenis: "teks", teks: m[1] };
+      return { jenis: "teks", teks: p };
+    });
+}
+
+/** Format ringan untuk balasan: "- " jadi butir, "1. " jadi langkah bernomor, **teks** tebal, [teks](/path) tautan. */
 export function uraiTeks(teks: string): BarisTeks[] {
   return teks.split("\n").map((baris) => {
-    const daftar = /^\s*[-*•]\s+/.test(baris);
-    const bersih = daftar ? baris.replace(/^\s*[-*•]\s+/, "") : baris;
-    const isi = bersih
-      .split(/(\*\*[^*]+\*\*)/)
-      .filter(Boolean)
-      .map((p) => (p.startsWith("**") && p.endsWith("**") ? { tebal: true, teks: p.slice(2, -2) } : { tebal: false, teks: p }));
-    return { daftar, isi };
+    if (/^\s*[-*•]\s+/.test(baris)) return { daftar: "butir", isi: uraiBaris(baris.replace(/^\s*[-*•]\s+/, "")) };
+    if (/^\s*\d+[.)]\s+/.test(baris)) return { daftar: "nomor", isi: uraiBaris(baris.replace(/^\s*\d+[.)]\s+/, "")) };
+    return { daftar: null, isi: uraiBaris(baris) };
   });
 }
