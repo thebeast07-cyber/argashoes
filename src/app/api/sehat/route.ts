@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { urlDatabase } from "@/db/url";
-import { tokenBlob } from "@/lib/foto/token-blob";
+import { kredensialBlob } from "@/lib/foto/kredensial-blob";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +18,7 @@ export async function GET() {
     websocketBawaan: typeof WebSocket !== "undefined",
     vercel: process.env.VERCEL_ENV ?? null,
     envDatabase: urlDatabase()?.nama ?? null,
-    envBlob: tokenBlob()?.nama ?? null,
+    envBlob: kredensialBlob()?.nama ?? null,
     envTerisi: {
       ADMIN_PASSWORD: env("ADMIN_PASSWORD"),
       RESEND_API_KEY: env("RESEND_API_KEY"),
