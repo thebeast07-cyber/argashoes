@@ -62,6 +62,8 @@ a { color: inherit; }
 .merek { font-stretch: 125%; font-weight: 900; font-size: 22px; letter-spacing: -0.02em; text-decoration: none; display: inline-flex; min-height: 44px; align-items: center; }
 .tombol-keranjang { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border: 1.5px solid var(--tinta); border-radius: 4px; background: var(--putih); font-weight: 700; text-decoration: none; }
 .tombol-keranjang:hover { background: var(--kertas-gelap); }
+/* Di layar di bawah 360px tulisan "Keranjang" disembunyikan: tanpa ini header luber 10px di 320px. */
+@media (max-width: 359px) { .tombol-keranjang .teks { display: none; } }
 .tombol-keranjang .jumlah { min-width: 22px; padding: 0 5px; border-radius: 2px; background: var(--tinta); color: var(--kertas); text-align: center; font-size: 13px; line-height: 22px; }
 svg.ik { display: block; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: square; stroke-linejoin: miter; }
 
@@ -94,7 +96,7 @@ svg.ik { display: block; fill: none; stroke: currentColor; stroke-width: 1.75; s
 .cari .lbl:hover { background: rgba(244,241,234,.14); }
 .cari .lbl[aria-pressed="true"] { background: var(--kertas); color: var(--tinta); }
 .cari .hasil { margin: 16px 0 0; min-height: 24px; font-weight: 700; }
-.cari .catatan { margin: 10px 0 0; font-size: 14px; color: var(--redup-gelap); }
+.lihat-hasil { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; margin-top: 12px; padding: 0 16px; border: 1.5px solid var(--kertas); border-radius: 4px; background: var(--kertas); color: var(--tinta); font-weight: 700; text-decoration: none; }
 
 .daftar { padding: 28px 16px 8px; }
 .daftar-kepala { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
@@ -117,29 +119,23 @@ svg.ik { display: block; fill: none; stroke: currentColor; stroke-width: 1.75; s
 .stok-baris li.sisa { background: var(--sedikit-latar); border-color: var(--sedikit-teks); color: var(--sedikit-teks); }
 .stok-baris li.lebih { border-color: transparent; color: var(--redup); }
 .status-size { margin: 8px 0 0; font-weight: 700; font-size: 14px; }
-.status-size.sisa { color: var(--sedikit-teks); }
+.status-size.sisa, .sisa-catatan { color: var(--sedikit-teks); }
+.sisa-catatan { margin: 6px 0 0; font-weight: 700; font-size: 13px; }
 
-/* Kartu unggulan penuh lebar, sisanya dua kolom: ritme berbeda, bukan mosaik. */
-.unggulan { margin-bottom: 14px; }
-.unggulan .foto { aspect-ratio: 4 / 3; font-size: 15px; }
-.unggulan .isi { padding: 14px 14px 16px; }
-.unggulan h3 { font-stretch: 100%; font-size: 24px; font-weight: 800; letter-spacing: -0.01em; }
-.unggulan .harga { font-size: 20px; }
+/* Semua kartu seukuran: belum ada aturan model mana yang ditonjolkan, jadi tidak ada kartu "unggulan". */
 .grid-kartu { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0; padding: 0; list-style: none; }
 .kosong { padding: 18px; border: 1.5px solid var(--tinta); border-radius: 2px; background: var(--putih); }
 .kosong p { margin: 0 0 12px; }
 
-/* Cara pesan: empat langkah karena prosesnya memang empat. */
-.cara { margin: 36px 0 0; padding: 32px 16px 36px; background: var(--kertas-gelap); }
-.cara h2 { margin: 0 0 6px; font-stretch: 100%; font-weight: 800; font-size: 26px; }
-.cara .pengantar { margin: 0 0 20px; color: var(--redup); max-width: 34ch; }
+/* Cara order: halaman sendiri dari footer, bukan bagian dari jalur beli. Empat langkah karena prosesnya memang empat. */
 .langkah { margin: 0; padding: 0; list-style: none; }
 .langkah li { display: grid; grid-template-columns: 52px 1fr; gap: 14px; padding: 14px 0; border-top: 1px solid rgba(29,27,24,.25); }
 .langkah .no { display: flex; align-items: center; justify-content: center; height: 52px; border: 1.5px solid var(--tinta); border-radius: 2px; background: var(--putih); font-stretch: 75%; font-weight: 800; font-size: 28px; }
 .langkah b { display: block; font-size: 17px; }
 .langkah span { color: var(--redup); font-size: 15px; }
 
-.toko { padding: 30px 16px 40px; }
+.toko { margin-top: 36px; padding: 30px 16px 40px; background: var(--kertas-gelap); }
+.toko .ke-cara { display: inline-flex; align-items: center; min-height: 44px; margin-top: 16px; font-weight: 700; text-underline-offset: 3px; }
 .toko h2 { margin: 0 0 12px; font-stretch: 100%; font-weight: 800; font-size: 22px; }
 .toko dl { margin: 0; }
 .toko dt { font-size: 13px; font-weight: 700; color: var(--redup); text-transform: uppercase; font-stretch: 75%; margin-top: 12px; }
@@ -157,20 +153,14 @@ svg.ik { display: block; fill: none; stroke: currentColor; stroke-width: 1.75; s
 .pilih-kepala { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 .pilih h2 { margin: 0; font-size: 18px; font-weight: 800; }
 .grid-size { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 0; padding: 0; list-style: none; }
-.keterangan-size { margin: 12px 0 0; min-height: 48px; font-weight: 600; }
-.panel-habis { margin-top: 4px; padding: 14px; border: 1.5px solid var(--tinta); border-radius: 2px; background: var(--putih); }
-.panel-habis p { margin: 0 0 12px; }
+.keterangan-size { margin: 12px 0 0; min-height: 24px; font-weight: 700; color: var(--sedikit-teks); }
 details.panduan { margin: 8px 16px 0; border-top: 1px solid rgba(29,27,24,.25); }
 details.panduan summary { display: flex; align-items: center; justify-content: space-between; min-height: 52px; font-weight: 700; cursor: pointer; list-style: none; }
 details.panduan summary::-webkit-details-marker { display: none; }
 details.panduan summary::after { content: "+"; font-size: 24px; font-weight: 500; }
 details.panduan[open] summary::after { content: "-"; }
 details.panduan .dalam { padding: 0 0 14px; color: var(--redup); }
-.jaminan { margin: 18px 16px 0; padding: 0; list-style: none; border: 1.5px solid var(--tinta); border-radius: 2px; background: var(--putih); }
-.jaminan li { padding: 12px 14px; border-top: 1px solid rgba(29,27,24,.2); }
-.jaminan li:first-child { border-top: 0; }
-.jaminan b { display: block; }
-.jaminan span { color: var(--redup); font-size: 15px; }
+details.panduan .dalam b { display: block; margin-top: 10px; color: var(--tinta); }
 .deskripsi { margin: 20px 16px 0; }
 .deskripsi h2 { margin: 0 0 6px; font-size: 18px; }
 .ruang-bar { height: 110px; }
@@ -207,8 +197,8 @@ form { margin-top: 22px; }
 .kolom label.setuju { display: flex; gap: 12px; align-items: flex-start; min-height: 44px; margin: 0 0 4px; font-weight: 400; }
 .setuju input { flex: none; width: 24px; height: 24px; margin: 8px 0 0; accent-color: var(--bata); }
 .setuju span { font-size: 15px; padding-top: 4px; }
-.janji { margin: 16px 0 12px; padding: 12px 14px; border: 1.5px solid var(--tinta); border-radius: 2px; background: var(--putih); font-size: 15px; }
-.janji b { display: block; }
+/* Satu baris di bawah tombol kirim: menjawab ragu bayar ke rekening pribadi (risiko konversi di PRD), tanpa paragraf. */
+.belum-bayar { margin: 8px 0 0; text-align: center; font-size: 14px; font-weight: 600; color: var(--redup); }
 .ringkasan-galat { margin: 0 0 12px; padding: 10px 12px; border: 1.5px solid var(--bata); border-radius: 2px; color: var(--bata); font-weight: 700; background: var(--putih); }
 
 /* ---- Terkirim ---- */
@@ -216,12 +206,6 @@ form { margin-top: 22px; }
 .kode small { display: block; color: var(--redup); font-weight: 600; }
 .kode b { display: block; font-stretch: 75%; font-weight: 800; font-size: 40px; letter-spacing: 0.02em; line-height: 1.05; }
 .kode span { display: inline-block; margin-top: 8px; padding: 3px 8px; border: 1.5px solid var(--sedikit-teks); border-radius: 2px; background: var(--sedikit-latar); color: var(--sedikit-teks); font-weight: 700; font-size: 14px; }
-.tahap { margin: 0 0 22px; padding: 0; list-style: none; }
-.tahap li { padding: 12px 0; border-top: 1px solid rgba(29,27,24,.25); }
-.tahap li:last-child { border-bottom: 1px solid rgba(29,27,24,.25); }
-.tahap b { display: block; }
-.tahap span { color: var(--redup); font-size: 15px; }
-.tahap li.sekarang b::after { content: " (sekarang)"; font-weight: 600; color: var(--redup); }
 
 .toast { position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%); z-index: 20; width: calc(100% - 32px); max-width: 420px; padding: 12px 14px; border-radius: 4px; background: var(--tinta); color: var(--kertas); font-weight: 600; font-size: 15px; }
 .toast[hidden] { display: none; }
@@ -237,6 +221,7 @@ form { margin-top: 22px; }
       <a href="#/produk/samba-og" data-r="produk">Produk</a>
       <a href="#/keranjang" data-r="keranjang">Keranjang</a>
       <a href="#/terkirim" data-r="terkirim">Pesanan terkirim</a>
+      <a href="#/cara-order" data-r="cara">Cara order</a>
     </nav>
   </div>
   <div id="app"></div>
@@ -277,24 +262,28 @@ function kepala() {
   const n = state.keranjang.reduce((a, i) => a + i.jumlah, 0);
   return `<header class="kepala">
     <a class="merek" href="#/" aria-label="Argashoes, ke katalog">Argashoes</a>
-    <a class="tombol-keranjang" href="#/keranjang">${IK.keranjang}<span>Keranjang</span><span class="jumlah angka" aria-label="${n} pasang">${n}</span></a>
+    <a class="tombol-keranjang" href="#/keranjang" aria-label="Keranjang, ${n} pasang">${IK.keranjang}<span class="teks" aria-hidden="true">Keranjang</span><span class="jumlah angka" aria-hidden="true">${n}</span></a>
   </header>`;
 }
 const foto = (teks = "[FOTO PRODUK]") => `<div class="foto" role="img" aria-label="Foto produk belum ada, ini penanda tempat">${teks}</div>`;
 
-function kartu(p, unggulan = false) {
+function kartu(p) {
   const ada = SIZES.filter((s) => stokDi(p, s) > 0);
   let info;
   if (state.sizeCari) {
     const n = stokDi(p, state.sizeCari);
     info = `<p class="status-size ${status(n) === "sisa" ? "sisa" : ""}">Size ${state.sizeCari}: ${teksStatus(n)}</p>`;
   } else {
-    const tampil = ada.slice(0, unggulan ? 8 : 4);
+    const tampil = ada.slice(0, 4);
+    // Size yang sisa sedikit juga ditulis, bukan cuma diwarnai (DESIGN.md: status stok tidak pernah hanya warna).
+    const sisa = tampil.filter((s) => status(stokDi(p, s)) === "sisa");
     info = `<ul class="stok-baris" aria-label="Size yang ada">${tampil
       .map((s) => `<li class="${status(stokDi(p, s)) === "sisa" ? "sisa" : ""}">${s}</li>`)
-      .join("")}${ada.length > tampil.length ? `<li class="lebih">+${ada.length - tampil.length}</li>` : ""}</ul>`;
+      .join("")}${ada.length > tampil.length ? `<li class="lebih">+${ada.length - tampil.length}</li>` : ""}</ul>${
+      sisa.length ? `<p class="sisa-catatan">Sisa sedikit: ${sisa.join(", ")}</p>` : ""
+    }`;
   }
-  return `<a class="kartu ${unggulan ? "unggulan" : ""}" href="#/produk/${p.id}" data-aksi="buka" data-id="${p.id}">
+  return `<a class="kartu" href="#/produk/${p.id}" data-aksi="buka" data-id="${p.id}">
     ${foto()}
     <div class="isi">
       <p class="merek-kecil">${p.brand}</p>
@@ -305,6 +294,19 @@ function kartu(p, unggulan = false) {
   </a>`;
 }
 
+function kaki() {
+  return `<footer class="toko" aria-labelledby="judul-toko">
+    <h2 id="judul-toko">Siapa yang menjual</h2>
+    <dl>
+      <dt>Toko</dt><dd><span class="ph">[NAMA TOKO]</span></dd>
+      <dt>Alamat</dt><dd><span class="ph">[ALAMAT TOKO]</span></dd>
+      <dt>WhatsApp</dt><dd><span class="ph">[NOMOR WA TOKO]</span>, dibalas <span class="ph">[JAM BALAS]</span></dd>
+      <dt>Retur</dt><dd><span class="ph">[KEBIJAKAN RETUR]</span></dd>
+    </dl>
+    <a class="ke-cara" href="#/cara-order">Cara order</a>
+  </footer>`;
+}
+
 /* ---- Layar ---- */
 function layarBeranda() {
   let daftar = PRODUK.filter((p) => state.brand === "Semua" || p.brand === state.brand);
@@ -312,26 +314,22 @@ function layarBeranda() {
   // Urut dari stok terbanyak di size yang dicari, supaya yang paling aman dipesan tampil dulu.
   if (state.sizeCari) daftar.sort((a, b) => stokDi(b, state.sizeCari) - stokDi(a, state.sizeCari));
 
-  const hasil = state.sizeCari
-    ? daftar.length
-      ? `${daftar.length} model ada di size ${state.sizeCari}`
-      : `Size ${state.sizeCari} belum ada yang ready`
-    : "Pilih size, atau lihat semua model di bawah.";
+  // Hasil pilih size ada di bawah layar HP, jadi hasilnya jadi tombol yang membawa ke daftar.
+  const hasil = !state.sizeCari
+    ? ""
+    : daftar.length
+      ? `<a class="lihat-hasil" href="#judul-daftar" data-aksi="ke-daftar">Lihat ${daftar.length} model di size ${state.sizeCari}</a>`
+      : `<p class="hasil">Size ${state.sizeCari} belum ada yang ready.</p>`;
 
   let isiDaftar;
   if (daftar.length === 0) {
-    isiDaftar = `<div class="kosong"><p>${
+    isiDaftar = `<div class="kosong">${
       state.sizeCari
-        ? `Tidak ada model ${state.brand === "Semua" ? "" : state.brand + " "}di size ${state.sizeCari} yang masih ada stoknya. Tanyakan ke retailer lewat WhatsApp, stok baru bisa dicek.`
-        : "Belum ada model di merek ini."
-    }</p>${
-      state.sizeCari
-        ? `<button class="tombol" data-aksi="tanya-wa" data-size="${state.sizeCari}">${IK.wa}Tanya stok size ${state.sizeCari}</button>`
-        : ""
+        ? `<p>Belum ada ${state.brand === "Semua" ? "model" : state.brand} size ${state.sizeCari} yang ready.</p><button class="tombol" data-aksi="tanya-wa" data-size="${state.sizeCari}">${IK.wa}Tanya stok size ${state.sizeCari}</button>`
+        : "<p>Belum ada model di merek ini.</p>"
     }</div>`;
   } else {
-    const [u, ...sisa] = daftar;
-    isiDaftar = `${kartu(u, true)}<ul class="grid-kartu">${sisa.map((p) => `<li>${kartu(p)}</li>`).join("")}</ul>`;
+    isiDaftar = `<ul class="grid-kartu">${daftar.map((p) => `<li>${kartu(p)}</li>`).join("")}</ul>`;
   }
 
   return `${kepala()}
@@ -342,41 +340,35 @@ function layarBeranda() {
       <ul class="deret-size" aria-label="Pilih size">
         ${SIZES.map((s) => `<li><button class="lbl" type="button" data-aksi="cari-size" data-size="${s}" aria-pressed="${state.sizeCari === s}"><span class="no angka">${s}</span></button></li>`).join("")}
       </ul>
-      <p class="hasil" role="status" aria-live="polite">${hasil}</p>
-      <p class="catatan">Pesan di sini, selesaikan di WhatsApp. Retailer mengonfirmasi stok dan ongkir sebelum kamu bayar.</p>
+      <div role="status" aria-live="polite">${hasil}</div>
     </section>
 
     <section class="daftar" aria-labelledby="judul-daftar">
       <div class="daftar-kepala">
-        <h2 id="judul-daftar">${state.sizeCari ? `Ready di size ${state.sizeCari}` : "Semua model"}</h2>
+        <h2 id="judul-daftar" tabindex="-1">${state.sizeCari ? `Ready di size ${state.sizeCari}` : "Semua model"}</h2>
         <div class="merek-pilih" role="group" aria-label="Filter merek">
           ${["Semua", "Nike", "Adidas"].map((m) => `<button type="button" data-aksi="merek" data-merek="${m}" aria-pressed="${state.brand === m}">${m}</button>`).join("")}
         </div>
       </div>
       ${isiDaftar}
     </section>
+  </main>
+  ${kaki()}`;
+}
 
-    <section class="cara" aria-labelledby="judul-cara">
-      <h2 id="judul-cara">Cara pesan</h2>
-      <p class="pengantar">Pesananmu tercatat di sini lebih dulu, lalu dilanjutkan di WhatsApp dengan retailer.</p>
-      <ol class="langkah">
-        <li><span class="no" aria-hidden="true">1</span><div><b>Pilih size, isi data pengiriman</b><span>Tanpa akun. Cukup nama, nomor WhatsApp, dan alamat.</span></div></li>
-        <li><span class="no" aria-hidden="true">2</span><div><b>Pesanan tercatat dengan kode</b><span>Kode ini yang kamu sebut saat chat dengan retailer.</span></div></li>
-        <li><span class="no" aria-hidden="true">3</span><div><b>Retailer membalas di WhatsApp</b><span>Mengecek stok pasangan itu dan menghitung ongkir ke alamatmu.</span></div></li>
-        <li><span class="no" aria-hidden="true">4</span><div><b>Kamu bayar, retailer mengirim</b><span>Nomor resi dikirim lewat WhatsApp.</span></div></li>
-      </ol>
-    </section>
-
-    <section class="toko" aria-labelledby="judul-toko">
-      <h2 id="judul-toko">Siapa yang menjual</h2>
-      <dl>
-        <dt>Retailer</dt><dd><span class="ph">[NAMA RETAILER]</span></dd>
-        <dt>Alamat toko</dt><dd><span class="ph">[ALAMAT TOKO]</span></dd>
-        <dt>WhatsApp</dt><dd><span class="ph">[NOMOR WA TOKO]</span>, dibalas <span class="ph">[JAM BALAS]</span></dd>
-        <dt>Retur</dt><dd><span class="ph">[KEBIJAKAN RETUR]</span></dd>
-      </dl>
-    </section>
-  </main>`;
+function layarCaraOrder() {
+  return `${kepala()}
+  <main class="halaman">
+    <a class="jalan" style="padding-left:0" href="#/">${IK.kembali}Katalog</a>
+    <h1>Cara order</h1>
+    <ol class="langkah">
+      <li><span class="no" aria-hidden="true">1</span><div><b>Pilih size, isi data pengiriman</b><span>Tanpa akun. Cukup nama, nomor WhatsApp, dan alamat.</span></div></li>
+      <li><span class="no" aria-hidden="true">2</span><div><b>Pesanan tercatat dengan kode</b><span>Sebut kode ini saat chat dengan toko.</span></div></li>
+      <li><span class="no" aria-hidden="true">3</span><div><b>Toko membalas di WhatsApp</b><span>Cek stok dan hitung ongkir ke alamatmu.</span></div></li>
+      <li><span class="no" aria-hidden="true">4</span><div><b>Kamu bayar, toko mengirim</b><span>Nomor resi dikirim lewat WhatsApp.</span></div></li>
+    </ol>
+  </main>
+  ${kaki()}`;
 }
 
 function layarProduk(id) {
@@ -390,13 +382,14 @@ function layarProduk(id) {
   const n = s ? stokDi(p, s) : null;
   const habisDipilih = s !== null && n === 0;
   const sizes = SIZES.filter((x) => x in p.stok);
+  // Label size sudah menulis Ready/Habis. Yang perlu ditulis lagi cuma sisa sedikit; sisanya hanya untuk pembaca layar.
   const ket = s === null
-    ? "Pilih size untuk melihat stoknya."
+    ? `<span class="sr">Belum ada size dipilih.</span>`
     : n === 0
-      ? `Size ${s} sedang habis.`
+      ? `<span class="sr">Size ${s} habis.</span>`
       : n >= AMBANG
-        ? `Size ${s}: Ready.`
-        : `Size ${s}: tinggal ${n} pasang. Retailer mengecek ulang saat konfirmasi.`;
+        ? `<span class="sr">Size ${s} dipilih, ready.</span>`
+        : `Tinggal ${n} pasang.`;
   const label = s === null ? "Pilih size dulu" : habisDipilih ? "Size ini habis" : `Pesan size ${s}`;
   const mati = s === null || habisDipilih;
 
@@ -416,19 +409,13 @@ function layarProduk(id) {
         ${sizes.map((x) => { const st = status(stokDi(p, x)); const dipilih = s === x; return `<li><button class="lbl ${st}" type="button" data-aksi="pilih-size" data-size="${x}" aria-pressed="${dipilih}" aria-label="Size ${x}, ${teksStatus(stokDi(p, x))}"><span class="no angka">${x}</span><span class="st">${dipilih ? "Dipilih" : teksStatus(stokDi(p, x))}</span></button></li>`; }).join("")}
       </ul>
       <p class="keterangan-size" role="status" aria-live="polite">${ket}</p>
-      ${habisDipilih ? `<div class="panel-habis"><p>Stok baru kadang masuk. Retailer bisa mengecek size ${s} untukmu.</p><button class="tombol penuh" type="button" data-aksi="tanya-wa" data-size="${s}">${IK.wa}Tanya stok size ${s}</button></div>` : ""}
+      ${habisDipilih ? `<button class="tombol penuh" type="button" data-aksi="tanya-wa" data-size="${s}">${IK.wa}Tanya stok size ${s}</button>` : ""}
     </section>
 
     <details class="panduan">
-      <summary>Panduan size</summary>
-      <div class="dalam"><span class="ph">[TABEL SIZE DARI RETAILER]</span></div>
+      <summary>Panduan size dan retur</summary>
+      <div class="dalam"><span class="ph">[TABEL SIZE DARI TOKO]</span><b>Retur</b><span class="ph">[KEBIJAKAN RETUR]</span></div>
     </details>
-
-    <ul class="jaminan">
-      <li><b>Dijual dan dikirim retailer</b><span><span class="ph">[NAMA RETAILER]</span>, bukan pihak ketiga.</span></li>
-      <li><b>Bayar setelah stok dikonfirmasi</b><span>Retailer membalas di WhatsApp dulu: cek stok, hitung ongkir.</span></li>
-      <li><b>Retur</b><span><span class="ph">[KEBIJAKAN RETUR]</span></span></li>
-    </ul>
 
     <section class="deskripsi">
       <h2>Tentang model ini</h2>
@@ -446,14 +433,14 @@ function layarKeranjang() {
   const k = state.keranjang;
   const total = k.reduce((a, i) => a + cariProduk(i.id).harga * i.jumlah, 0);
   const g = state.galat;
-  const adaGalat = Object.keys(g).length > 0;
+  const jumlahGalat = Object.keys(g).length;
   if (k.length === 0) {
     return `${kepala()}<main class="halaman"><a class="jalan" style="padding-left:0" href="#/">${IK.kembali}Katalog</a>
       <h1>Keranjang</h1>
-      <div class="kosong"><p>Keranjang masih kosong. Pilih size di salah satu model, lalu pesan.</p><a class="tombol utama" href="#/">Cari size di katalog</a></div></main>`;
+      <div class="kosong"><p>Keranjang masih kosong.</p><a class="tombol utama" href="#/">Cari size di katalog</a></div></main>`;
   }
   const kolom = (id, label, input, bantuan) => `<div class="kolom"><label for="${id}">${label}</label>${input}${bantuan && !g[id] ? `<p class="bantuan" id="${id}-b">${bantuan}</p>` : ""}${g[id] ? `<p class="galat" id="${id}-e">${g[id]}</p>` : ""}</div>`;
-  const attr = (id) => `aria-invalid="${Boolean(g[id])}" aria-describedby="${g[id] ? id + "-e" : id + "-b"}"`;
+  const attr = (id, bantuan) => `aria-invalid="${Boolean(g[id])}"${g[id] ? ` aria-describedby="${id}-e"` : bantuan ? ` aria-describedby="${id}-b"` : ""}`;
   return `${kepala()}
   <main class="halaman">
     <a class="jalan" style="padding-left:0" href="#/">${IK.kembali}Tambah model lain</a>
@@ -473,21 +460,21 @@ function layarKeranjang() {
         </div>
       </div></article>`; }).join("")}
     <div class="ringkas"><span>Subtotal</span><span class="angka">${rp(total)}</span></div>
-    <p class="ringkas-catatan">Ongkir belum termasuk. Retailer menghitungnya sesuai alamatmu di WhatsApp.</p>
+    <p class="ringkas-catatan">Belum termasuk ongkir.</p>
 
     <form id="form-pesan" novalidate>
       <h2 style="margin:0 0 12px;font-size:22px;font-weight:800">Data pengiriman</h2>
-      ${adaGalat ? `<p class="ringkasan-galat" role="alert" tabindex="-1" id="galat-ringkas">Ada isian yang perlu dibetulkan. Lihat pesan merah di bawah.</p>` : ""}
       ${kolom("nama", "Nama penerima", `<input id="nama" name="nama" type="text" autocomplete="name" ${attr("nama")}>`, "")}
-      ${kolom("wa", "Nomor WhatsApp", `<input id="wa" name="wa" type="tel" inputmode="tel" autocomplete="tel" ${attr("wa")}>`, "Retailer menghubungimu di nomor ini.")}
-      ${kolom("alamat", "Alamat lengkap", `<textarea id="alamat" name="alamat" rows="3" autocomplete="street-address" ${attr("alamat")}></textarea>`, "Jalan, nomor, kecamatan, kota, kode pos.")}
-      ${kolom("catatan", "Catatan untuk retailer (opsional)", `<textarea id="catatan" name="catatan" rows="2"></textarea>`, "")}
+      ${kolom("wa", "Nomor WhatsApp", `<input id="wa" name="wa" type="tel" inputmode="tel" autocomplete="tel" ${attr("wa")}>`, "")}
+      ${kolom("alamat", "Alamat lengkap", `<textarea id="alamat" name="alamat" rows="3" autocomplete="street-address" ${attr("alamat", true)}></textarea>`, "Jalan, nomor, kecamatan, kota, kode pos.")}
+      ${kolom("catatan", "Catatan untuk toko (opsional)", `<textarea id="catatan" name="catatan" rows="2"></textarea>`, "")}
       <div class="kolom">
-        <label class="setuju"><input type="checkbox" id="setuju" name="setuju" aria-invalid="${Boolean(g.setuju)}" ${g.setuju ? 'aria-describedby="setuju-e"' : ""}><span>Saya setuju datanya dipakai retailer untuk memproses pesanan ini. <span class="ph">[LINK KEBIJAKAN PRIVASI]</span></span></label>
+        <label class="setuju"><input type="checkbox" id="setuju" name="setuju" aria-invalid="${Boolean(g.setuju)}" ${g.setuju ? 'aria-describedby="setuju-e"' : ""}><span>Saya setuju data ini dipakai toko untuk pesanan ini. <span class="ph">[LINK KEBIJAKAN PRIVASI]</span></span></label>
         ${g.setuju ? `<p class="galat" id="setuju-e">${g.setuju}</p>` : ""}
       </div>
-      <div class="janji"><b>Apa yang terjadi setelah tombol ditekan</b>Pesananmu tercatat dengan kode, lalu WhatsApp terbuka dengan pesan yang sudah terisi. Kamu belum membayar apa pun.</div>
+      ${jumlahGalat ? `<p class="ringkasan-galat" role="alert">Ada ${jumlahGalat} isian yang perlu dibetulkan.</p>` : ""}
       <button class="tombol utama penuh" type="submit">${IK.wa}Kirim pesanan ke WhatsApp</button>
+      <p class="belum-bayar">Belum bayar. Stok dan ongkir dicek dulu di WhatsApp.</p>
     </form>
   </main>`;
 }
@@ -499,20 +486,13 @@ function layarTerkirim() {
   <main class="halaman">
     <h1>Pesananmu sudah tercatat</h1>
     ${sampel ? `<p class="ringkas-catatan"><span class="ph">[CONTOH]</span> Begini tampilan setelah pesanan dikirim.</p>` : ""}
-    <p class="kode"><small>Kode pesanan</small><b class="angka">WEB-xxxx</b><span>Menunggu konfirmasi retailer</span></p>
-    <ol class="tahap">
-      <li class="sekarang"><b>Pesanan tercatat</b><span>${esc(o.nama)}, pesananmu sudah masuk ke retailer.</span></li>
-      <li><b>Retailer membalas di WhatsApp</b><span>Konfirmasi stok dan ongkir. Kalau WhatsApp belum terbuka, tekan tombol di bawah.</span></li>
-      <li><b>Kamu bayar</b><span>Nomor rekening dikirim retailer di WhatsApp.</span></li>
-      <li><b>Barang dikirim</b><span>Nomor resi menyusul lewat WhatsApp.</span></li>
-    </ol>
-    <section aria-labelledby="judul-isi" style="margin-bottom:22px">
-      <h2 id="judul-isi" style="margin:0 0 8px;font-size:18px">Isi pesanan</h2>
+    <p class="kode"><small>Kode pesanan</small><b class="angka">WEB-xxxx</b><span>Menunggu balasan toko</span></p>
+    <div style="margin-bottom:22px">
       ${o.item.map((i) => { const p = cariProduk(i.id); return `<p style="margin:0 0 4px" class="angka">${i.jumlah} × ${p.brand} ${p.nama}, size ${i.size}</p>`; }).join("")}
       <p style="margin:8px 0 0;font-weight:800" class="angka">Subtotal ${rp(o.total)} <span style="font-weight:400;color:var(--redup)">(belum termasuk ongkir)</span></p>
-    </section>
+    </div>
     <div style="display:grid;gap:10px">
-      <button class="tombol utama penuh" type="button" data-aksi="buka-wa">${IK.wa}Buka WhatsApp lagi</button>
+      <button class="tombol utama penuh" type="button" data-aksi="buka-wa">${IK.wa}Buka WhatsApp</button>
       <a class="tombol penuh" href="#/">Cari model lain</a>
     </div>
   </main>`;
@@ -536,6 +516,7 @@ function gambar() {
   const [, rute, arg] = h.split("/");
   if (rute === "produk") { app.innerHTML = layarProduk(arg); aktifkanNav("produk"); document.title = (cariProduk(arg) || PRODUK[0]).nama + " · Argashoes"; }
   else if (rute === "keranjang") { app.innerHTML = layarKeranjang(); aktifkanNav("keranjang"); document.title = "Keranjang · Argashoes"; }
+  else if (rute === "cara-order") { app.innerHTML = layarCaraOrder(); aktifkanNav("cara"); document.title = "Cara order · Argashoes"; }
   else if (rute === "terkirim") { app.innerHTML = layarTerkirim(); aktifkanNav("terkirim"); document.title = "Pesanan tercatat · Argashoes"; }
   else { app.innerHTML = layarBeranda(); aktifkanNav("beranda"); document.title = "Argashoes · cari size, pesan lewat WhatsApp"; }
 }
@@ -571,10 +552,15 @@ app.addEventListener("click", (e) => {
   } else if (a === "hapus") {
     state.keranjang.splice(Number(t.dataset.i), 1);
     pasang();
+  } else if (a === "ke-daftar") {
+    e.preventDefault();
+    const judul = document.getElementById("judul-daftar");
+    judul.scrollIntoView({ block: "start" });
+    judul.focus({ preventScroll: true });
   } else if (a === "tanya-wa") {
-    beri(`Mockup: di web asli tombol ini membuka WhatsApp retailer dengan pesan "Halo, apakah size ${t.dataset.size} ada?" sudah terisi.`);
+    beri(`Mockup: di web asli tombol ini membuka WhatsApp toko dengan pesan "Halo, apakah size ${t.dataset.size} ada?" sudah terisi.`);
   } else if (a === "buka-wa") {
-    beri("Mockup: di web asli tombol ini membuka WhatsApp retailer dengan kode pesanan sudah terisi.");
+    beri("Mockup: di web asli tombol ini membuka WhatsApp toko dengan kode pesanan sudah terisi.");
   }
 });
 
@@ -587,14 +573,14 @@ app.addEventListener("submit", (e) => {
   if (!String(f.get("nama") || "").trim()) g.nama = "Nama penerima wajib diisi.";
   if (!/^(0|62)8\d{7,12}$/.test(wa)) g.wa = "Isi nomor WhatsApp Indonesia, contoh 0812 3456 7890.";
   if (String(f.get("alamat") || "").trim().length < 15) g.alamat = "Alamat terlalu pendek. Tulis jalan, kecamatan, kota, dan kode pos.";
-  if (!f.get("setuju")) g.setuju = "Centang persetujuan supaya retailer boleh memproses pesananmu.";
+  if (!f.get("setuju")) g.setuju = "Centang persetujuan supaya toko boleh memproses pesananmu.";
   if (Object.keys(g).length) {
     // Isian yang sudah benar dipertahankan lewat penyimpanan sementara di state.
     state.galat = g; state.isi = { nama: f.get("nama"), wa: f.get("wa"), alamat: f.get("alamat"), catatan: f.get("catatan") };
     gambar();
     for (const [k, v] of Object.entries(state.isi)) { const el = document.getElementById(k); if (el) el.value = v || ""; }
-    const pertama = document.getElementById(Object.keys(g)[0]) || document.getElementById("galat-ringkas");
-    (document.getElementById("galat-ringkas") || pertama).focus();
+    // Fokus ke kolom pertama yang salah: di HP pembeli sedang di bawah form saat menekan kirim.
+    document.getElementById(Object.keys(g)[0])?.focus();
     return;
   }
   const total = state.keranjang.reduce((a, i) => a + cariProduk(i.id).harga * i.jumlah, 0);
