@@ -1,12 +1,16 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { PGlite } from "@electric-sql/pglite";
-import { Pool } from "@neondatabase/serverless";
+import { neonConfig, Pool } from "@neondatabase/serverless";
 import { drizzle as drizzleNeon } from "drizzle-orm/neon-serverless";
 import { drizzle as drizzlePglite } from "drizzle-orm/pglite";
 import { migrate as migratePglite } from "drizzle-orm/pglite/migrator";
 import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
+import ws from "ws";
 import * as schema from "./schema";
+
+// Driver Neon memakai WebSocket. Node 22 punya bawaan; Node 20 (bisa jadi versi project di Vercel) belum, jadi pakai paket ws.
+if (typeof WebSocket === "undefined") neonConfig.webSocketConstructor = ws;
 
 // Satu tipe untuk dua driver: Neon (Vercel) dan PGlite (lokal/test).
 export type Db = PgDatabase<PgQueryResultHKT, typeof schema>;
@@ -40,6 +44,8 @@ const globalDb = globalThis as unknown as { __argashoesDb?: Promise<Db> };
 export function getDb(): Promise<Db> {
   if (!globalDb.__argashoesDb) {
     const url = process.env.DATABASE_URL;
+    // Di Vercel, PGlite pasti gagal (filesystem hanya-baca). Pesan ini muncul di log, bukan error yang membingungkan.
+    if (!url && process.env.VERCEL) throw new Error("DATABASE_URL belum diisi di Vercel (Settings → Environment Variables). Hubungkan database Neon lalu redeploy.");
     globalDb.__argashoesDb = url
       ? Promise.resolve(createNeonDb(url).db)
       : createPgliteDb(process.env.PGLITE_DIR || PGLITE_DIR_DEFAULT).then((r) => r.db);
