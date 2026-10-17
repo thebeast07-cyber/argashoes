@@ -9,7 +9,7 @@ describe("punyaIzin", () => {
   });
 
   it("admin toko: produk, order, pelanggan, pengaturan toko, dan mengajukan usulan", () => {
-    for (const izin of ["produk.kelola", "order.kelola", "pelanggan.lihat", "pengaturan.ubah", "usulan.ajukan"] as const) {
+    for (const izin of ["produk.kelola", "order.kelola", "pelanggan.lihat", "pengaturan.ubah", "usulan.ajukan", "banner.kelola"] as const) {
       assert.equal(punyaIzin("admin_toko", izin), true, izin);
     }
   });

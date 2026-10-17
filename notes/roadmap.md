@@ -14,5 +14,6 @@ Urutan ini mengikuti dependensi: order butuh produk, laporan fee butuh order. Ti
 | 8 | Beranda admin & analitik | Ringkasan hari ini, order Lead > 1 jam, size habis, klik WA 7/30 hari (Redis) | – |
 | 9 | Halaman pendukung & SEO | Cara order, retur, privasi, sitemap, link UTM | Kebijakan retur, nama brand, domain |
 | 10 | Asisten AI (admin) | Asisten melayang selesai (`docs/asisten-ai.md`): ngobrol bebas dengan data katalog + stok terbaru, hanya membaca. Ubah/tambah produk lewat AI dinilai nanti | Masukan pemilik atas draf, `GEMINI_API_KEY` |
+| 11 | Banner promo | Selesai: banner terjadwal (WIB) di atas katalog, gambar opsional, tombol ke halaman/link, matikan dan hapus, pratinjau di form. Promo harga tetap lewat harga coret | Isi dan gambar promo |
 
 Tahap 2 dan 3 bisa jalan tanpa nunggu mockup publik di-ACC. Tahap 4–5 sebaiknya nunggu ACC mockup (sesuai PRD).

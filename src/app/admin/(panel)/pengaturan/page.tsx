@@ -135,6 +135,16 @@ export default async function HalamanPengaturan({ searchParams }: { searchParams
         <FormToko nomorWa={p.nomorWa ? `+${p.nomorWa}` : ""} ambang={p.ambang.readyMin} />
       </section>
 
+      <section aria-labelledby="judul-banner" className="space-y-3">
+        <h2 id="judul-banner" className="text-lg font-bold">
+          Banner promo
+        </h2>
+        <p className="text-sm text-redup">Pengumuman di atas katalog, mis. promo tanggal kembar. Tampil dan hilang sendiri sesuai jadwal.</p>
+        <Link href="/admin/pengaturan/banner" className="tombol-garis">
+          Atur banner
+        </Link>
+      </section>
+
       <nav aria-label="Catatan pengaturan" className="flex flex-wrap gap-x-6 gap-y-1 border-t border-tinta/20 pt-4 text-sm font-semibold">
         <Link href="/admin/pengaturan/usulan" className="inline-flex min-h-11 items-center underline underline-offset-2">
           Semua usulan
