@@ -4,11 +4,12 @@ import { users } from "@/db/schema";
 import { wajibIzin } from "@/lib/auth/current";
 import { LABEL_PERAN } from "@/lib/auth/roles";
 import { FormAkun } from "./form-akun";
+import { KelolaAkun } from "./kelola-akun";
 
 export const metadata = { title: "Akun admin · Argashoes" };
 
 export default async function HalamanAkun() {
-  await wajibIzin("akun.kelola");
+  const saya = await wajibIzin("akun.kelola");
   const db = await getDb();
   const daftar = await db
     .select({ id: users.id, nama: users.nama, email: users.email, peran: users.peran, aktif: users.aktif })
@@ -26,7 +27,9 @@ export default async function HalamanAkun() {
             </p>
             <p className="text-sm text-redup">
               {u.email} · {LABEL_PERAN[u.peran]}
+              {u.id === saya.id && " · kamu"}
             </p>
+            <KelolaAkun userId={u.id} nama={u.nama} aktif={u.aktif} diriSendiri={u.id === saya.id} />
           </li>
         ))}
       </ul>

@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getDb } from "@/db";
 import { auditLog } from "@/db/schema";
+import { resetSandi as resetSandiDb, ubahAktif } from "@/lib/auth/akun";
 import { wajibIzin } from "@/lib/auth/current";
 import { isPeran } from "@/lib/auth/roles";
 import { buatPemilikPertama, buatSesi, buatUser, cekLogin, hapusSesi, SESSION_COOKIE } from "@/lib/auth/session";
@@ -68,4 +69,26 @@ export async function tambahAkun(_prev: StateForm, form: FormData): Promise<Stat
     if (e instanceof Error && e.message.startsWith("Password")) return { error: e.message };
     throw e;
   }
+}
+
+export async function resetSandiAkun(_prev: StateForm, form: FormData): Promise<StateForm> {
+  const pemilik = await wajibIzin("akun.kelola");
+  const userId = String(form.get("userId") ?? "");
+  const password = String(form.get("password") ?? "");
+  const hasil = await resetSandiDb(await getDb(), { pelakuId: pemilik.id, userId, password });
+  if (!hasil.ok) return { error: hasil.error };
+  // Reset sandi sendiri ikut menghapus sesi ini, jadi langsung ke halaman login.
+  if (userId === pemilik.id) redirect("/admin/login");
+  revalidatePath("/admin/akun");
+  return { sukses: `Password ${hasil.email} diganti. Akun itu perlu login ulang.` };
+}
+
+export async function ubahAktifAkun(_prev: StateForm, form: FormData): Promise<StateForm> {
+  const pemilik = await wajibIzin("akun.kelola");
+  const userId = String(form.get("userId") ?? "");
+  const aktif = form.get("aktif") === "true";
+  const hasil = await ubahAktif(await getDb(), { pelakuId: pemilik.id, userId, aktif });
+  if (!hasil.ok) return { error: hasil.error };
+  revalidatePath("/admin/akun");
+  return { sukses: aktif ? `${hasil.email} aktif lagi.` : `${hasil.email} dinonaktifkan.` };
 }

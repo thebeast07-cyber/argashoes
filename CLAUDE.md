@@ -44,7 +44,7 @@ PGlite hanya bisa dibuka satu proses: hentikan `npm run dev` sebelum menjalankan
 - `DESIGN.md`: arah tampilan sementara (token warna di `tailwind.config.ts`). Baca sebelum kerja UI.
 - `src/lib/domain/pengaturan.ts`: editor tier (batas → rentang rapat), nomor WA, rekening, ambang stok. `usulan.ts`: jenis/status usulan, deteksi usulan basi, dampak tier ke produk. `waktu.ts`: tampilan waktu WIB.
 - `src/lib/pengaturan/`: `data.ts` (query pengaturan, usulan, riwayat), `mutasi.ts` (ubah langsung + ajukan/putuskan/tarik usulan, semua dengan `audit_log`), `ringkasan.ts` (teks daftar usulan dan riwayat).
-- `src/lib/auth/`: `roles.ts` (peran → izin, murni), `password.ts` (scrypt), `session.ts` (akun & sesi, tanpa Next), `current.ts` (helper Next: `wajibLogin`, `wajibIzin`).
+- `src/lib/auth/`: `roles.ts` (peran → izin, murni), `password.ts` (scrypt), `session.ts` (akun & sesi, tanpa Next), `current.ts` (helper Next: `wajibLogin`, `wajibIzin`). `akun.ts`: reset password dan aktif/nonaktif akun oleh pemilik (aturannya di `src/lib/domain/akun.ts`: tidak bisa menonaktifkan diri sendiri, minimal satu pemilik aktif); keduanya menghapus semua sesi akun itu.
 - `src/app/admin/`: login dan panel admin (mobile, tab bawah). `src/middleware.ts` hanya cek ada-tidaknya cookie; validasi sesi asli di layout panel.
 - `tests/unit/`: test fungsi murni. `tests/db/`: test integrasi dengan PGlite in-memory.
 
