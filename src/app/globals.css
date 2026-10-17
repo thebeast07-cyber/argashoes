@@ -72,3 +72,43 @@ body {
     padding-inline: max(var(--sisi, 16px), calc((100% - 1200px) / 2));
   }
 }
+
+/*
+  Layar memuat halaman publik: logo "bernapas" supaya terlihat masih bekerja, bukan macet.
+  Baru tampil setelah 300ms, jadi pindah halaman yang cepat tidak berkedip.
+  Pengguna yang memilih kurangi gerakan hanya melihat logo diam.
+*/
+@keyframes napas {
+  0%,
+  100% {
+    transform: scale(0.94);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes muncul {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.muncul-telat {
+  animation: muncul 200ms ease-out 300ms both;
+}
+
+.napas {
+  animation: napas 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .napas {
+    animation: none;
+  }
+}
