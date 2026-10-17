@@ -47,7 +47,12 @@ export default async function HalamanProduk({ params, searchParams }: Props) {
               {p.hargaCoret && p.hargaCoret > p.harga && <span className="ml-1.5 text-base font-normal text-redup line-through">{formatRupiah(p.hargaCoret)}</span>}
             </p>
           </div>
-          <PilihPesan varian={p.varian} harga={p.harga} ambang={ambang} sizeAwal={searchParams.size} />
+          <PilihPesan
+            produk={{ id: p.id, nama: p.nama, brand: p.brand, harga: p.harga, foto: p.foto[0] ?? null }}
+            varian={p.varian}
+            ambang={ambang}
+            sizeAwal={searchParams.size}
+          />
           {p.deskripsi && (
             <section aria-labelledby="judul-deskripsi" className="mx-4 mt-6 min-[900px]:order-4 min-[900px]:mx-0">
               <h2 id="judul-deskripsi" className="mb-1.5 text-lg font-bold">

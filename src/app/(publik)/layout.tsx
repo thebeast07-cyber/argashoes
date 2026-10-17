@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getDb } from "@/db";
 import { kalimatMerek } from "@/lib/domain/katalog";
 import { merekAktif } from "@/lib/katalog/data";
+import { TautanKeranjang } from "./tautan-keranjang";
 
 // Nama brand diambil dari katalog, jadi brand baru otomatis ikut tersebut (sampai 4 brand; lebih dari itu kalimatnya umum).
 export async function generateMetadata() {
@@ -9,7 +10,7 @@ export async function generateMetadata() {
   return { description: `Cari size, cek stok, dan pesan sepatu ${merek ? `${merek} ` : ""}lewat WhatsApp.` };
 }
 
-// Kerangka halaman publik. Belum ada tautan Keranjang: keranjang dibangun di tahap 5 (R-24, tanpa tautan ke halaman yang belum ada).
+// Kerangka halaman publik.
 export default async function LayoutPublik({ children }: { children: React.ReactNode }) {
   const merek = kalimatMerek(await merekAktif(await getDb()));
   return (
@@ -18,9 +19,13 @@ export default async function LayoutPublik({ children }: { children: React.React
         <Link href="/" className="lebar inline-flex min-h-11 items-center text-[22px] font-black tracking-tight">
           Argashoes
         </Link>
-        <Link href="/cara-order" className="inline-flex min-h-11 items-center font-bold underline underline-offset-[3px] hover:decoration-2">
-          Cara order
-        </Link>
+        <div className="flex items-center gap-5">
+          {/* Cara order di header hanya mulai 600px; di HP cukup di footer supaya header tidak sesak. */}
+          <Link href="/cara-order" className="hidden min-h-11 items-center font-bold underline underline-offset-[3px] hover:decoration-2 min-[600px]:inline-flex">
+            Cara order
+          </Link>
+          <TautanKeranjang />
+        </div>
       </header>
       <div className="flex-1">{children}</div>
       <footer className="wadah mt-9 bg-kertas-gelap py-8 min-[900px]:py-10">

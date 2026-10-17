@@ -36,6 +36,7 @@ PGlite hanya bisa dibuka satu proses: hentikan `npm run dev` sebelum menjalankan
 - `src/lib/produk/`: `data.ts` (query) dan `mutasi.ts` (tulis + `audit_log` dalam satu transaksi). Semua perubahan stok wajib lewat sini.
 - `src/lib/domain/foto.ts`: urutan foto (sampul = foto pertama), batas 8 per model, syarat file (murni). `src/lib/foto/penyimpanan.ts`: `BLOB_READ_WRITE_TOKEN` terisi → Vercel Blob, kosong → `./.data/foto` disajikan `src/app/foto/[nama]/route.ts`. `kecilkan.ts`: foto dikecilkan ke 1600px JPEG di browser sebelum upload (satu foto per server action).
 - `src/lib/domain/katalog.ts`: baca pencarian dari URL, saring/urut katalog, ringkas size per kartu (murni). `src/lib/katalog/data.ts`: query publik (hanya model aktif). Halaman publik di `src/app/(publik)/`: beranda katalog, `/produk/[id]`, `/cara-order`. Utilitas `.wadah` di `globals.css` membatasi isi 1200px dengan latar tetap selebar layar.
+- `src/lib/domain/keranjang.ts` (keranjang di localStorage, murni) dan `checkout.ts` (validasi pembeli, `rencanakanOrder` membaca ulang harga/stok, kode `WEB-XXXX` acak, pesan WhatsApp, batas kirim). `src/lib/orders/buat-order.ts`: pelanggan + order Lead + item + event dalam satu transaksi, `orderPublik`, `catatKlikWa`. Alur publik: `/produk/[id]` → `/keranjang` (server action `kirimPesanan`) → `/pesanan/[kode]` → `/pesanan/[kode]/wa` (catat klik, 303 ke wa.me). Hook `src/lib/keranjang/use-keranjang.ts`.
 - `src/components/pesan.tsx`: `PesanGalat` (galat selalu ikon + teks, bukan warna saja) dan `RingkasanGalat` (dekat tombol simpan, memindah fokus ke kolom pertama yang `aria-invalid`). Pakai ini untuk semua pesan gagal.
 - `src/components/ikon.tsx`: ikon buatan sendiri. Jangan pakai Lucide atau library ikon lain (permintaan pemilik).
 - `DESIGN.md`: arah tampilan sementara (token warna di `tailwind.config.ts`). Baca sebelum kerja UI.
@@ -57,7 +58,8 @@ PGlite hanya bisa dibuka satu proses: hentikan `npm run dev` sebelum menjalankan
 - **Tier fee punya tabel sendiri** (`fee_tiers`: harga_min inklusif, harga_max eksklusif/null, fee), bukan JSON di `settings`, supaya bisa divalidasi constraint. `products.fee_per_pasang` (opsional) menimpa tier. Fee dibatasi Rp 50.000–100.000 di DB dan di `validasiTier`.
 - **Transisi status**: lead → dikonfirmasi/batal; dikonfirmasi → dikirim/batal; dikirim → selesai. Selesai dan batal adalah status akhir. Dikirim → batal (retur) belum diizinkan karena aturan fee retur masih pertanyaan terbuka di PRD.
 - **Dikirim wajib resi** dijaga dua lapis: `transisiStatus` dan CHECK constraint di tabel `orders`. `dikirim_pada` diisi saat pindah ke Dikirim dan tidak berubah saat Selesai.
-- **Tidak ada tier yang cocok** → `tentukanFeePerPasang` mengembalikan `null`; alur checkout nanti harus memutuskan (tolak, atau pakai default) setelah tabel fee dari retailer jelas.
+- **Tidak ada tier yang cocok** → `tentukanFeePerPasang` mengembalikan `null`; checkout memakai `FEE_MIN` (Rp 50.000, batas bawah kesepakatan) supaya pembeli tidak ditolak selama tabel fee belum lengkap. Fee disalin ke `order_items` saat order dibuat.
+- **Order publik**: harga dan stok dibaca ulang dari DB saat checkout (bukan dari browser); web tidak menahan stok. Kode `WEB-XXXX` acak (bukan urut) dari alfabet tanpa 0/O/1/I/L, diulang kalau bentrok. Batas 3 order per nomor WA per jam (DB) dan 10 kirim per IP per 10 menit (memori, sampai Redis ada), plus kolom jebakan bot. Pesan WA disusun di server dan memuat alamat, karena halaman order admin belum ada.
 - Tambahan tabel di luar PRD: `sessions`, `fee_tiers`, `audit_log` (riwayat perubahan stok/produk/akun/pengaturan, append-only), `usulan`.
 - Fee per produk hanya bisa diubah langsung oleh pemilik (izin `fee.atur`), termasuk lewat import CSV. Admin toko mengusulkan lewat halaman produk.
 - **Usulan** (tabel `usulan`): tier fee, fee khusus produk, dan rekening tampil yang diajukan admin toko baru berlaku setelah disetujui pemilik. Satu sasaran hanya boleh punya satu usulan menunggu (indeks unik parsial pada `kunci`). Usulan menyimpan nilai saat diajukan (`dasar`); kalau nilai sekarang sudah beda, usulan basi dan tidak bisa disetujui, supaya perubahan yang lebih baru tidak tertimpa diam-diam.
@@ -67,7 +69,7 @@ PGlite hanya bisa dibuka satu proses: hentikan `npm run dev` sebelum menjalankan
 
 ## Belum dibangun
 
-Keranjang, checkout, WhatsApp (tombol "Pesan size" di halaman produk masih mati sampai tahap 5), daftar & detail order, pelanggan, laporan fee, pengaturan nama toko/area kirim/kebijakan retur, halaman audit log untuk stok dan akun, Redis, rate limit login. Catatan per tahap ada di `notes/`.
+Daftar & detail order, pelanggan, laporan fee, pengaturan nama toko/area kirim/kebijakan retur, halaman audit log untuk stok dan akun, Redis, rate limit login. Catatan per tahap ada di `notes/`.
 
 <!-- antislop:start -->
 ## antislop

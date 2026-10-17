@@ -1,8 +1,11 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { tambahItem } from "@/lib/domain/keranjang";
 import { formatRupiah } from "@/lib/domain/produk";
 import { labelStok, statusStok, type AmbangStok } from "@/lib/domain/stok";
+import { useKeranjang } from "@/lib/keranjang/use-keranjang";
 
 const GAYA = {
   ready: "border-tinta bg-white",
@@ -11,20 +14,29 @@ const GAYA = {
 } as const;
 
 export function PilihPesan({
+  produk,
   varian,
-  harga,
   ambang,
   sizeAwal,
 }: {
+  produk: { id: string; nama: string; brand: string; harga: number; foto: string | null };
   varian: { size: string; stok: number }[];
-  harga: number;
   ambang: AmbangStok;
   sizeAwal?: string;
 }) {
+  const router = useRouter();
+  const { ubah } = useKeranjang();
   const bolehAwal = varian.some((v) => v.size === sizeAwal && v.stok > 0);
   const [dipilih, setDipilih] = useState<string | null>(bolehAwal ? sizeAwal! : null);
   const stok = dipilih ? (varian.find((v) => v.size === dipilih)?.stok ?? 0) : null;
   const sisaSedikit = stok !== null && statusStok(stok, ambang) === "sisa_sedikit";
+  const bisaPesan = stok !== null && stok > 0;
+
+  function pesan() {
+    if (!dipilih || !bisaPesan) return;
+    ubah((items) => tambahItem(items, { productId: produk.id, size: dipilih, nama: produk.nama, brand: produk.brand, harga: produk.harga, foto: produk.foto }));
+    router.push("/keranjang");
+  }
 
   return (
     <>
@@ -68,16 +80,17 @@ export function PilihPesan({
       <div className="sticky bottom-0 z-[5] mt-4 flex items-center gap-3 border-t-[1.5px] border-tinta bg-white px-4 pb-[calc(10px+env(safe-area-inset-bottom))] pt-2.5 min-[900px]:static min-[900px]:order-3 min-[900px]:mt-0 min-[900px]:block min-[900px]:border-0 min-[900px]:bg-transparent min-[900px]:p-0 min-[900px]:pt-4">
         <div className="shrink-0 leading-tight min-[900px]:hidden">
           <small className="block text-xs text-redup">Harga</small>
-          <b className="angka text-lg">{formatRupiah(harga)}</b>
+          <b className="angka text-lg">{formatRupiah(produk.harga)}</b>
         </div>
         <div className="flex-1">
-          {/* TODO tahap 5: tombol ini memasukkan size ke keranjang. Sampai keranjang ada, tombol mati dan diberi keterangan (R-26). */}
-          <button type="button" disabled className="tombol-utama min-h-[52px] w-full text-[17px] disabled:border-[1.5px] disabled:border-habis disabled:bg-kertas-gelap disabled:text-redup disabled:opacity-100" aria-describedby="belum-buka">
+          <button
+            type="button"
+            onClick={pesan}
+            disabled={!bisaPesan}
+            className="tombol-utama min-h-[52px] w-full text-[17px] disabled:border-[1.5px] disabled:border-habis disabled:bg-kertas-gelap disabled:text-redup disabled:opacity-100"
+          >
             {dipilih ? `Pesan size ${dipilih}` : "Pilih size dulu"}
           </button>
-          <p id="belum-buka" className="mt-1 text-center text-xs text-redup">
-            Pemesanan lewat web segera dibuka.
-          </p>
         </div>
       </div>
     </>

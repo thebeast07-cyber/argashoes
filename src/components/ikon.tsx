@@ -110,6 +110,26 @@ export function IkonCoret(p: Props) {
   );
 }
 
+/** Keranjang: troli dengan sudut siku. */
+export function IkonKeranjang(p: Props) {
+  return (
+    <Dasar {...p}>
+      <path d="M3 5h3l2 11h11l2-8H7" />
+      <path d="M9 20h2M16 20h2" />
+    </Dasar>
+  );
+}
+
+/** WhatsApp: balon chat persegi, bukan logo merek. */
+export function IkonChat(p: Props) {
+  return (
+    <Dasar {...p}>
+      <path d="M4 4h16v12H11l-5 4v-4H4z" />
+      <path d="M8 9h8M8 12h5" />
+    </Dasar>
+  );
+}
+
 /** Pesan gagal: kotak dengan tanda seru, supaya galat tidak dibedakan dari warna saja. */
 export function IkonGalat(p: Props) {
   return (
