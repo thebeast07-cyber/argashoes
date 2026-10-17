@@ -4,13 +4,14 @@ import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { del, put } from "@vercel/blob";
 import { TIPE_FOTO, type TipeFoto } from "@/lib/domain/foto";
+import { tokenBlob } from "./token-blob";
 
-// BLOB_READ_WRITE_TOKEN terisi → Vercel Blob. Kosong → folder lokal ./.data/foto, disajikan oleh /foto/[nama].
+// Token Blob terisi (BLOB_READ_WRITE_TOKEN atau <PREFIX>_READ_WRITE_TOKEN) → Vercel Blob. Kosong → folder lokal ./.data/foto, disajikan oleh /foto/[nama].
 // Pola yang sama dengan database: lokal jalan tanpa setup apa pun.
 
 export class PenyimpananBelumSiap extends Error {}
 
-const pakaiBlob = () => Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+const pakaiBlob = () => tokenBlob() !== null;
 const folderLokal = () => path.resolve(process.env.FOTO_DIR ?? ".data/foto");
 
 /** Nama file lokal yang sah: uuid + ekstensi foto. Menutup path traversal di route penyaji. */
@@ -20,7 +21,12 @@ export const POLA_NAMA_LOKAL = /^[0-9a-f-]{36}\.(jpg|webp|png)$/;
 export async function simpanFoto(folder: string, isi: Blob, tipe: TipeFoto): Promise<string> {
   const nama = `${randomUUID()}.${TIPE_FOTO[tipe]}`;
   if (pakaiBlob()) {
-    const hasil = await put(`${folder}/${nama}`, isi, { access: "public", contentType: tipe, cacheControlMaxAge: 31_536_000 });
+    const hasil = await put(`${folder}/${nama}`, isi, {
+      access: "public",
+      contentType: tipe,
+      cacheControlMaxAge: 31_536_000,
+      token: tokenBlob()!.token,
+    });
     return hasil.url;
   }
   // Filesystem di Vercel hanya-baca: tanpa token Blob, upload di Preview/Production pasti gagal.
@@ -37,7 +43,8 @@ export async function hapusFotoTersimpan(url: string): Promise<void> {
     if (POLA_NAMA_LOKAL.test(nama)) await unlink(path.join(folderLokal(), nama)).catch(() => {});
     return;
   }
-  if (pakaiBlob()) await del(url);
+  const blob = tokenBlob();
+  if (blob) await del(url, { token: blob.token });
 }
 
 export async function bacaFotoLokal(nama: string): Promise<Buffer | null> {
