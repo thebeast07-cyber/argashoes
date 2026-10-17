@@ -17,6 +17,8 @@ export default async function HalamanUbahBanner({ params }: { params: { id: stri
   const b = /^[0-9a-f-]{36}$/.test(params.id) ? await ambilBanner(await getDb(), params.id) : null;
   if (!b) notFound();
   const st = statusBanner(b, new Date());
+  // Banner dari versi lama bisa belum punya dua gambar; database menolak menyalakannya.
+  const lengkap = Boolean(b.gambarPotret && b.gambarLanskap);
 
   return (
     <div className="space-y-4">
@@ -30,23 +32,26 @@ export default async function HalamanUbahBanner({ params }: { params: { id: stri
         <p className="flex-1">
           Status: <span className="font-semibold">{LABEL_STATUS_BANNER[st]}</span>
         </p>
-        <form action={ubahAktifBanner.bind(null, b.id, !b.aktif)}>
-          <button type="submit" className="tombol-garis px-3 text-sm">
-            {b.aktif ? "Matikan banner" : "Nyalakan lagi"}
-          </button>
-        </form>
+        {b.aktif || lengkap ? (
+          <form action={ubahAktifBanner.bind(null, b.id, !b.aktif)}>
+            <button type="submit" className="tombol-garis px-3 text-sm">
+              {b.aktif ? "Matikan banner" : "Nyalakan lagi"}
+            </button>
+          </form>
+        ) : (
+          <p className="w-full text-redup">Pasang gambar HP dan desktop dulu, baru banner bisa dinyalakan.</p>
+        )}
       </div>
 
       <FormBanner
         id={b.id}
         awal={{
           judul: b.judul,
-          keterangan: b.keterangan ?? "",
           tautan: b.tautan ?? "",
-          teksTombol: b.teksTombol ?? "",
           mulai: inputWaktuWib(b.mulai),
           selesai: inputWaktuWib(b.selesai),
-          gambarUrl: b.gambarUrl,
+          gambarPotret: b.gambarPotret,
+          gambarLanskap: b.gambarLanskap,
         }}
       />
 

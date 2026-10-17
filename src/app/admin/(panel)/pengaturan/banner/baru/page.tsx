@@ -14,7 +14,7 @@ export default async function HalamanBannerBaru() {
         Banner promo
       </Link>
       <h1 className="text-2xl font-bold">Banner baru</h1>
-      <FormBanner id={null} awal={{ judul: "", keterangan: "", tautan: "", teksTombol: "", mulai: "", selesai: "", gambarUrl: null }} />
+      <FormBanner id={null} awal={{ judul: "", tautan: "", mulai: "", selesai: "", gambarPotret: null, gambarLanskap: null }} />
     </div>
   );
 }

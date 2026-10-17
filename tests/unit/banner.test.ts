@@ -2,16 +2,18 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   bannerTayang,
+  galatGambarBanner,
   inputWaktuWib,
+  JEDA_TAMPIL_ULANG_MS,
   parseWaktuWib,
+  perluTampilOverlay,
   statusBanner,
-  TEKS_TOMBOL_BAWAAN,
   tautanSah,
   urutBannerAdmin,
   validasiBanner,
 } from "@/lib/domain/banner";
 
-const input = { judul: "Promo 11.11", keterangan: "", tautan: "", teksTombol: "", mulai: "2026-11-11T00:00", selesai: "2026-11-12T00:00" };
+const input = { judul: "Promo 11.11", tautan: "", mulai: "2026-11-11T00:00", selesai: "2026-11-12T00:00" };
 
 describe("waktu banner (WIB)", () => {
   it("isian dibaca sebagai WIB dan bisa dikembalikan ke isian", () => {
@@ -26,23 +28,22 @@ describe("waktu banner (WIB)", () => {
 });
 
 describe("validasiBanner", () => {
-  it("data dirapikan, tombol bawaan dipakai kalau tujuan diisi tanpa teks tombol", () => {
-    const r = validasiBanner({ ...input, judul: "  Promo   11.11 ", tautan: "/?kategori=Lifestyle" });
+  it("data dirapikan, jadwal dibaca WIB", () => {
+    const r = validasiBanner({ ...input, judul: "  Promo   11.11 ", tautan: " /?kategori=Lifestyle " });
     assert.ok(r.ok);
     if (!r.ok) return;
     assert.equal(r.data.judul, "Promo 11.11");
-    assert.equal(r.data.keterangan, null);
-    assert.equal(r.data.teksTombol, TEKS_TOMBOL_BAWAAN);
+    assert.equal(r.data.tautan, "/?kategori=Lifestyle");
     assert.equal(r.data.mulai.toISOString(), "2026-11-10T17:00:00.000Z");
   });
 
-  it("tanpa tujuan berarti tanpa tombol", () => {
+  it("tanpa tujuan berarti gambar tidak bisa diketuk", () => {
     const r = validasiBanner(input);
-    assert.ok(r.ok && r.data.tautan === null && r.data.teksTombol === null);
+    assert.ok(r.ok && r.data.tautan === null);
   });
 
-  it("menolak judul kosong, jadwal terbalik, tautan asing, teks tombol tanpa tujuan", () => {
-    const r = validasiBanner({ ...input, judul: " ", selesai: "2026-11-10T23:00", teksTombol: "Gas" });
+  it("menolak judul kosong, jadwal terbalik, tautan asing", () => {
+    const r = validasiBanner({ ...input, judul: " ", selesai: "2026-11-10T23:00", tautan: "//jahat.com" });
     assert.ok(!r.ok);
     if (r.ok) return;
     assert.deepEqual(Object.keys(r.error).sort(), ["judul", "selesai", "tautan"]);
@@ -52,6 +53,23 @@ describe("validasiBanner", () => {
   it("tautan sah: path web ini atau https", () => {
     for (const t of ["/", "/produk/abc", "https://instagram.com/argashoes"]) assert.ok(tautanSah(t), t);
     for (const t of ["//jahat.com", "http://contoh.com", "javascript:alert(1)", "produk/abc", "/ada spasi"]) assert.ok(!tautanSah(t), t);
+  });
+});
+
+describe("gambar dan overlay", () => {
+  it("dua gambar wajib", () => {
+    assert.deepEqual(Object.keys(galatGambarBanner({ potret: false, lanskap: true })), ["gambarPotret"]);
+    assert.deepEqual(Object.keys(galatGambarBanner({ potret: true, lanskap: false })), ["gambarLanskap"]);
+    assert.deepEqual(galatGambarBanner({ potret: true, lanskap: true }), {});
+  });
+
+  it("overlay yang ditutup baru muncul lagi setelah 24 jam", () => {
+    const t = 1_000_000_000;
+    assert.ok(perluTampilOverlay(null, t));
+    assert.ok(!perluTampilOverlay(t, t + JEDA_TAMPIL_ULANG_MS - 1));
+    assert.ok(perluTampilOverlay(t, t + JEDA_TAMPIL_ULANG_MS));
+    assert.ok(perluTampilOverlay(Number.NaN, t), "isi localStorage rusak");
+    assert.ok(perluTampilOverlay(t + 5000, t), "jam perangkat mundur");
   });
 });
 

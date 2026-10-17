@@ -50,6 +50,8 @@ Putih (`#FFFFFF`) dipakai untuk permukaan kartu dan input. Status stok tidak per
 
 Atas permintaan pemilik web (18 Okt 2026), panel Asisten di admin memakai kaca buram (putih 85%, blur) dengan sudut 16px seperti panel iPhone, dan latar halaman di belakangnya diburamkan. Hanya panel ini. Tombol pembukanya padat warna tinta (sudut 16px, senada dengan panelnya). Bagian lain tetap mengikuti aturan Bentuk di atas.
 
+Overlay banner promo di beranda publik memakai keluarga yang sama: latar diburamkan, gambar bersudut 12px, tombol tutup bulat putih di pojok kanan atas.
+
 ## Ikon
 
 Dibuat sendiri, bukan dari library (Lucide dilarang). Grid 24, garis 1.75px, **ujung dan sambungan siku** (`stroke-linecap: square`, `stroke-linejoin: miter`) supaya senada dengan label kardus dan beda dari ikon bulat-bulat bawaan. Semua ikon ada di `src/components/ikon.tsx`.

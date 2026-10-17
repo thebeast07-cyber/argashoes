@@ -238,17 +238,17 @@ export const settings = pgTable("settings", {
   nilai: jsonb("nilai").notNull(),
 });
 
-// Banner promo di beranda publik (mis. 11.11). Tampil otomatis selama mulai <= sekarang < selesai dan aktif.
+// Banner promo (mis. 11.11): overlay gambar di beranda publik. Tampil otomatis selama mulai <= sekarang < selesai dan aktif.
 export const banner = pgTable(
   "banner",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     judul: text("judul").notNull(),
-    keterangan: text("keterangan"),
-    gambarUrl: text("gambar_url"),
-    // Path internal (/produk/...) atau URL https. Null berarti banner tanpa tombol.
+    // Overlay di beranda: potret untuk HP, lanskap untuk layar lebar. Wajib keduanya selama banner aktif.
+    gambarPotret: text("gambar_potret"),
+    gambarLanskap: text("gambar_lanskap"),
+    // Tujuan saat gambar diketuk: path internal (/produk/...) atau URL https. Null berarti tidak bisa diketuk.
     tautan: text("tautan"),
-    teksTombol: text("teks_tombol"),
     mulai: timestamp("mulai", { withTimezone: true }).notNull(),
     selesai: timestamp("selesai", { withTimezone: true }).notNull(),
     aktif: boolean("aktif").notNull().default(true),
@@ -257,7 +257,7 @@ export const banner = pgTable(
   (t) => [
     index("banner_jadwal_idx").on(t.aktif, t.mulai, t.selesai),
     check("banner_jadwal_check", sql`${t.selesai} > ${t.mulai}`),
-    check("banner_tombol_check", sql`(${t.tautan} is null) = (${t.teksTombol} is null)`),
+    check("banner_gambar_check", sql`not ${t.aktif} or (${t.gambarPotret} is not null and ${t.gambarLanskap} is not null)`),
   ],
 );
 

@@ -1,4 +1,4 @@
-// Banner promo di beranda publik. Fungsi murni.
+// Banner promo: overlay gambar di beranda publik (potret untuk HP, lanskap untuk layar lebar). Fungsi murni.
 // Jadwal diisi dan ditampilkan dalam WIB, disimpan sebagai timestamptz.
 
 import type { HasilValidasi } from "./produk";
@@ -6,22 +6,18 @@ import type { HasilValidasi } from "./produk";
 export type Banner = {
   id: string;
   judul: string;
-  keterangan: string | null;
-  gambarUrl: string | null;
+  gambarPotret: string | null;
+  gambarLanskap: string | null;
   tautan: string | null;
-  teksTombol: string | null;
   mulai: Date;
   selesai: Date;
   aktif: boolean;
 };
 
-export type DataBanner = Omit<Banner, "id" | "gambarUrl" | "aktif">;
-export type InputBanner = { judul: string; keterangan: string; tautan: string; teksTombol: string; mulai: string; selesai: string };
+export type DataBanner = Omit<Banner, "id" | "gambarPotret" | "gambarLanskap" | "aktif">;
+export type InputBanner = { judul: string; tautan: string; mulai: string; selesai: string };
 
-export const BATAS_JUDUL = 60;
-export const BATAS_KETERANGAN = 140;
-export const BATAS_TEKS_TOMBOL = 24;
-export const TEKS_TOMBOL_BAWAAN = "Lihat promo";
+export const BATAS_JUDUL = 120;
 
 const WIB_MS = 7 * 60 * 60 * 1000;
 
@@ -55,18 +51,13 @@ export function tautanSah(tautan: string): boolean {
 export function validasiBanner(input: InputBanner): HasilValidasi<DataBanner> {
   const error: Record<string, string> = {};
   const judul = input.judul.trim().replace(/\s+/g, " ");
-  const keterangan = input.keterangan.trim().replace(/\s+/g, " ");
   const tautan = input.tautan.trim();
-  const teksTombol = input.teksTombol.trim().replace(/\s+/g, " ");
   const mulai = parseWaktuWib(input.mulai);
   const selesai = parseWaktuWib(input.selesai);
 
   if (!judul) error.judul = "Judul wajib diisi.";
   else if (judul.length > BATAS_JUDUL) error.judul = `Judul maksimal ${BATAS_JUDUL} huruf.`;
-  if (keterangan.length > BATAS_KETERANGAN) error.keterangan = `Keterangan maksimal ${BATAS_KETERANGAN} huruf.`;
   if (tautan && !tautanSah(tautan)) error.tautan = "Tulis alamat halaman web ini (mulai dengan /) atau link https.";
-  if (teksTombol.length > BATAS_TEKS_TOMBOL) error.teksTombol = `Teks tombol maksimal ${BATAS_TEKS_TOMBOL} huruf.`;
-  if (teksTombol && !tautan) error.tautan = "Isi tujuan tombol, atau kosongkan teks tombol.";
   if (!mulai) error.mulai = "Isi tanggal dan jam mulai.";
   if (!selesai) error.selesai = "Isi tanggal dan jam selesai.";
   else if (mulai && selesai <= mulai) error.selesai = "Waktu selesai harus setelah waktu mulai.";
@@ -76,13 +67,26 @@ export function validasiBanner(input: InputBanner): HasilValidasi<DataBanner> {
     ok: true,
     data: {
       judul,
-      keterangan: keterangan || null,
       tautan: tautan || null,
-      teksTombol: tautan ? teksTombol || TEKS_TOMBOL_BAWAAN : null,
       mulai: mulai!,
       selesai: selesai!,
     },
   };
+}
+
+/** Banner wajib punya dua gambar. Saat mengubah, gambar yang sudah tersimpan boleh dipakai lagi. */
+export function galatGambarBanner(g: { potret: boolean; lanskap: boolean }): Record<string, string> {
+  const error: Record<string, string> = {};
+  if (!g.potret) error.gambarPotret = "Pilih gambar untuk HP (potret).";
+  if (!g.lanskap) error.gambarLanskap = "Pilih gambar untuk desktop (lanskap).";
+  return error;
+}
+
+/** Sekali ditutup, overlay banner yang sama tidak muncul lagi di browser itu selama 24 jam. */
+export const JEDA_TAMPIL_ULANG_MS = 24 * 60 * 60 * 1000;
+
+export function perluTampilOverlay(ditutupPada: number | null, sekarang: number): boolean {
+  return ditutupPada === null || !Number.isFinite(ditutupPada) || sekarang - ditutupPada >= JEDA_TAMPIL_ULANG_MS || ditutupPada > sekarang;
 }
 
 export type StatusBanner = "nonaktif" | "dijadwalkan" | "tayang" | "selesai";
