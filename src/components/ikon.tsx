@@ -140,6 +140,25 @@ export function IkonChat(p: Props) {
   );
 }
 
+/** Tutup: silang dengan ujung siku. */
+export function IkonTutup(p: Props) {
+  return (
+    <Dasar {...p}>
+      <path d="M6 6l12 12M18 6L6 18" />
+    </Dasar>
+  );
+}
+
+/** Kirim: kertas pesan yang dilipat jadi panah ke kanan. */
+export function IkonKirim(p: Props) {
+  return (
+    <Dasar {...p}>
+      <path d="M4 4l16 8-16 8 3-8z" />
+      <path d="M7 12h6" />
+    </Dasar>
+  );
+}
+
 /** Pesan gagal: kotak dengan tanda seru, supaya galat tidak dibedakan dari warna saja. */
 export function IkonGalat(p: Props) {
   return (

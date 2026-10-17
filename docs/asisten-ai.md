@@ -1,12 +1,12 @@
 # Asisten AI untuk stok dan produk
 
-Status: MVP tanya stok dibangun (halaman Admin, Produk, Tanya stok). Keputusan pemilik: MVP hanya tanya jawab stok (baca saja). Tambah dan ubah produk tetap lewat form dan import CSV, karena AI tidak bisa dijamin tidak salah baca.
+Status: dibangun sebagai tombol Asisten melayang di semua halaman admin, membuka panel obrolan tanpa pindah halaman. Keputusan pemilik: asisten hanya membaca stok, tapi boleh diajak ngobrol di luar soal stok. Tambah dan ubah produk tetap lewat form dan import CSV, karena AI tidak bisa dijamin tidak salah baca.
 
 ## Masalah
 
 Data produk masih di kepala pemilik, dan pemilik sibuk. Form admin dan import CSV sudah ada, tapi keduanya menuntut data yang rapi: SKU per size, satu baris per size, harga diketik berulang. Stok juga berubah tiap hari karena dipakai bareng marketplace.
 
-Asisten ini menjawab pertanyaan stok dalam bahasa sehari-hari. Ia hanya membaca, tidak mengubah data.
+Asisten ini menjawab pertanyaan stok dalam bahasa sehari-hari, dan bisa diajak ngobrol hal umum (ide caption, perawatan sepatu, dan sebagainya). Ia hanya membaca, tidak mengubah data.
 
 ## Siapa yang memakai
 
@@ -21,16 +21,20 @@ Asisten ini menjawab pertanyaan stok dalam bahasa sehari-hari. Ia hanya membaca,
 | 2 | Cari per size | "size 42 apa aja yang ready?" | Daftar model aktif yang size 42-nya ada stok. |
 | 3 | Yang mau habis | "apa yang mau habis?" | Size dengan status Sisa sedikit atau Habis, dikelompokkan per model. |
 
-Tiap jawaban menyebut nama model yang dicocokkan dan memberi tautan ke halaman produknya di admin, supaya salah tangkap langsung kelihatan dan bisa diperbaiki lewat form biasa.
+| 4 | Obrolan umum | "ide caption IG buat sepatu baru" | Teks dari AI, diberi tanda "Jawaban umum dari AI, bisa keliru." |
+| 5 | Pertanyaan lanjutan | "kalau size 41?" setelah tanya satu model | Konteks diambil dari 6 giliran terakhir. |
+
+Tiap jawaban stok menyebut nama model yang dicocokkan dan memberi tautan ke halaman produknya di admin, supaya salah tangkap langsung kelihatan dan bisa diperbaiki lewat form biasa.
 
 Pertanyaan bisa juga diketik lewat fitur suara di keyboard HP. Asisten tidak perlu fitur suara sendiri.
 
 ## Aturan yang tidak boleh dilanggar
 
 1. **AI hanya membaca maksud, angka selalu dari database.** Gemini mengubah pertanyaan jadi data terstruktur (model yang dimaksud, size, jenis pertanyaan). Pencocokan ke produk dan angka stok dihitung server dari database dan disusun dengan template, bukan dikarang AI.
-2. **Hanya membaca.** Asisten tidak punya akses ke fungsi mutasi apa pun.
+2. **Hanya membaca.** Asisten tidak punya akses ke fungsi mutasi apa pun. Permintaan mengubah data dijawab dengan arahan ke halaman Produk.
 3. **Ragu berarti bertanya.** Kalau "af1 putih" cocok ke lebih dari satu model, asisten menampilkan semuanya (maksimal 5) dengan nama lengkap, bukan memilih salah satu. Kalau tidak ada yang cocok, asisten bilang tidak ketemu.
 4. **Tetap jalan tanpa AI.** Kalau Gemini gagal atau kuota habis, muncul pesan jelas. Daftar produk, filter, dan pencarian admin tetap bisa dipakai.
+5. **Obrolan umum boleh, tapi tanpa data toko.** Teks obrolan datang dari AI dan bisa keliru, jadi diberi tanda. AI diminta tidak menyebut angka stok, harga, atau status order di obrolan, karena ia tidak punya datanya.
 
 ## Kode artikel dan SKU
 
@@ -41,7 +45,7 @@ Tidak termasuk MVP ini. Dicatat supaya tidak hilang:
 
 ## Data yang dikirim ke Gemini
 
-- **Dikirim**: kalimat pertanyaan dan daftar nama model + brand supaya AI bisa memahami singkatan. Angka stok tidak perlu dikirim.
+- **Dikirim**: pesan pengguna, 6 giliran obrolan terakhir (untuk jawaban stok, yang dikirim ringkasannya), dan daftar nama model + brand supaya AI bisa memahami singkatan.
 - **Tidak pernah dikirim**: data pembeli (nama, alamat, WA, email), order, fee, harga, rekening, akun admin.
 
 Free tier Gemini boleh memakai data yang dikirim untuk melatih model Google. Data sepatu dan stok tidak sensitif. Itu sebabnya data pembeli dikecualikan.
@@ -71,8 +75,8 @@ Memakai fungsi pencarian yang sama dengan nomor 1, dengan batas:
 
 ## Konfigurasi
 
-- `GEMINI_API_KEY` di env Vercel (Production dan Preview). Kosong berarti halaman Tanya stok hanya menampilkan pemberitahuan, sisa admin tetap jalan.
-- `GEMINI_MODEL` (opsional): nama model Gemini. Kalau kosong atau modelnya tidak ada, dipakai `gemini-flash-latest` lalu `gemini-2.5-flash`.
+- `GEMINI_API_KEY` di env Vercel (Production dan Preview). Kosong berarti tombol Asisten tidak tampil, sisa admin tetap jalan.
+- `GEMINI_MODEL` (opsional): nama model Gemini. Kalau kosong atau modelnya tidak ada, dicoba berurutan `gemini-2.5-flash-lite`, `gemini-flash-lite-latest`, `gemini-2.5-flash`, `gemini-flash-latest`. Flash-Lite didahulukan karena kuota gratisnya paling longgar dan tugas memilah pertanyaan cukup ringan.
 - `/api/sehat` menampilkan apakah key terisi (ya/tidak, tanpa nilainya).
 
 ## Keputusan
