@@ -74,7 +74,7 @@ Memakai fungsi pencarian yang sama dengan nomor 1, dengan batas:
 - `GEMINI_API_KEY` di env Vercel (Production dan Preview). Kosong berarti asisten tidak tampil dan sisa admin tetap jalan.
 - `/api/sehat` menampilkan apakah key terisi (ya/tidak, tanpa nilainya).
 
-## Pertanyaan terbuka
+## Keputusan
 
-- [ ] Admin toko juga boleh memakai asisten, atau pemilik saja? Usulan: keduanya, karena hanya membaca.
-- [ ] Model nonaktif ikut dijawab di admin? Usulan: ikut, dengan tanda "nonaktif".
+- [x] Pemilik dan admin toko sama-sama boleh memakai asisten, karena hanya membaca.
+- [x] Model nonaktif ikut dijawab di admin, dengan tanda "nonaktif".
