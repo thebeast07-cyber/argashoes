@@ -52,7 +52,7 @@ Free tier Gemini boleh memakai data yang dikirim untuk melatih model Google. Dat
 
 ## Batas pemakaian
 
-- Kuota free tier dibatasi Google dan bisa berubah. Asisten membatasi jumlah permintaan per akun per menit supaya kuota tidak habis karena salah tekan.
+- Kuota free tier dibatasi Google dan bisa berubah. Satu pertanyaan = satu permintaan; 500 per hari dibagi semua akun admin, reset tengah malam waktu Pasifik (sekitar jam 14.00 atau 15.00 WIB). Asisten membatasi jumlah permintaan per akun per menit supaya kuota tidak habis karena salah tekan.
 
 ## Nanti, setelah tanya stok dipakai beberapa minggu
 
@@ -76,7 +76,7 @@ Memakai fungsi pencarian yang sama dengan nomor 1, dengan batas:
 ## Konfigurasi
 
 - `GEMINI_API_KEY` di env Vercel (Production dan Preview). Kosong berarti tombol Asisten tidak tampil, sisa admin tetap jalan.
-- `GEMINI_MODEL` (opsional): nama model Gemini. Kalau kosong atau modelnya tidak ada, dicoba berurutan `gemini-2.5-flash-lite`, `gemini-flash-lite-latest`, `gemini-2.5-flash`, `gemini-flash-latest`. Flash-Lite didahulukan karena kuota gratisnya paling longgar dan tugas memilah pertanyaan cukup ringan.
+- `GEMINI_MODEL` (opsional): nama model Gemini. Kalau kosong atau modelnya tidak ada, dicoba berurutan `gemini-3.5-flash-lite`, `gemini-flash-lite-latest`, `gemini-2.5-flash-lite`, `gemini-3.5-flash`, `gemini-flash-latest`, `gemini-2.5-flash`. Flash-Lite didahulukan karena kuota gratisnya paling longgar (AI Studio akun toko, 18 Okt 2026: 3.5 Flash-Lite 500 permintaan per hari) dan tugas memilah pertanyaan cukup ringan.
 - `/api/sehat` menampilkan apakah key terisi (ya/tidak, tanpa nilainya).
 
 ## Keputusan

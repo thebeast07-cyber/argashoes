@@ -7,10 +7,17 @@ import type { Giliran } from "@/lib/domain/asisten-stok";
 
 export class AsistenTidakTersedia extends Error {}
 
-// Flash-Lite dulu: kuota gratisnya paling longgar dan tugas utamanya (memilah pertanyaan) ringan. Versi bernomor
-// dipakai sebelum alias "-latest" supaya perilaku tidak berubah diam-diam. Nama model sering berganti, jadi
-// GEMINI_MODEL dicoba paling awal dan model yang tidak ada (404) dilewati.
-const MODEL_CADANGAN = ["gemini-2.5-flash-lite", "gemini-flash-lite-latest", "gemini-2.5-flash", "gemini-flash-latest"];
+// Flash-Lite dulu: kuota gratisnya paling longgar dan tugas utamanya (memilah pertanyaan) ringan. Per 18 Okt 2026
+// AI Studio akun toko menampilkan 3.5 Flash-Lite dengan 500 permintaan per hari. Versi bernomor dipakai sebelum alias
+// "-latest" supaya perilaku tidak berubah diam-diam. GEMINI_MODEL dicoba paling awal dan model yang tidak ada (404) dilewati.
+const MODEL_CADANGAN = [
+  "gemini-3.5-flash-lite",
+  "gemini-flash-lite-latest",
+  "gemini-2.5-flash-lite",
+  "gemini-3.5-flash",
+  "gemini-flash-latest",
+  "gemini-2.5-flash",
+];
 
 export function asistenAktif(): boolean {
   return Boolean(process.env.GEMINI_API_KEY);
