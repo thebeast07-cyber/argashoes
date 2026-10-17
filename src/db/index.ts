@@ -8,6 +8,7 @@ import { migrate as migratePglite } from "drizzle-orm/pglite/migrator";
 import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 import ws from "ws";
 import * as schema from "./schema";
+import { urlDatabase } from "./url";
 
 // Driver Neon memakai WebSocket. Node 22 punya bawaan; Node 20 (bisa jadi versi project di Vercel) belum, jadi pakai paket ws.
 if (typeof WebSocket === "undefined") neonConfig.webSocketConstructor = ws;
@@ -43,7 +44,7 @@ const globalDb = globalThis as unknown as { __argashoesDb?: Promise<Db> };
 
 export function getDb(): Promise<Db> {
   if (!globalDb.__argashoesDb) {
-    const url = process.env.DATABASE_URL;
+    const url = urlDatabase()?.url;
     // Di Vercel, PGlite pasti gagal (filesystem hanya-baca). Pesan ini muncul di log, bukan error yang membingungkan.
     if (!url && process.env.VERCEL) throw new Error("DATABASE_URL belum diisi di Vercel (Settings → Environment Variables). Hubungkan database Neon lalu redeploy.");
     globalDb.__argashoesDb = url

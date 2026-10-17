@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import { getDb } from "@/db";
+import { urlDatabase } from "@/db/url";
 
 export const dynamic = "force-dynamic";
 
@@ -15,8 +16,8 @@ export async function GET() {
     node: process.version,
     websocketBawaan: typeof WebSocket !== "undefined",
     vercel: process.env.VERCEL_ENV ?? null,
+    envDatabase: urlDatabase()?.nama ?? null,
     envTerisi: {
-      DATABASE_URL: env("DATABASE_URL"),
       ADMIN_PASSWORD: env("ADMIN_PASSWORD"),
       BLOB_READ_WRITE_TOKEN: env("BLOB_READ_WRITE_TOKEN"),
       RESEND_API_KEY: env("RESEND_API_KEY"),
