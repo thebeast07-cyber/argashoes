@@ -12,6 +12,7 @@ import { ambilProduk, getAmbangStok, opsiFilter } from "@/lib/produk/data";
 import { simpanProduk } from "../actions";
 import { FormProduk } from "../form-produk";
 import { BarisSize } from "./baris-size";
+import { FotoProduk } from "./foto-produk";
 import { FormSizeBaru } from "./form-size-baru";
 import { FormUsulFee } from "./form-usul-fee";
 
@@ -75,6 +76,8 @@ export default async function HalamanDetailProduk({ params, searchParams }: { pa
         )}
         <FormSizeBaru productId={produk.id} skuAwal={awalanSku(produk.varian.map((v) => v.sku))} />
       </section>
+
+      <FotoProduk productId={produk.id} foto={produk.foto} />
 
       <section aria-labelledby="judul-data" className="space-y-3">
         <h2 id="judul-data" className="text-lg font-bold">

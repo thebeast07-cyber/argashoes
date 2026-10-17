@@ -57,6 +57,10 @@ export function SizeCepat({
                   tombol.current[v.id] = el;
                 }}
                 onClick={() => setBukaId(terbuka ? null : v.id)}
+                onKeyDown={(e) => {
+                  // Fokus masih di label size setelah diketuk; Escape harus menutup panel dari sini juga.
+                  if (e.key === "Escape" && terbuka) tutup();
+                }}
                 aria-expanded={terbuka}
                 aria-controls={terbuka ? idPanel : undefined}
                 className={`block rounded-label ${terbuka ? "outline outline-2 outline-offset-2 outline-tinta" : ""}`}

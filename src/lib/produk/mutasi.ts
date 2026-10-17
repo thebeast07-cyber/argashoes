@@ -2,6 +2,7 @@ import { eq, inArray, sql } from "drizzle-orm";
 import type { Db } from "@/db";
 import { isUniqueViolation } from "@/db/errors";
 import { auditLog, products, variants } from "@/db/schema";
+import { terapkanAksiFoto, type AksiFoto, type HasilFoto } from "@/lib/domain/foto";
 import type { RencanaKatalog, RencanaStok } from "@/lib/domain/import";
 import type { DataProduk, DataVarian } from "@/lib/domain/produk";
 
@@ -89,6 +90,21 @@ export async function hapusVarian(db: Db, variantId: string, olehUserId: string)
     if (!lama) return "tidak_ada";
     await catat(tx, olehUserId, { aksi: "varian.dihapus", entitas: "variants", entitasId: variantId, data: lama });
     return "ok";
+  });
+}
+
+/** Urutan foto ditulis ulang utuh di dalam kunci baris, supaya dua admin yang mengatur bersamaan tidak saling menimpa. */
+export type HasilUbahFoto = HasilFoto | { ok: false; error: "produk_tidak_ada" };
+
+export async function ubahFotoProduk(db: Db, productId: string, aksi: AksiFoto, olehUserId: string): Promise<HasilUbahFoto> {
+  return db.transaction(async (tx) => {
+    const [p] = await tx.select({ foto: products.foto }).from(products).where(eq(products.id, productId)).for("update");
+    if (!p) return { ok: false, error: "produk_tidak_ada" } as const;
+    const hasil = terapkanAksiFoto(p.foto, aksi);
+    if (!hasil.ok) return hasil;
+    await tx.update(products).set({ foto: hasil.foto }).where(eq(products.id, productId));
+    await catat(tx, olehUserId, { aksi: `foto.${aksi.jenis}`, entitas: "products", entitasId: productId, data: { url: aksi.url, urutan: hasil.foto } });
+    return hasil;
   });
 }
 

@@ -7,8 +7,9 @@ import { parseCsv } from "@/lib/csv";
 import { rencanakanImportKatalog, rencanakanImportStok } from "@/lib/domain/import";
 import type { DataProduk } from "@/lib/domain/produk";
 import { buatUser } from "@/lib/auth/session";
-import { ambilProduk, barisEkspor, daftarProduk, daftarSizeHabis, dataUntukImport, getAmbangStok, opsiFilter } from "@/lib/produk/data";
-import { buatProduk, hapusVarian, tambahVarian, terapkanImportKatalog, terapkanImportStok, ubahProduk, ubahStok } from "@/lib/produk/mutasi";
+import { ambilProduk, barisEkspor, daftarProduk, daftarSizeHabis, dataUntukImport, fotoProduk, getAmbangStok, opsiFilter } from "@/lib/produk/data";
+import { FOTO_MAKS } from "@/lib/domain/foto";
+import { buatProduk, hapusVarian, tambahVarian, terapkanImportKatalog, terapkanImportStok, ubahFotoProduk, ubahProduk, ubahStok } from "@/lib/produk/mutasi";
 
 let db: Db;
 let close: () => Promise<void>;
@@ -150,5 +151,29 @@ describe("ambang stok", () => {
     assert.deepEqual(await getAmbangStok(db), { readyMin: 5 });
     await db.update(settings).set({ nilai: { readyMin: "x" } }).where(eq(settings.kunci, "ambang_stok"));
     assert.deepEqual(await getAmbangStok(db), { readyMin: 3 });
+  });
+});
+
+describe("foto produk", () => {
+  it("tambah, sampul, geser, hapus tersimpan berurutan dan tercatat", async () => {
+    const id = await buatProduk(db, { ...AIR_MAX, nama: "Foto Test", feePerPasang: null }, adminId);
+    for (const url of ["a", "b", "c"]) assert.equal((await ubahFotoProduk(db, id, { jenis: "tambah", url }, adminId)).ok, true);
+    await ubahFotoProduk(db, id, { jenis: "sampul", url: "c" }, adminId);
+    await ubahFotoProduk(db, id, { jenis: "geser", url: "a", arah: 1 }, adminId);
+    await ubahFotoProduk(db, id, { jenis: "hapus", url: "b" }, adminId);
+    assert.deepEqual(await fotoProduk(db, id), ["c", "a"]);
+    assert.equal(await jumlahAudit("foto.tambah"), 3);
+    const [log] = await db.select().from(auditLog).where(eq(auditLog.aksi, "foto.hapus"));
+    assert.deepEqual(log.data, { url: "b", urutan: ["c", "a"] });
+  });
+
+  it("batas jumlah dan produk yang tidak ada", async () => {
+    const id = await buatProduk(db, { ...AIR_MAX, nama: "Foto Penuh", feePerPasang: null }, adminId);
+    for (let i = 0; i < FOTO_MAKS; i++) await ubahFotoProduk(db, id, { jenis: "tambah", url: `f${i}` }, adminId);
+    assert.deepEqual(await ubahFotoProduk(db, id, { jenis: "tambah", url: "lebih" }, adminId), { ok: false, error: "penuh" });
+    assert.equal((await fotoProduk(db, id))?.length, FOTO_MAKS);
+    const hilang = "00000000-0000-0000-0000-000000000000";
+    assert.deepEqual(await ubahFotoProduk(db, hilang, { jenis: "tambah", url: "x" }, adminId), { ok: false, error: "produk_tidak_ada" });
+    assert.equal(await fotoProduk(db, hilang), null);
   });
 });

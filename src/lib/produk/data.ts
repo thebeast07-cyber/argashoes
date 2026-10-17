@@ -130,6 +130,11 @@ export async function daftarSizeHabis(db: Db, batas: number): Promise<{ items: S
   return { items, total };
 }
 
+export async function fotoProduk(db: Db, id: string): Promise<string[] | null> {
+  const [p] = await db.select({ foto: products.foto }).from(products).where(eq(products.id, id));
+  return p ? p.foto : null;
+}
+
 export async function ambilProduk(db: Db, id: string) {
   const [produk] = await db.select().from(products).where(eq(products.id, id));
   if (!produk) return null;

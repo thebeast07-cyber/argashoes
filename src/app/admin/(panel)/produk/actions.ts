@@ -6,6 +6,8 @@ import { getDb } from "@/db";
 import { wajibIzin } from "@/lib/auth/current";
 import { punyaIzin } from "@/lib/auth/roles";
 import { BATAS_UKURAN_CSV, parseCsv } from "@/lib/csv";
+import { FOTO_MAKS, isTipeFoto, parseAksiFoto, validasiFileFoto } from "@/lib/domain/foto";
+import { hapusFotoTersimpan, PenyimpananBelumSiap, simpanFoto } from "@/lib/foto/penyimpanan";
 import {
   rencanakanImportKatalog,
   rencanakanImportStok,
@@ -14,15 +16,17 @@ import {
   type RencanaStok,
 } from "@/lib/domain/import";
 import { parseBilanganBulat, validasiProduk, validasiVarian, type InputProduk } from "@/lib/domain/produk";
-import { dataUntukImport } from "@/lib/produk/data";
+import { dataUntukImport, fotoProduk } from "@/lib/produk/data";
 import {
   buatProduk,
   hapusVarian,
   tambahVarian,
   terapkanImportKatalog,
   terapkanImportStok,
+  ubahFotoProduk,
   ubahProduk,
   ubahStok,
+  type HasilUbahFoto,
 } from "@/lib/produk/mutasi";
 
 export type StateForm = { error?: Record<string, string>; pesan?: string; sukses?: string };
@@ -114,6 +118,63 @@ export async function hapusSize(productId: string, variantId: string): Promise<v
   await hapusVarian(await getDb(), variantId, user.id);
   revalidatePath(`/admin/produk/${productId}`);
   revalidatePath("/admin/produk");
+}
+
+// --- Foto ------------------------------------------------------------------------
+
+export type HasilAksiFoto = { error?: string };
+
+const PESAN_FOTO: Record<Exclude<HasilUbahFoto, { ok: true }>["error"], string> = {
+  penuh: `Sudah ${FOTO_MAKS} foto, batas per model. Hapus satu untuk menambah.`,
+  tidak_ada: "Foto ini sudah berubah. Muat ulang halaman.",
+  sudah_ada: "Foto ini sudah ada.",
+  produk_tidak_ada: "Produk ini sudah tidak ada.",
+};
+
+function segarkanProduk(productId: string) {
+  revalidatePath(`/admin/produk/${productId}`);
+  revalidatePath("/admin/produk");
+}
+
+/** Satu foto per panggilan: browser sudah mengecilkannya, jadi muat di batas body server action. */
+export async function unggahFoto(productId: string, form: FormData): Promise<HasilAksiFoto> {
+  const user = await wajibIzin("produk.kelola");
+  const file = form.get("foto");
+  if (!(file instanceof Blob)) return { error: "File foto tidak terbaca. Pilih ulang." };
+  const salah = validasiFileFoto({ tipe: file.type, ukuran: file.size });
+  if (salah || !isTipeFoto(file.type)) return { error: salah ?? "Format foto harus JPG, PNG, atau WebP." };
+
+  const db = await getDb();
+  // Cek batas sebelum menyimpan file, supaya tidak ada file tersimpan yang tidak dipakai produk mana pun.
+  const foto = await fotoProduk(db, productId);
+  if (!foto) return { error: PESAN_FOTO.produk_tidak_ada };
+  if (foto.length >= FOTO_MAKS) return { error: PESAN_FOTO.penuh };
+
+  let url: string;
+  try {
+    url = await simpanFoto(productId, file, file.type);
+  } catch (e) {
+    if (e instanceof PenyimpananBelumSiap) return { error: "Penyimpanan foto belum disiapkan di server. Kabari pemilik web." };
+    return { error: "Foto gagal diunggah. Coba lagi." };
+  }
+  const hasil = await ubahFotoProduk(db, productId, { jenis: "tambah", url }, user.id);
+  if (!hasil.ok) {
+    await hapusFotoTersimpan(url).catch(() => {});
+    return { error: PESAN_FOTO[hasil.error] };
+  }
+  segarkanProduk(productId);
+  return {};
+}
+
+export async function aturFoto(productId: string, aksiMentah: unknown): Promise<HasilAksiFoto> {
+  const user = await wajibIzin("produk.kelola");
+  const aksi = parseAksiFoto(aksiMentah);
+  if (!aksi) return { error: "Aksi foto tidak dikenal." };
+  const hasil = await ubahFotoProduk(await getDb(), productId, aksi, user.id);
+  if (!hasil.ok) return { error: PESAN_FOTO[hasil.error] };
+  if (aksi.jenis === "hapus") await hapusFotoTersimpan(aksi.url).catch(() => {});
+  segarkanProduk(productId);
+  return {};
 }
 
 // --- Import CSV -----------------------------------------------------------------
