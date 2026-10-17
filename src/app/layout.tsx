@@ -11,7 +11,7 @@ const archivo = Archivo({
 
 export const metadata: Metadata = {
   title: "Argashoes",
-  description: "Sepatu Nike dan Adidas original, order lewat WhatsApp.",
+  description: "Cari size, cek stok, dan pesan sepatu Nike dan Adidas lewat WhatsApp.",
 };
 
 export const viewport: Viewport = {

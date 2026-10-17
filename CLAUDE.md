@@ -35,6 +35,7 @@ PGlite hanya bisa dibuka satu proses: hentikan `npm run dev` sebelum menjalankan
 - `src/lib/domain/stok.ts`, `produk.ts`, `import.ts`: status stok, urutan size, validasi produk/SKU, rencana import CSV (murni).
 - `src/lib/produk/`: `data.ts` (query) dan `mutasi.ts` (tulis + `audit_log` dalam satu transaksi). Semua perubahan stok wajib lewat sini.
 - `src/lib/domain/foto.ts`: urutan foto (sampul = foto pertama), batas 8 per model, syarat file (murni). `src/lib/foto/penyimpanan.ts`: `BLOB_READ_WRITE_TOKEN` terisi → Vercel Blob, kosong → `./.data/foto` disajikan `src/app/foto/[nama]/route.ts`. `kecilkan.ts`: foto dikecilkan ke 1600px JPEG di browser sebelum upload (satu foto per server action).
+- `src/lib/domain/katalog.ts`: baca pencarian dari URL, saring/urut katalog, ringkas size per kartu (murni). `src/lib/katalog/data.ts`: query publik (hanya model aktif). Halaman publik di `src/app/(publik)/`: beranda katalog, `/produk/[id]`, `/cara-order`. Utilitas `.wadah` di `globals.css` membatasi isi 1200px dengan latar tetap selebar layar.
 - `src/components/pesan.tsx`: `PesanGalat` (galat selalu ikon + teks, bukan warna saja) dan `RingkasanGalat` (dekat tombol simpan, memindah fokus ke kolom pertama yang `aria-invalid`). Pakai ini untuk semua pesan gagal.
 - `src/components/ikon.tsx`: ikon buatan sendiri. Jangan pakai Lucide atau library ikon lain (permintaan pemilik).
 - `DESIGN.md`: arah tampilan sementara (token warna di `tailwind.config.ts`). Baca sebelum kerja UI.
@@ -66,7 +67,7 @@ PGlite hanya bisa dibuka satu proses: hentikan `npm run dev` sebelum menjalankan
 
 ## Belum dibangun
 
-Halaman publik (katalog, produk, keranjang, checkout, WhatsApp), daftar & detail order, pelanggan, laporan fee, pengaturan nama toko/area kirim/kebijakan retur, halaman audit log untuk stok dan akun, Redis, rate limit login. Catatan per tahap ada di `notes/`.
+Keranjang, checkout, WhatsApp (tombol "Pesan size" di halaman produk masih mati sampai tahap 5), daftar & detail order, pelanggan, laporan fee, pengaturan nama toko/area kirim/kebijakan retur, halaman audit log untuk stok dan akun, Redis, rate limit login. Catatan per tahap ada di `notes/`.
 
 <!-- antislop:start -->
 ## antislop

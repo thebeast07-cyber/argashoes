@@ -13,6 +13,9 @@ const config: Config = {
         "sedikit-teks": "#7A4B00",
         "sedikit-latar": "#FBEFD5",
         habis: "#6B6760",
+        // Halaman publik (mockup): alas foto placeholder dan latar footer; teks sekunder di atas tinta (8.61:1).
+        "kertas-gelap": "#E9E3D6",
+        "redup-gelap": "#BDB7AB",
       },
       fontFamily: {
         sans: ["var(--font-archivo)", "system-ui", "sans-serif"],

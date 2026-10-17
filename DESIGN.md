@@ -26,6 +26,8 @@ Design Read: dashboard stok mobile untuk retailer sepatu dan pemilik web, gaya l
 | `bata` | `#B3361C` | Satu aksen: aksi utama dan tanda fokus. Tidak dipakai untuk dekorasi |
 | `sedikit-teks` / `sedikit-latar` | `#7A4B00` / `#FBEFD5` | Status Sisa sedikit (6.50:1) |
 | `habis` | `#6B6760` | Teks size habis, selalu dengan coretan dan tulisan "Habis" (4.99:1) |
+| `kertas-gelap` | `#E9E3D6` | Halaman publik: alas foto yang belum ada, latar footer |
+| `redup-gelap` | `#BDB7AB` | Halaman publik: teks sekunder di atas blok tinta (8.61:1) |
 
 Putih (`#FFFFFF`) dipakai untuk permukaan kartu dan input. Status stok tidak pernah hanya warna: selalu ada tulisan Ready / Sisa N / Habis.
 

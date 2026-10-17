@@ -6,6 +6,20 @@ body {
   @apply bg-kertas text-tinta antialiased;
 }
 
+:root {
+  --sisi: 16px;
+}
+@media (min-width: 600px) {
+  :root {
+    --sisi: 24px;
+  }
+}
+@media (min-width: 900px) {
+  :root {
+    --sisi: 40px;
+  }
+}
+
 /* Fokus keyboard yang jelas di semua elemen interaktif (R-32). */
 :focus-visible {
   outline: 2px solid theme("colors.bata");
@@ -39,5 +53,22 @@ body {
 
   .sempit {
     font-variation-settings: "wdth" 75;
+  }
+
+  /* Huruf lebar untuk nama toko dan judul besar halaman publik (sumbu wdth Archivo). */
+  .lebar {
+    font-variation-settings: "wdth" 125;
+  }
+
+  .agak-lebar {
+    font-variation-settings: "wdth" 112;
+  }
+
+  /*
+    Isi halaman publik dibatasi 1200px, tapi latar sebuah bagian tetap selebar layar.
+    Jarak tepi 16px di HP, 24px mulai 600px, 40px mulai 900px (sama dengan mockup).
+  */
+  .wadah {
+    padding-inline: max(var(--sisi, 16px), calc((100% - 1200px) / 2));
   }
 }
