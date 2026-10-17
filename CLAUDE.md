@@ -27,6 +27,7 @@ PGlite hanya bisa dibuka satu proses: hentikan `npm run dev` sebelum menjalankan
 
 ## Struktur
 
+- `vercel.json`: fungsi server dijalankan di `sin1` (Singapura), satu region dengan database Neon. Tanpa ini Vercel memakai region Amerika dan tiap query DB menyeberang Pasifik.
 - `src/db/schema.ts`: semua tabel (Drizzle). `src/db/index.ts`: pilih driver; `DATABASE_URL` terisi → Neon, kosong → PGlite (migrasi otomatis).
 - `drizzle/`: migrasi SQL. `0001_log_append_only.sql` adalah migrasi custom (trigger yang menolak UPDATE/DELETE pada `order_events` dan `audit_log`). Jangan edit migrasi yang sudah di-deploy; buat migrasi baru.
 - `src/lib/domain/fee.ts`: tier fee, fee per pasang, syarat kena fee, periode WIB, rekap bulanan.
