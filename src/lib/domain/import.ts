@@ -60,7 +60,10 @@ export function rencanakanImportStok(tabel: string[][], varian: readonly VarianA
 // --- Import katalog: satu baris per size ----------------------------------------
 
 export const KOLOM_KATALOG = ["sku", "brand", "nama", "kategori", "harga", "harga_coret", "fee_per_pasang", "size", "stok"] as const;
-const KOLOM_KATALOG_WAJIB = ["sku", "brand", "nama", "harga", "size", "stok"] as const;
+export const KOLOM_KATALOG_WAJIB = ["sku", "brand", "nama", "harga", "size", "stok"] as const;
+// Template kosong untuk sepatu baru. Tanpa kolom fee: kolom fee yang ada tapi kosong berarti "ikut tier" dan akan
+// menghapus fee khusus produk lama kalau template ini dipakai ulang untuk SKU yang sudah ada.
+export const KOLOM_TEMPLATE = KOLOM_KATALOG.filter((k) => k !== "fee_per_pasang");
 
 export type ProdukAda = {
   id: string;
