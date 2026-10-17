@@ -300,7 +300,6 @@ function kaki() {
     <dl>
       <dt>Toko</dt><dd><span class="ph">[NAMA TOKO]</span></dd>
       <dt>Alamat</dt><dd><span class="ph">[ALAMAT TOKO]</span></dd>
-      <dt>WhatsApp</dt><dd><span class="ph">[NOMOR WA TOKO]</span>, dibalas <span class="ph">[JAM BALAS]</span></dd>
       <dt>Retur</dt><dd><span class="ph">[KEBIJAKAN RETUR]</span></dd>
     </dl>
     <a class="ke-cara" href="#/cara-order">Cara order</a>
@@ -325,7 +324,7 @@ function layarBeranda() {
   if (daftar.length === 0) {
     isiDaftar = `<div class="kosong">${
       state.sizeCari
-        ? `<p>Belum ada ${state.brand === "Semua" ? "model" : state.brand} size ${state.sizeCari} yang ready.</p><button class="tombol" data-aksi="tanya-wa" data-size="${state.sizeCari}">${IK.wa}Tanya stok size ${state.sizeCari}</button>`
+        ? `<p>Belum ada ${state.brand === "Semua" ? "model" : state.brand} size ${state.sizeCari} yang ready.</p><button class="tombol" type="button" data-aksi="semua-model">Lihat semua model</button>`
         : "<p>Belum ada model di merek ini.</p>"
     }</div>`;
   } else {
@@ -409,7 +408,6 @@ function layarProduk(id) {
         ${sizes.map((x) => { const st = status(stokDi(p, x)); const dipilih = s === x; return `<li><button class="lbl ${st}" type="button" data-aksi="pilih-size" data-size="${x}" aria-pressed="${dipilih}" aria-label="Size ${x}, ${teksStatus(stokDi(p, x))}"><span class="no angka">${x}</span><span class="st">${dipilih ? "Dipilih" : teksStatus(stokDi(p, x))}</span></button></li>`; }).join("")}
       </ul>
       <p class="keterangan-size" role="status" aria-live="polite">${ket}</p>
-      ${habisDipilih ? `<button class="tombol penuh" type="button" data-aksi="tanya-wa" data-size="${s}">${IK.wa}Tanya stok size ${s}</button>` : ""}
     </section>
 
     <details class="panduan">
@@ -557,8 +555,10 @@ app.addEventListener("click", (e) => {
     const judul = document.getElementById("judul-daftar");
     judul.scrollIntoView({ block: "start" });
     judul.focus({ preventScroll: true });
-  } else if (a === "tanya-wa") {
-    beri(`Mockup: di web asli tombol ini membuka WhatsApp toko dengan pesan "Halo, apakah size ${t.dataset.size} ada?" sudah terisi.`);
+  } else if (a === "semua-model") {
+    state.sizeCari = null;
+    state.brand = "Semua";
+    pasang("#judul-daftar");
   } else if (a === "buka-wa") {
     beri("Mockup: di web asli tombol ini membuka WhatsApp toko dengan kode pesanan sudah terisi.");
   }

@@ -186,6 +186,7 @@ Urutan kerja usulan: coding baru mulai setelah retailer meng-ACC mockup, dan has
 - Stok global bersama marketplace, dikonfirmasi lewat WhatsApp, tanpa sinkronisasi otomatis.
 - Katalog dikelola lewat CMS di web (bukan Google Sheet), dengan import CSV. Foto produk sudah tersedia.
 - Pengiriman, retur, dan CS adalah urusan retailer.
+- Halaman publik tidak menampilkan nomor WhatsApp toko dan tidak punya tombol "Tanya stok". Satu-satunya jalan ke WhatsApp adalah lewat order yang tercatat dengan kode `WEB-xxxx`, supaya setiap closing dari web kena fee. Size yang habis cukup tampil Habis; kalau stok web telat diperbarui, retailer memberi tahu di WhatsApp setelah order masuk.
 
 **Masih terbuka**
 
