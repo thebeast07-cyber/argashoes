@@ -1,6 +1,7 @@
 "use client";
 
 import { useFormState, useFormStatus } from "react-dom";
+import { PesanGalat, RingkasanGalat } from "@/components/pesan";
 import type { StateForm } from "./actions";
 
 export type NilaiProduk = {
@@ -48,9 +49,9 @@ function Kolom({
         </p>
       )}
       {error && (
-        <p id={`${id}-error`} className="mt-1 text-sm font-semibold text-bata">
+        <PesanGalat id={`${id}-error`} kecil>
           {error}
-        </p>
+        </PesanGalat>
       )}
     </div>
   );
@@ -159,16 +160,8 @@ export function FormProduk({
         </span>
       </label>
 
-      {state.pesan && (
-        <p role="alert" className="text-sm font-semibold text-bata">
-          {state.pesan}
-        </p>
-      )}
-      {Object.keys(e).length > 0 && (
-        <p role="alert" className="text-sm font-semibold text-bata">
-          Ada isian yang perlu dibetulkan. Lihat pesan merah di atas.
-        </p>
-      )}
+      {state.pesan && <PesanGalat umumkan>{state.pesan}</PesanGalat>}
+      <RingkasanGalat jumlah={Object.keys(e).length} pemicu={state} />
       {state.sukses && (
         <p role="status" className="text-sm font-semibold">
           {state.sukses}

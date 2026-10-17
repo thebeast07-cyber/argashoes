@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useFormState } from "react-dom";
 import { IkonTambah } from "@/components/ikon";
+import { PesanGalat } from "@/components/pesan";
 import type { BarisTier } from "@/lib/domain/pengaturan";
 import { formatRupiah, parseRupiah } from "@/lib/domain/produk";
 import { simpanTierAksi, type StatePengaturan } from "../actions";
@@ -110,11 +111,7 @@ export function EditorTier({ awal, mode }: { awal: BarisTier[]; mode: "langsung"
         </button>
       )}
 
-      {error.umum && (
-        <p role="alert" className="text-sm font-semibold text-bata">
-          {error.umum}
-        </p>
-      )}
+      {error.umum && <PesanGalat umumkan>{error.umum}</PesanGalat>}
       {mode === "usul" && <KolomAlasan bantuan="Misalnya harga modal naik, atau model baru masuk di rentang harga tertentu." />}
       <PesanState state={strukturBerubah ? { pesan: state.pesan } : state} />
       <TombolKirim kelas="tombol-utama w-full sm:w-auto">{mode === "usul" ? "Kirim usulan ke pemilik" : "Simpan tier"}</TombolKirim>

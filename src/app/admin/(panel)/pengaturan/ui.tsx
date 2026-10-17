@@ -1,6 +1,7 @@
 "use client";
 
 import { useFormStatus } from "react-dom";
+import { PesanGalat, RingkasanGalat } from "@/components/pesan";
 import type { StatePengaturan } from "./actions";
 
 export function TombolKirim({ children, kelas = "tombol-utama", name, value }: { children: React.ReactNode; kelas?: string; name?: string; value?: string }) {
@@ -37,9 +38,9 @@ export function Kolom({
         </p>
       )}
       {error && (
-        <p id={`${id}-error`} className="mt-1 text-sm font-semibold text-bata">
+        <PesanGalat id={`${id}-error`} kecil>
           {error}
-        </p>
+        </PesanGalat>
       )}
     </div>
   );
@@ -52,19 +53,12 @@ export function keterangan(state: StatePengaturan, id: string, bantuan = false):
 }
 
 export function PesanState({ state }: { state: StatePengaturan }) {
-  const adaError = state.error && Object.keys(state.error).length > 0;
+  // "umum" bukan isian; editor tier menampilkannya sendiri.
+  const jumlahError = Object.keys(state.error ?? {}).filter((k) => k !== "umum").length;
   return (
     <>
-      {state.pesan && (
-        <p role="alert" className="text-sm font-semibold text-bata">
-          {state.pesan}
-        </p>
-      )}
-      {adaError && !state.pesan && (
-        <p role="alert" className="text-sm font-semibold text-bata">
-          Ada isian yang perlu dibetulkan. Lihat pesan merah di atas.
-        </p>
-      )}
+      {state.pesan && <PesanGalat umumkan>{state.pesan}</PesanGalat>}
+      {!state.pesan && <RingkasanGalat jumlah={jumlahError} pemicu={state} />}
       {state.sukses && (
         <p role="status" className="text-sm font-semibold">
           {state.sukses}

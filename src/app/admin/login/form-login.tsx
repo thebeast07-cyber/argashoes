@@ -1,6 +1,7 @@
 "use client";
 
 import { useFormState, useFormStatus } from "react-dom";
+import { PesanGalat } from "@/components/pesan";
 import { login, type StateForm } from "../actions";
 
 function TombolMasuk() {
@@ -28,11 +29,7 @@ export function FormLogin() {
         <span className="label-form">Password</span>
         <input name="password" type="password" autoComplete="current-password" required className="input" />
       </label>
-      {state.error && (
-        <p role="alert" className="text-sm font-semibold text-bata">
-          {state.error}
-        </p>
-      )}
+      {state.error && <PesanGalat umumkan>{state.error}</PesanGalat>}
       <TombolMasuk />
     </form>
   );

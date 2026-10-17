@@ -110,6 +110,16 @@ export function IkonCoret(p: Props) {
   );
 }
 
+/** Pesan gagal: kotak dengan tanda seru, supaya galat tidak dibedakan dari warna saja. */
+export function IkonGalat(p: Props) {
+  return (
+    <Dasar {...p}>
+      <path d="M4 4h16v16H4z" />
+      <path d="M12 8v5M12 16v1.5" />
+    </Dasar>
+  );
+}
+
 /** Pengaturan: tiga penggeser dengan kenop kotak, nilai yang bisa diatur. */
 export function IkonPengaturan(p: Props) {
   return (

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { BATAS_UKURAN_CSV } from "@/lib/csv";
+import { PesanGalat } from "@/components/pesan";
 import { pratinjauImport, terapkanImport, type HasilImport, type JenisImport } from "../actions";
 
 const KOLOM: Record<JenisImport, string> = {
@@ -10,10 +11,10 @@ const KOLOM: Record<JenisImport, string> = {
   katalog: "sku, brand, nama, kategori, harga, harga_coret, fee_per_pasang, size, stok",
 };
 
-function Tombol({ children, utama }: { children: React.ReactNode; utama?: boolean }) {
+function Tombol({ children, utama, mati }: { children: React.ReactNode; utama?: boolean; mati?: boolean }) {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" disabled={pending} className={`${utama ? "tombol-utama" : "tombol-garis"} w-full`}>
+    <button type="submit" disabled={pending || mati} className={`${utama ? "tombol-utama" : "tombol-garis"} w-full`}>
       {pending ? "Memproses..." : children}
     </button>
   );
@@ -24,11 +25,7 @@ function Laporan({ hasil }: { hasil: HasilImport }) {
   const adaError = Boolean(hasil.totalError);
   return (
     <div className="space-y-3">
-      {hasil.pesan && (
-        <p role="alert" className="text-sm font-semibold text-bata">
-          {hasil.pesan}
-        </p>
-      )}
+      {hasil.pesan && <PesanGalat umumkan>{hasil.pesan}</PesanGalat>}
       {hasil.sukses && (
         <p role="status" className="rounded-label border-[1.5px] border-tinta bg-white p-3 text-sm font-semibold">
           {hasil.sukses}
@@ -127,7 +124,7 @@ export function FormImport() {
             ["katalog", "Katalog lengkap", "Menambah model dan size baru, mengubah harga dan stok."],
           ] as const
         ).map(([nilai, judul, ket]) => (
-          <label key={nilai} className={`flex cursor-pointer gap-3 rounded-label border-[1.5px] p-3 ${jenis === nilai ? "border-tinta bg-white" : "border-tinta/25"}`}>
+          <label key={nilai} className={`flex cursor-pointer gap-3 rounded-label border-[1.5px] p-3 ${jenis === nilai ? "border-tinta bg-white" : "border-tinta/55"}`}>
             <input type="radio" name="jenis-pilihan" value={nilai} checked={jenis === nilai} onChange={() => setJenis(nilai)} className="mt-1 size-5 accent-bata" />
             <span className="text-sm">
               <span className="block font-semibold">{judul}</span>
@@ -168,15 +165,15 @@ export function FormImport() {
           )}
         </p>
         {errorFile && (
-          <p role="alert" className="mt-1 text-sm font-semibold text-bata">
+          <PesanGalat umumkan kecil>
             {errorFile}
-          </p>
+          </PesanGalat>
         )}
       </div>
 
       <form action={aksiPratinjau}>
         {dataTersembunyi}
-        <Tombol>Periksa file</Tombol>
+        <Tombol mati={!file}>Periksa file</Tombol>
       </form>
 
       {pratinjauBerlaku && <Laporan hasil={pratinjau} />}

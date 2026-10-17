@@ -14,7 +14,7 @@ body {
 
 @layer components {
   .input {
-    @apply min-h-11 w-full rounded-kontrol border border-tinta/40 bg-white px-3 py-2 text-base text-tinta placeholder:text-redup focus:border-tinta;
+    @apply min-h-11 w-full rounded-kontrol border border-tinta/55 bg-white px-3 py-2 text-base text-tinta placeholder:text-redup focus:border-tinta;
   }
 
   .label-form {

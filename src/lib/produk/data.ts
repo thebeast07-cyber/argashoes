@@ -111,6 +111,25 @@ export async function opsiFilter(db: Db): Promise<{ brands: string[]; sizes: str
   };
 }
 
+export type SizeHabis = { productId: string; brand: string; nama: string; size: string };
+
+/** Size berstok 0 dari model yang tampil di katalog, untuk beranda admin. */
+export async function daftarSizeHabis(db: Db, batas: number): Promise<{ items: SizeHabis[]; total: number }> {
+  const where = and(eq(variants.stok, 0), eq(products.aktif, true));
+  const [[{ total }], rows] = await Promise.all([
+    db.select({ total: count() }).from(variants).innerJoin(products, eq(variants.productId, products.id)).where(where),
+    db
+      .select({ productId: products.id, brand: products.brand, nama: products.nama, size: variants.size })
+      .from(variants)
+      .innerJoin(products, eq(variants.productId, products.id))
+      .where(where),
+  ]);
+  const items = rows
+    .sort((a, b) => a.brand.localeCompare(b.brand) || a.nama.localeCompare(b.nama) || bandingkanSize(a.size, b.size))
+    .slice(0, batas);
+  return { items, total };
+}
+
 export async function ambilProduk(db: Db, id: string) {
   const [produk] = await db.select().from(products).where(eq(products.id, id));
   if (!produk) return null;

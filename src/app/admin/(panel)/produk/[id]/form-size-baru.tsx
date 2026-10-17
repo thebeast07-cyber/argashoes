@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useFormState, useFormStatus } from "react-dom";
+import { PesanGalat } from "@/components/pesan";
 import { simpanVarianBaru, type StateForm } from "../actions";
 
 function TombolTambah() {
@@ -48,9 +49,9 @@ export function FormSizeBaru({ productId, skuAwal }: { productId: string; skuAwa
         </div>
       </div>
       {Object.values(e).map((pesan) => (
-        <p key={pesan} role="alert" className="text-sm font-semibold text-bata">
+        <PesanGalat key={pesan} umumkan>
           {pesan}
-        </p>
+        </PesanGalat>
       ))}
       {state.sukses && (
         <p role="status" className="text-sm font-semibold">

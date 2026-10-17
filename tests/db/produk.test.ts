@@ -7,7 +7,7 @@ import { parseCsv } from "@/lib/csv";
 import { rencanakanImportKatalog, rencanakanImportStok } from "@/lib/domain/import";
 import type { DataProduk } from "@/lib/domain/produk";
 import { buatUser } from "@/lib/auth/session";
-import { ambilProduk, barisEkspor, daftarProduk, dataUntukImport, getAmbangStok, opsiFilter } from "@/lib/produk/data";
+import { ambilProduk, barisEkspor, daftarProduk, daftarSizeHabis, dataUntukImport, getAmbangStok, opsiFilter } from "@/lib/produk/data";
 import { buatProduk, hapusVarian, tambahVarian, terapkanImportKatalog, terapkanImportStok, ubahProduk, ubahStok } from "@/lib/produk/mutasi";
 
 let db: Db;
@@ -88,6 +88,16 @@ describe("produk dan varian", () => {
     const opsi = await opsiFilter(db);
     assert.deepEqual(opsi.brands, ["Adidas", "Nike"]);
     assert.deepEqual(opsi.sizes, ["40", "41 1/3", "42"]);
+  });
+
+  it("size habis: hanya stok 0 dari model aktif, urut size, dibatasi", async () => {
+    const habis = await daftarSizeHabis(db, 1);
+    assert.equal(habis.total, 2);
+    assert.deepEqual(habis.items, [{ productId: produkId, brand: "Nike", nama: "Air Max 90", size: "40" }]);
+
+    await db.update(products).set({ aktif: false }).where(eq(products.id, produkId));
+    assert.equal((await daftarSizeHabis(db, 10)).total, 0);
+    await db.update(products).set({ aktif: true }).where(eq(products.id, produkId));
   });
 
   it("hapus varian tercatat", async () => {

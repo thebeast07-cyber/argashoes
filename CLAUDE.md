@@ -34,6 +34,7 @@ PGlite hanya bisa dibuka satu proses: hentikan `npm run dev` sebelum menjalankan
 - `src/lib/orders/ubah-status.ts`: ubah status + catat `order_events` dalam satu transaksi.
 - `src/lib/domain/stok.ts`, `produk.ts`, `import.ts`: status stok, urutan size, validasi produk/SKU, rencana import CSV (murni).
 - `src/lib/produk/`: `data.ts` (query) dan `mutasi.ts` (tulis + `audit_log` dalam satu transaksi). Semua perubahan stok wajib lewat sini.
+- `src/components/pesan.tsx`: `PesanGalat` (galat selalu ikon + teks, bukan warna saja) dan `RingkasanGalat` (dekat tombol simpan, memindah fokus ke kolom pertama yang `aria-invalid`). Pakai ini untuk semua pesan gagal.
 - `src/components/ikon.tsx`: ikon buatan sendiri. Jangan pakai Lucide atau library ikon lain (permintaan pemilik).
 - `DESIGN.md`: arah tampilan sementara (token warna di `tailwind.config.ts`). Baca sebelum kerja UI.
 - `src/lib/domain/pengaturan.ts`: editor tier (batas → rentang rapat), nomor WA, rekening, ambang stok. `usulan.ts`: jenis/status usulan, deteksi usulan basi, dampak tier ke produk. `waktu.ts`: tampilan waktu WIB.

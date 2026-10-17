@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useFormState, useFormStatus } from "react-dom";
+import { PesanGalat } from "@/components/pesan";
 import { PASSWORD_MIN } from "@/lib/auth/password-rules";
 import { tambahAkun, type StateForm } from "../../actions";
 
@@ -66,11 +67,7 @@ export function FormAkun() {
           <option value="pemilik">Pemilik web: semua, termasuk fee dan akun</option>
         </select>
       </div>
-      {state.error && (
-        <p role="alert" className="text-sm font-semibold text-bata">
-          {state.error}
-        </p>
-      )}
+      {state.error && <PesanGalat umumkan>{state.error}</PesanGalat>}
       {state.sukses && (
         <p role="status" className="text-sm font-semibold">
           {state.sukses}

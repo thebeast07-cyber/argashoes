@@ -2,13 +2,14 @@
 
 import { useFormState, useFormStatus } from "react-dom";
 import { IkonCoret } from "@/components/ikon";
+import { PesanGalat } from "@/components/pesan";
 import { hapusSize, simpanStok, tandaiHabis, type StateForm } from "../actions";
 
-function Tombol({ children, kelas, label }: { children: React.ReactNode; kelas: string; label?: string }) {
+function Tombol({ children, kelas, proses }: { children: React.ReactNode; kelas: string; proses: string }) {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" disabled={pending} className={kelas} aria-label={label}>
-      {pending ? "..." : children}
+    <button type="submit" disabled={pending} className={kelas}>
+      {pending ? proses : children}
     </button>
   );
 }
@@ -46,24 +47,27 @@ export function BarisSize({
               key={varian.stok}
               className="input angka w-20 px-2"
             />
-            <Tombol kelas="tombol-garis px-3 text-sm">Simpan</Tombol>
-            {state.sukses && (
-              <span role="status" className="text-xs text-redup">
-                {state.sukses}
-              </span>
-            )}
+            <Tombol kelas="tombol-garis px-3 text-sm" proses="Menyimpan...">
+              Simpan
+            </Tombol>
           </form>
-          {state.pesan && (
-            <p role="alert" className="mt-1 text-sm font-semibold text-bata">
-              {state.pesan}
+          {/* Baris sendiri, bukan di samping tombol: di layar 320px teksnya keluar layar. */}
+          {state.sukses && (
+            <p role="status" className="mt-1 text-sm font-semibold">
+              Stok {varian.size} tersimpan.
             </p>
+          )}
+          {state.pesan && (
+            <div className="mt-1">
+              <PesanGalat umumkan>{state.pesan}</PesanGalat>
+            </div>
           )}
         </div>
       </div>
       <div className="flex flex-wrap gap-2 pl-[4.75rem]">
         {varian.stok > 0 && (
           <form action={tandaiHabis.bind(null, productId, varian.id)}>
-            <Tombol kelas="tombol-garis border-bata px-3 text-sm text-bata">
+            <Tombol kelas="tombol-garis px-3 text-sm" proses="Menandai...">
               <IkonCoret ukuran={16} />
               Tandai habis
             </Tombol>
@@ -75,7 +79,9 @@ export function BarisSize({
             if (!confirm(`Hapus size ${varian.size} (${varian.sku})? Riwayat order yang sudah ada tidak ikut terhapus.`)) e.preventDefault();
           }}
         >
-          <Tombol kelas="min-h-11 px-2 text-sm font-semibold text-redup underline underline-offset-2 hover:text-tinta">Hapus size</Tombol>
+          <Tombol kelas="min-h-11 px-2 text-sm font-semibold text-redup underline underline-offset-2 hover:text-tinta" proses="Menghapus...">
+            Hapus size
+          </Tombol>
         </form>
       </div>
     </li>

@@ -22,7 +22,7 @@ export default async function HalamanAkun() {
         {daftar.map((u) => (
           <li key={u.id} className="py-3">
             <p className="font-medium">
-              {u.nama} {!u.aktif && <span className="text-xs font-semibold text-bata">(nonaktif)</span>}
+              {u.nama} {!u.aktif && <span className="text-xs font-semibold text-redup">(nonaktif)</span>}
             </p>
             <p className="text-sm text-redup">
               {u.email} · {LABEL_PERAN[u.peran]}
