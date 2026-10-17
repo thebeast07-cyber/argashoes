@@ -14,11 +14,14 @@ export function LabelSize({
   stok,
   ambang,
   besar = false,
+  keterangan,
 }: {
   size: string;
   stok: number;
   ambang: AmbangStok;
   besar?: boolean;
+  /** Pengganti tulisan status, mis. jumlah pasang persis di admin. Warna tetap mengikuti status. */
+  keterangan?: string;
 }) {
   const status = statusStok(stok, ambang);
   return (
@@ -30,7 +33,7 @@ export function LabelSize({
       <span className={`sempit angka font-bold ${besar ? "text-2xl" : "text-base"} ${status === "habis" ? "line-through" : ""}`}>
         {size}
       </span>
-      <span className={`sempit mt-0.5 font-medium ${besar ? "text-sm" : "text-[13px]"}`}>{labelStok(stok, ambang)}</span>
+      <span className={`sempit mt-0.5 font-medium ${besar ? "text-sm" : "text-[13px]"}`}>{keterangan ?? labelStok(stok, ambang)}</span>
     </span>
   );
 }

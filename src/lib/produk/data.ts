@@ -1,6 +1,7 @@
 import { and, asc, count, eq, exists, ilike, inArray, ne, or, sql } from "drizzle-orm";
 import type { Db } from "@/db";
 import { products, settings, variants } from "@/db/schema";
+import type { ModelStok, VarianStok } from "@/lib/domain/asisten-stok";
 import type { ProdukAda, VarianAda } from "@/lib/domain/import";
 import { AMBANG_STOK_DEFAULT, bandingkanSize, isAmbangStok, type AmbangStok } from "@/lib/domain/stok";
 
@@ -191,4 +192,16 @@ export async function barisEkspor(db: Db) {
   return rows.sort(
     (a, b) => a.brand.localeCompare(b.brand) || a.nama.localeCompare(b.nama) || bandingkanSize(a.size, b.size),
   );
+}
+
+/** Untuk asisten tanya stok: semua model (aktif dan nonaktif) dan stok per size. */
+export async function dataStokAsisten(db: Db): Promise<{ model: ModelStok[]; varian: VarianStok[] }> {
+  const [model, varian] = await Promise.all([
+    db
+      .select({ id: products.id, brand: products.brand, nama: products.nama, aktif: products.aktif })
+      .from(products)
+      .orderBy(asc(products.brand), asc(products.nama)),
+    db.select({ productId: variants.productId, size: variants.size, stok: variants.stok }).from(variants),
+  ]);
+  return { model, varian };
 }

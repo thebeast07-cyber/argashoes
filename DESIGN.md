@@ -46,6 +46,10 @@ Putih (`#FFFFFF`) dipakai untuk permukaan kartu dan input. Status stok tidak per
 - Target sentuh minimal 44px.
 - Fokus keyboard: garis 2px warna bata dengan jarak 2px, di semua elemen interaktif.
 
+## Pengecualian: panel Asisten
+
+Atas permintaan pemilik web (18 Okt 2026), panel Asisten di admin memakai kaca buram (putih 85%, blur) dengan sudut 16px seperti panel iPhone, dan latar halaman di belakangnya diburamkan. Hanya panel ini. Tombol pembukanya padat warna tinta (sudut 16px, senada dengan panelnya). Bagian lain tetap mengikuti aturan Bentuk di atas.
+
 ## Ikon
 
 Dibuat sendiri, bukan dari library (Lucide dilarang). Grid 24, garis 1.75px, **ujung dan sambungan siku** (`stroke-linecap: square`, `stroke-linejoin: miter`) supaya senada dengan label kardus dan beda dari ikon bulat-bulat bawaan. Semua ikon ada di `src/components/ikon.tsx`.
