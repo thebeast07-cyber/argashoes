@@ -1,4 +1,4 @@
-import { and, asc, count, eq, exists, ilike, inArray, or, sql } from "drizzle-orm";
+import { and, asc, count, eq, exists, ilike, inArray, ne, or, sql } from "drizzle-orm";
 import type { Db } from "@/db";
 import { products, settings, variants } from "@/db/schema";
 import type { ProdukAda, VarianAda } from "@/lib/domain/import";
@@ -96,6 +96,15 @@ export async function daftarProduk(
         .sort((a, b) => bandingkanSize(a.size, b.size)),
     })),
   };
+}
+
+/** Brand yang sudah dipakai model lain, untuk menyamakan ejaan saat menyimpan (`samakanMerek`). */
+export async function daftarMerek(db: Db, kecualiProdukId?: string): Promise<string[]> {
+  const rows = await db
+    .selectDistinct({ v: products.brand })
+    .from(products)
+    .where(kecualiProdukId ? ne(products.id, kecualiProdukId) : undefined);
+  return rows.map((r) => r.v);
 }
 
 export async function opsiFilter(db: Db): Promise<{ brands: string[]; sizes: string[]; kategori: string[] }> {

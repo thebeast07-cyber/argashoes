@@ -3,7 +3,7 @@
 
 import { tabelKeObjek } from "../csv";
 import { feeDalamRentang } from "./fee";
-import { parseBilanganBulat, parseRupiah, skuValid } from "./produk";
+import { parseBilanganBulat, parseRupiah, samakanMerek, skuValid } from "./produk";
 import { normalisasiSize, normalisasiSku } from "./stok";
 
 export type ErrorBaris = { baris: number; pesan: string };
@@ -109,6 +109,8 @@ export function rencanakanImportKatalog(
 
   const produkPerId = new Map(produk.map((p) => [p.id, p]));
   const produkPerKunci = new Map(produk.map((p) => [kunciProduk(p.brand, p.nama), p]));
+  // Ejaan brand: yang sudah ada di katalog dulu, lalu yang pertama muncul di file.
+  const merekDikenal = [...new Set(produk.map((p) => p.brand))];
   const varianPerSku = new Map(varian.map((v) => [normalisasiSku(v.sku), v]));
   const sizePerProduk = new Map<string, Map<string, string>>(); // productId -> size -> sku
   for (const v of varian) {
@@ -166,12 +168,14 @@ export function rencanakanImportKatalog(
 
     const field: FieldProduk = {
       nama: nilai.nama.trim().replace(/\s+/g, " "),
-      brand: nilai.brand.trim(),
+      brand: samakanMerek(nilai.brand, merekDikenal),
       kategori: nilai.kategori?.trim() || null,
       harga: harga!,
       hargaCoret,
       feePerPasang: feeDipakai,
     };
+
+    if (!merekDikenal.includes(field.brand)) merekDikenal.push(field.brand);
 
     const k = kelompok.get(tujuan);
     if (k) {

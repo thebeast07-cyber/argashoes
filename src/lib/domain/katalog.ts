@@ -139,3 +139,13 @@ export function urlKatalog(cari: CariKatalog, ubah: Partial<CariKatalog> = {}): 
   const s = p.toString();
   return s ? `/?${s}` : "/";
 }
+
+/**
+ * Nama brand untuk kalimat di halaman: "Nike", "Nike dan Adidas", "Adidas, New Balance, dan Nike".
+ * Lebih dari 4 brand (atau belum ada): null, supaya kalimatnya umum dan tidak jadi daftar panjang.
+ */
+export function kalimatMerek(brand: readonly string[], maks = 4): string | null {
+  if (brand.length === 0 || brand.length > maks) return null;
+  if (brand.length === 1) return brand[0];
+  return `${brand.slice(0, -1).join(", ")}${brand.length > 2 ? "," : ""} dan ${brand[brand.length - 1]}`;
+}

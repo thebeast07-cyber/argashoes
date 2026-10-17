@@ -3,6 +3,7 @@ import { Gambar } from "@/components/gambar";
 import { getDb } from "@/db";
 import {
   halamanKatalog,
+  kalimatMerek,
   LABEL_URUT,
   opsiKatalog,
   parseCariKatalog,
@@ -31,6 +32,7 @@ export default async function Beranda({ searchParams }: { searchParams: Record<s
   const hasil = saringKatalog(semua, cari);
   const halaman = halamanKatalog(hasil, cari.hal);
   const katalogKosong = opsi.brand.length === 0;
+  const merek = kalimatMerek(opsi.brand);
   const filterLain = Boolean(cari.q || cari.kategori || cari.hargaMin !== undefined || cari.hargaMax !== undefined || cari.urut !== "baru");
 
   return (
@@ -41,7 +43,7 @@ export default async function Beranda({ searchParams }: { searchParams: Record<s
           <h1 id="judul-cari" className="agak-lebar mb-2 text-[clamp(44px,14vw,60px)] font-black leading-[0.95] tracking-tight min-[900px]:text-[clamp(64px,7vw,96px)]">
             Cari size kamu.
           </h1>
-          <p className="mb-5 max-w-[30ch] text-redup-gelap min-[900px]:mb-0 min-[900px]:text-lg">Pilih size, kami tampilkan model Nike dan Adidas yang masih ada stoknya.</p>
+          <p className="mb-5 max-w-[30ch] text-redup-gelap min-[900px]:mb-0 min-[900px]:text-lg">Pilih size, kami tampilkan model {merek ? `${merek} ` : ""}yang masih ada stoknya.</p>
         </div>
         <div>
           {opsi.size.length > 0 ? (

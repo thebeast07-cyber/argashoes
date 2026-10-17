@@ -62,3 +62,13 @@ export async function produkPublik(db: Db, id: string): Promise<ProdukPublik | n
   const varian = await db.select({ size: variants.size, stok: variants.stok }).from(variants).where(eq(variants.productId, id));
   return { ...p, varian: varian.sort((a, b) => bandingkanSize(a.size, b.size)) };
 }
+
+/** Brand yang tampil di katalog: model aktif yang punya size. Dipakai untuk kalimat di beranda, footer, dan deskripsi situs. */
+export async function merekAktif(db: Db): Promise<string[]> {
+  const rows = await db
+    .selectDistinct({ v: products.brand })
+    .from(products)
+    .innerJoin(variants, eq(variants.productId, products.id))
+    .where(eq(products.aktif, true));
+  return rows.map((r) => r.v).sort((a, b) => a.localeCompare(b, "id"));
+}

@@ -16,6 +16,16 @@ export function parseBilanganBulat(teks: string): number | null {
   return /^\d+$/.test(bersih) ? Number(bersih) : null;
 }
 
+/**
+ * Brand yang sudah ada dipakai dengan ejaan lamanya, supaya "nike" dan "Nike" tidak jadi dua filter merek.
+ * Brand baru disimpan apa adanya, hanya spasinya dirapikan.
+ */
+export function samakanMerek(brand: string, ada: readonly string[]): string {
+  const rapi = (b: string) => b.trim().replace(/\s+/g, " ");
+  const kunci = rapi(brand).toLowerCase();
+  return ada.find((b) => rapi(b).toLowerCase() === kunci) ?? rapi(brand);
+}
+
 export function formatRupiah(n: number): string {
   return "Rp " + n.toLocaleString("id-ID");
 }

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { formatRupiah, parseRupiah, validasiProduk, validasiVarian, type InputProduk } from "@/lib/domain/produk";
+import { formatRupiah, parseRupiah, samakanMerek, validasiProduk, validasiVarian, type InputProduk } from "@/lib/domain/produk";
 
 const input = (o: Partial<InputProduk> = {}): InputProduk => ({
   nama: "Air Max 90",
@@ -86,5 +86,15 @@ describe("validasiVarian", () => {
 
   it("SKU dengan spasi atau simbol aneh ditolak", () => {
     assert.ok(!validasiVarian({ sku: "AB CD", size: "40", stok: "1" }).ok);
+  });
+});
+
+describe("samakanMerek", () => {
+  it("ejaan brand yang sudah ada dipakai, brand baru hanya dirapikan spasinya", () => {
+    const ada = ["Nike", "Adidas", "New Balance"];
+    assert.equal(samakanMerek("nike", ada), "Nike");
+    assert.equal(samakanMerek("  NEW   balance ", ada), "New Balance");
+    assert.equal(samakanMerek(" Puma  King ", ada), "Puma King");
+    assert.equal(samakanMerek("Puma", []), "Puma");
   });
 });

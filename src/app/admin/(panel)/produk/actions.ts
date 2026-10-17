@@ -15,8 +15,8 @@ import {
   type RencanaKatalog,
   type RencanaStok,
 } from "@/lib/domain/import";
-import { parseBilanganBulat, validasiProduk, validasiVarian, type InputProduk } from "@/lib/domain/produk";
-import { dataUntukImport, fotoProduk } from "@/lib/produk/data";
+import { parseBilanganBulat, samakanMerek, validasiProduk, validasiVarian, type InputProduk } from "@/lib/domain/produk";
+import { daftarMerek, dataUntukImport, fotoProduk } from "@/lib/produk/data";
 import {
   buatProduk,
   hapusVarian,
@@ -53,7 +53,8 @@ export async function simpanProdukBaru(_prev: StateForm, form: FormData): Promis
   const hasil = validasiProduk(input);
   if (!hasil.ok) return { error: hasil.error };
 
-  const id = await buatProduk(await getDb(), hasil.data, user.id);
+  const db = await getDb();
+  const id = await buatProduk(db, { ...hasil.data, brand: samakanMerek(hasil.data.brand, await daftarMerek(db)) }, user.id);
   revalidatePath("/admin/produk");
   redirect(`/admin/produk/${id}?baru=1`);
 }
@@ -67,7 +68,10 @@ export async function simpanProduk(id: string, _prev: StateForm, form: FormData)
   const hasil = validasiProduk(input);
   if (!hasil.ok) return { error: hasil.error };
 
-  const status = await ubahProduk(await getDb(), id, hasil.data, user.id, { bolehUbahFee });
+  const db = await getDb();
+  // Model ini sendiri tidak dihitung, supaya ejaan brand-nya tetap bisa dibetulkan ("nike" jadi "Nike").
+  const brand = samakanMerek(hasil.data.brand, await daftarMerek(db, id));
+  const status = await ubahProduk(db, id, { ...hasil.data, brand }, user.id, { bolehUbahFee });
   if (status === "tidak_ada") return { pesan: "Produk ini sudah tidak ada." };
   revalidatePath("/admin/produk");
   revalidatePath(`/admin/produk/${id}`);

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   halamanKatalog,
+  kalimatMerek,
   opsiKatalog,
   parseCariKatalog,
   ringkasSizeKartu,
@@ -103,5 +104,15 @@ describe("urlKatalog", () => {
     assert.equal(urlKatalog(c, { brand: undefined }), "/?size=42");
     assert.equal(urlKatalog(c, { hal: 4 }), "/?size=42&brand=Nike&hal=4");
     assert.equal(urlKatalog({ ...DASAR, urut: "murah", hargaMin: 500_000 }), "/?min=500000&urut=murah");
+  });
+});
+
+describe("kalimatMerek", () => {
+  it("1 sampai 4 brand disebut, lebih dari itu atau kosong: null", () => {
+    assert.equal(kalimatMerek([]), null);
+    assert.equal(kalimatMerek(["Nike"]), "Nike");
+    assert.equal(kalimatMerek(["Adidas", "Nike"]), "Adidas dan Nike");
+    assert.equal(kalimatMerek(["Adidas", "New Balance", "Nike"]), "Adidas, New Balance, dan Nike");
+    assert.equal(kalimatMerek(["A", "B", "C", "D", "E"]), null);
   });
 });

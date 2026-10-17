@@ -151,3 +151,20 @@ describe("rencanakanImportKatalog", () => {
     assert.match(r.error[5].pesan, /tanpa spasi/);
   });
 });
+
+describe("ejaan brand saat import", () => {
+  it("brand yang sudah ada dipakai ejaannya; brand baru pakai ejaan pertama di file", () => {
+    const csv = [
+      HEADER,
+      "NK-AM90-42,NIKE,Air Max 90,Lifestyle,1.899.000,,,42,3",
+      "AD-GZL-40, adidas ,Gazelle,,1.500.000,,,40,4",
+      "NB-550-41,New Balance,550,,1.600.000,,,41,2",
+      "NB-990-42,new  balance,990,,2.600.000,,,42,1",
+    ].join("\n");
+    const r = rencanakanImportKatalog(parseCsv(csv), PRODUK, VARIAN, { bolehUbahFee: true });
+    assert.deepEqual(r.error, []);
+    // "NIKE" untuk Air Max yang sudah ada tidak dihitung sebagai perubahan brand.
+    assert.deepEqual(r.produkDiubah, []);
+    assert.deepEqual(r.produkBaru.map((p) => p.data.brand), ["Adidas", "New Balance", "New Balance"]);
+  });
+});
