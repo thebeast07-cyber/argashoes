@@ -5,6 +5,7 @@ import { useFormState, useFormStatus } from "react-dom";
 import { BATAS_UKURAN_CSV } from "@/lib/csv";
 import { PesanGalat } from "@/components/pesan";
 import { pratinjauImport, terapkanImport, type HasilImport, type JenisImport } from "../actions";
+import { PanduanImport } from "./panduan";
 
 const KOLOM: Record<JenisImport, string> = {
   stok: "sku, size, stok",
@@ -135,13 +136,9 @@ export function FormImport() {
         ))}
       </fieldset>
 
-      <p className="text-sm text-redup">
-        Paling gampang: unduh{" "}
-        <a href={`/admin/produk/ekspor?format=${jenis}`} className="font-semibold text-tinta underline underline-offset-2">
-          file {jenis === "stok" ? "stok" : "katalog"} saat ini
-        </a>
-        , ubah di Excel atau Google Sheets, lalu simpan sebagai CSV dan pilih di bawah. Pemisah koma dan titik koma sama-sama bisa.
-      </p>
+      <PanduanImport jenis={jenis} />
+
+      <p className="text-sm text-redup">Pemisah koma dan titik koma sama-sama bisa.</p>
 
       <div>
         <label htmlFor="file-csv" className="label-form">
