@@ -38,6 +38,7 @@ PGlite hanya bisa dibuka satu proses: hentikan `npm run dev` sebelum menjalankan
 - `src/lib/domain/katalog.ts`: baca pencarian dari URL, saring/urut katalog, ringkas size per kartu (murni). `src/lib/katalog/data.ts`: query publik (hanya model aktif). Halaman publik di `src/app/(publik)/`: beranda katalog, `/produk/[id]`, `/cara-order`. Utilitas `.wadah` di `globals.css` membatasi isi 1200px dengan latar tetap selebar layar.
 - `src/lib/domain/keranjang.ts` (keranjang di localStorage, murni) dan `checkout.ts` (validasi pembeli, `rencanakanOrder` membaca ulang harga/stok, kode `WEB-XXXX` acak, pesan WhatsApp, batas kirim). `src/lib/orders/buat-order.ts`: pelanggan + order Lead + item + event dalam satu transaksi, `orderPublik`, `catatKlikWa`. Alur publik: `/produk/[id]` → `/keranjang` (server action `kirimPesanan`) → `/pesanan/[kode]` → `/pesanan/[kode]/wa` (catat klik, 303 ke wa.me). Hook `src/lib/keranjang/use-keranjang.ts`.
 - Admin order (tahap 6): `src/app/admin/(panel)/order/` (daftar per status, detail, ubah status, resi + foto resi, catatan internal, riwayat) dan `pelanggan/` (+ ekspor CSV di `src/app/admin/pelanggan/ekspor`). Query di `src/lib/orders/data.ts`, tulis di `mutasi.ts` (dengan `audit_log`). Aturan tampilan (Lead > 24 jam, awal hari WIB, isi email) di `src/lib/domain/order-admin.ts`. Email order baru: `src/lib/notifikasi/` lewat Resend (`RESEND_API_KEY` kosong → tidak mengirim), penerima semua pemilik aktif + `EMAIL_NOTIFIKASI`.
+- Laporan fee (tahap 7): `src/app/admin/(panel)/fee/` (ringkasan semua bulan, detail per bulan, tandai dibayar) dan ekspor CSV di `src/app/admin/fee/[bulan]/ekspor`. Angka selalu lewat `rekapFeeBulanan`; `src/lib/fee/data.ts` hanya menyaring kasar di SQL. Bulan, tanggal WIB, dan status bayar (belum/lunas/selisih) di `src/lib/domain/laporan-fee.ts`. Hanya izin `fee.laporan` (pemilik).
 - `src/components/pesan.tsx`: `PesanGalat` (galat selalu ikon + teks, bukan warna saja) dan `RingkasanGalat` (dekat tombol simpan, memindah fokus ke kolom pertama yang `aria-invalid`). Pakai ini untuk semua pesan gagal.
 - `src/components/ikon.tsx`: ikon buatan sendiri. Jangan pakai Lucide atau library ikon lain (permintaan pemilik).
 - `DESIGN.md`: arah tampilan sementara (token warna di `tailwind.config.ts`). Baca sebelum kerja UI.
@@ -61,6 +62,7 @@ PGlite hanya bisa dibuka satu proses: hentikan `npm run dev` sebelum menjalankan
 - **Dikirim wajib resi** dijaga dua lapis: `transisiStatus` dan CHECK constraint di tabel `orders`. `dikirim_pada` diisi saat pindah ke Dikirim dan tidak berubah saat Selesai.
 - **Tidak ada tier yang cocok** → `tentukanFeePerPasang` mengembalikan `null`; checkout memakai `FEE_MIN` (Rp 50.000, batas bawah kesepakatan) supaya pembeli tidak ditolak selama tabel fee belum lengkap. Fee disalin ke `order_items` saat order dibuat.
 - **Batal wajib alasan** dijaga dua lapis (`transisiStatus` dan CHECK `orders_alasan_batal_check`); alasan juga disalin ke `order_events.catatan` supaya tetap terbaca di riwayat yang append-only.
+- **Pembayaran fee** (`fee_payments`): total diambil dari rekap di server saat ditandai dibayar, bukan dari form. Kalau rekap bulan itu berubah sesudahnya (mis. ditandai sebelum bulan selesai), halaman menampilkan selisih dan meminta tandai ulang. Tandai dan pembatalannya tercatat di `audit_log`.
 - **Lead terbengkalai** = Lead yang dibiarkan 24 jam atau lebih (keputusan pemilik, bukan 1 jam seperti PRD).
 - **Order publik**: harga dan stok dibaca ulang dari DB saat checkout (bukan dari browser); web tidak menahan stok. Kode `WEB-XXXX` acak (bukan urut) dari alfabet tanpa 0/O/1/I/L, diulang kalau bentrok. Batas 3 order per nomor WA per jam (DB) dan 10 kirim per IP per 10 menit (memori, sampai Redis ada), plus kolom jebakan bot. Pesan WA disusun di server dan memuat alamat, karena halaman order admin belum ada.
 - Tambahan tabel di luar PRD: `sessions`, `fee_tiers`, `audit_log` (riwayat perubahan stok/produk/akun/pengaturan, append-only), `usulan`.
@@ -72,7 +74,7 @@ PGlite hanya bisa dibuka satu proses: hentikan `npm run dev` sebelum menjalankan
 
 ## Belum dibangun
 
-Laporan fee (tahap 7), pengaturan nama toko/area kirim/kebijakan retur, halaman audit log untuk stok dan akun, Redis, rate limit login. Catatan per tahap ada di `notes/`.
+Pengaturan nama toko/area kirim/kebijakan retur, halaman audit log untuk stok dan akun, Redis, rate limit login. Catatan per tahap ada di `notes/`.
 
 <!-- antislop:start -->
 ## antislop

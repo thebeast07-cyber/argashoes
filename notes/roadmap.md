@@ -10,7 +10,7 @@ Urutan ini mengikuti dependensi: order butuh produk, laporan fee butuh order. Ti
 | 4 | Katalog publik | Selesai: beranda cari size, grid, cari, filter merek/kategori/harga, urut harga, halaman produk dengan galeri dan status stok, cara order. Tombol pesan menunggu tahap 5 | Foto produk |
 | 5 | Keranjang, checkout, WhatsApp | Selesai: keranjang di browser, checkout + persetujuan, order `WEB-XXXX` tersimpan dulu baru ke WA (klik dicatat), halaman konfirmasi, batas kirim per nomor WA dan per IP (memori), honeypot. Rate limit per IP yang kuat menunggu Redis | Nomor WA toko |
 | 6 | Order & pelanggan (admin) | Selesai: daftar order per status + cari (kode/nama/WA), detail, ubah status (Batal wajib alasan, Dikirim wajib resi), foto resi, catatan internal, riwayat, pelanggan + riwayat + ekspor CSV, beranda: order hari ini dan Lead > 24 jam, email order baru (Resend) | – |
-| 7 | Laporan fee | Rekap per bulan, daftar order pendukung, tandai sudah dibayar, ekspor CSV | Tanggal cut-off, aturan retur |
+| 7 | Laporan fee | Selesai: ringkasan semua bulan, rekap per bulan WIB dari tanggal Dikirim, order pendukung, tandai dibayar (dengan deteksi selisih), ekspor CSV. Cut-off memakai bulan kalender sampai retailer menentukan lain | Tanggal cut-off, aturan retur |
 | 8 | Beranda admin & analitik | Ringkasan hari ini, order Lead > 1 jam, size habis, klik WA 7/30 hari (Redis) | – |
 | 9 | Halaman pendukung & SEO | Cara order, retur, privasi, sitemap, link UTM | Kebijakan retur, nama brand, domain |
 

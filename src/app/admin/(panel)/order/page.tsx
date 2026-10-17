@@ -3,6 +3,7 @@ import { IkonCari } from "@/components/ikon";
 import { LabelStatus } from "@/components/label-status";
 import { getDb } from "@/db";
 import { wajibIzin } from "@/lib/auth/current";
+import { punyaIzin } from "@/lib/auth/roles";
 import { leadTerbengkalai, umur } from "@/lib/domain/order-admin";
 import { isStatusOrder, LABEL_STATUS, STATUS_ORDER, type StatusOrder } from "@/lib/domain/order-status";
 import { formatRupiah } from "@/lib/domain/produk";
@@ -23,7 +24,7 @@ function url(cari: { status?: StatusOrder; q?: string; hal?: number }) {
 }
 
 export default async function HalamanOrder({ searchParams }: { searchParams: Cari }) {
-  await wajibIzin("order.kelola");
+  const user = await wajibIzin("order.kelola");
   const status = isStatusOrder(searchParams.status) ? searchParams.status : undefined;
   const q = searchParams.q?.trim().slice(0, 60) || undefined;
   const halaman = Math.max(1, Number(searchParams.hal) || 1);
@@ -37,9 +38,16 @@ export default async function HalamanOrder({ searchParams }: { searchParams: Car
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-bold">Order</h1>
-        <Link href="/admin/pelanggan" className="tombol-garis px-3 text-sm">
-          Pelanggan
-        </Link>
+        <div className="flex gap-2">
+          {punyaIzin(user.peran, "fee.laporan") && (
+            <Link href="/admin/fee" className="tombol-garis px-3 text-sm">
+              Laporan fee
+            </Link>
+          )}
+          <Link href="/admin/pelanggan" className="tombol-garis px-3 text-sm">
+            Pelanggan
+          </Link>
+        </div>
       </div>
 
       <form role="search" action="/admin/order" className="space-y-2">

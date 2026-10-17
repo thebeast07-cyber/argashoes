@@ -3,7 +3,11 @@ import { IkonCari, IkonMasukKardus } from "@/components/ikon";
 import { getDb } from "@/db";
 import { wajibLogin } from "@/lib/auth/current";
 import { punyaIzin } from "@/lib/auth/roles";
+import { periodeFee } from "@/lib/domain/fee";
+import { labelBulan } from "@/lib/domain/laporan-fee";
 import { awalHariWib, umur } from "@/lib/domain/order-admin";
+import { formatRupiah } from "@/lib/domain/produk";
+import { rekapBulan } from "@/lib/fee/data";
 import { ringkasanBerandaOrder } from "@/lib/orders/data";
 import { jumlahUsulanMenunggu } from "@/lib/pengaturan/data";
 import { daftarSizeHabis } from "@/lib/produk/data";
@@ -18,10 +22,11 @@ export default async function BerandaAdmin({ searchParams }: { searchParams: { a
   const db = await getDb();
   const kelolaProduk = punyaIzin(user.peran, "produk.kelola");
   const sekarang = new Date();
-  const [usulanMenunggu, habis, order] = await Promise.all([
+  const [usulanMenunggu, habis, order, fee] = await Promise.all([
     punyaIzin(user.peran, "usulan.putuskan") ? jumlahUsulanMenunggu(db) : 0,
     kelolaProduk ? daftarSizeHabis(db, BATAS_HABIS) : null,
     punyaIzin(user.peran, "order.kelola") ? ringkasanBerandaOrder(db, awalHariWib(sekarang), sekarang) : null,
+    punyaIzin(user.peran, "fee.laporan") ? rekapBulan(db, periodeFee(sekarang)) : null,
   ]);
 
   return (
@@ -39,6 +44,16 @@ export default async function BerandaAdmin({ searchParams }: { searchParams: { a
             Periksa usulan
           </Link>
         </div>
+      )}
+
+      {fee && (
+        <Link href={`/admin/fee/${fee.bulan}`} className="block rounded-label border-[1.5px] border-tinta bg-white p-3 hover:bg-kertas">
+          <span className="block text-sm text-redup">Fee {labelBulan(fee.bulan)} sejauh ini</span>
+          <span className="angka block text-2xl font-extrabold">{formatRupiah(fee.totalFee)}</span>
+          <span className="angka block text-sm">
+            {fee.jumlahPasang} pasang · <span className="font-semibold underline underline-offset-2">Lihat laporan fee</span>
+          </span>
+        </Link>
       )}
 
       {order && (
