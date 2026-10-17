@@ -35,7 +35,7 @@ export default async function HalamanBanner({ searchParams }: { searchParams: { 
           Banner baru
         </Link>
       </div>
-      <p className="text-sm text-redup">Banner tampil di atas katalog selama jadwalnya, lalu hilang sendiri. Kalau ada dua yang jadwalnya bertabrakan, yang mulainya paling baru yang tampil.</p>
+      <p className="text-sm text-redup">Banner muncul sebagai gambar di tengah layar saat pembeli membuka beranda, selama jadwalnya, lalu berhenti sendiri. Kalau ada dua yang jadwalnya bertabrakan, yang mulainya paling baru yang tampil.</p>
 
       {(searchParams.tersimpan || searchParams.dihapus) && (
         <p role="status" className="rounded-label border-[1.5px] border-tinta bg-white p-3 text-sm">

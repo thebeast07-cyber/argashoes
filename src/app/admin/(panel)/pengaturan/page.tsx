@@ -139,7 +139,7 @@ export default async function HalamanPengaturan({ searchParams }: { searchParams
         <h2 id="judul-banner" className="text-lg font-bold">
           Banner promo
         </h2>
-        <p className="text-sm text-redup">Pengumuman di atas katalog, mis. promo tanggal kembar. Tampil dan hilang sendiri sesuai jadwal.</p>
+        <p className="text-sm text-redup">Gambar promo yang muncul saat pembeli membuka web, mis. promo tanggal kembar. Tampil dan berhenti sendiri sesuai jadwal.</p>
         <Link href="/admin/pengaturan/banner" className="tombol-garis">
           Atur banner
         </Link>

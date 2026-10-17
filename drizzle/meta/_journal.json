@@ -36,6 +36,20 @@
       "when": 1792265575326,
       "tag": "0004_banner",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792266288499,
+      "tag": "0005_banner_overlay",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792266298467,
+      "tag": "0006_banner_buang_kolom_lama",
+      "breakpoints": true
     }
   ]
 }

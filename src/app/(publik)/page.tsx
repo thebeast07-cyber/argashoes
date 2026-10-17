@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BannerPromo } from "@/components/banner-promo";
+import { BannerOverlay } from "@/components/banner-overlay";
 import { Gambar } from "@/components/gambar";
 import { getDb } from "@/db";
 import { bannerBeranda } from "@/lib/banner/data";
@@ -39,7 +39,9 @@ export default async function Beranda({ searchParams }: { searchParams: Record<s
 
   return (
     <main>
-      {promo && <BannerPromo banner={promo} />}
+      {promo?.gambarPotret && promo.gambarLanskap && (
+        <BannerOverlay banner={{ id: promo.id, judul: promo.judul, gambarPotret: promo.gambarPotret, gambarLanskap: promo.gambarLanskap, tautan: promo.tautan }} />
+      )}
       {/* Satu fokus: pencari size. Size adalah hambatan terbesar sebelum beli. */}
       <section aria-labelledby="judul-cari" className="wadah bg-tinta pb-6 pt-7 text-kertas min-[900px]:grid min-[900px]:grid-cols-[minmax(0,1fr)_minmax(0,520px)] min-[900px]:items-end min-[900px]:gap-x-14 min-[900px]:py-14">
         <div>

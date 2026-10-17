@@ -6,10 +6,9 @@ import { bannerTayang, type Banner } from "@/lib/domain/banner";
 const kolom = {
   id: banner.id,
   judul: banner.judul,
-  keterangan: banner.keterangan,
-  gambarUrl: banner.gambarUrl,
+  gambarPotret: banner.gambarPotret,
+  gambarLanskap: banner.gambarLanskap,
   tautan: banner.tautan,
-  teksTombol: banner.teksTombol,
   mulai: banner.mulai,
   selesai: banner.selesai,
   aktif: banner.aktif,
