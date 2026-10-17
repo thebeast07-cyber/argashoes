@@ -179,6 +179,15 @@ details.panduan .dalam b { display: block; margin-top: 10px; color: var(--tinta)
 .bar-bawah .total b { font-size: 18px; }
 .bar-bawah .tombol { flex: 1; }
 
+/* Galeri produk */
+.galeri-wadah { position: relative; }
+.galeri { display: flex; margin: 0; padding: 0; list-style: none; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.galeri::-webkit-scrollbar { display: none; }
+.galeri .slide { flex: 0 0 100%; scroll-snap-align: start; }
+.posisi { position: absolute; right: 12px; bottom: 12px; margin: 0; padding: 4px 8px; border-radius: 2px; background: var(--tinta); color: var(--kertas); font-weight: 700; font-size: 14px; }
+/* Deret foto kecil hanya di layar lebar; di HP foto cukup digeser. */
+.jempol { display: none; }
+
 /* ---- Keranjang dan checkout ---- */
 .halaman { padding: 8px 16px 40px; }
 .halaman h1 { margin: 8px 0 14px; font-stretch: 105%; font-weight: 900; font-size: 32px; letter-spacing: -0.02em; line-height: 1.02; }
@@ -249,6 +258,10 @@ form { margin-top: 22px; }
   .produk .jalan { padding-left: 0; }
   .produk-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 56px; align-items: start; }
   .produk-foto { position: sticky; top: 16px; }
+  .jempol { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin: 10px 0 0; padding: 0; list-style: none; }
+  .jempol button { display: block; width: 100%; padding: 0; border: 1.5px solid transparent; border-radius: 2px; background: none; cursor: pointer; }
+  .jempol button[aria-current="true"] { border-color: var(--tinta); }
+  .jempol .foto { aspect-ratio: 1 / 1; font-size: 14px; }
   .produk-info { display: flex; flex-direction: column; }
   .produk .kepala-produk { order: 1; padding: 0; }
   .produk h1 { font-size: 44px; }
@@ -291,12 +304,12 @@ form { margin-top: 22px; }
 const AMBANG = 3;
 const SIZES = [38, 39, 40, 41, 42, 43, 44, 45];
 const PRODUK = [
-  { id: "samba-og", brand: "Adidas", nama: "Samba OG", harga: 1399000, coret: 1599000, stok: { 39: 3, 40: 5, 41: 0, 42: 4, 43: 2, 44: 0 } },
-  { id: "air-max-90", brand: "Nike", nama: "Air Max 90", harga: 1899000, coret: null, stok: { 40: 2, 41: 3, 42: 6, 43: 4, 44: 1 } },
-  { id: "court-vision-low", brand: "Nike", nama: "Court Vision Low", harga: 899000, coret: 1099000, stok: { 38: 2, 39: 4, 40: 3, 41: 5, 42: 0, 43: 2 } },
-  { id: "dunk-low", brand: "Nike", nama: "Dunk Low", harga: 1549000, coret: null, stok: { 39: 1, 40: 0, 41: 2, 42: 3, 43: 3, 44: 2, 45: 1 } },
-  { id: "gazelle", brand: "Adidas", nama: "Gazelle", harga: 1299000, coret: null, stok: { 38: 3, 39: 2, 40: 4, 41: 3, 42: 2, 43: 0 } },
-  { id: "campus-00s", brand: "Adidas", nama: "Campus 00s", harga: 1199000, coret: 1399000, stok: { 39: 0, 40: 2, 41: 3, 42: 5, 43: 3, 44: 2 } },
+  { id: "samba-og", foto: 5, brand: "Adidas", nama: "Samba OG", harga: 1399000, coret: 1599000, stok: { 39: 3, 40: 5, 41: 0, 42: 4, 43: 2, 44: 0 } },
+  { id: "air-max-90", foto: 3, brand: "Nike", nama: "Air Max 90", harga: 1899000, coret: null, stok: { 40: 2, 41: 3, 42: 6, 43: 4, 44: 1 } },
+  { id: "court-vision-low", foto: 1, brand: "Nike", nama: "Court Vision Low", harga: 899000, coret: 1099000, stok: { 38: 2, 39: 4, 40: 3, 41: 5, 42: 0, 43: 2 } },
+  { id: "dunk-low", foto: 4, brand: "Nike", nama: "Dunk Low", harga: 1549000, coret: null, stok: { 39: 1, 40: 0, 41: 2, 42: 3, 43: 3, 44: 2, 45: 1 } },
+  { id: "gazelle", foto: 2, brand: "Adidas", nama: "Gazelle", harga: 1299000, coret: null, stok: { 38: 3, 39: 2, 40: 4, 41: 3, 42: 2, 43: 0 } },
+  { id: "campus-00s", foto: 3, brand: "Adidas", nama: "Campus 00s", harga: 1199000, coret: 1399000, stok: { 39: 0, 40: 2, 41: 3, 42: 5, 43: 3, 44: 2 } },
 ];
 const rp = (n) => "Rp " + n.toLocaleString("id-ID");
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -365,6 +378,26 @@ function kaki() {
     </dl>
     <a class="ke-cara" href="#/cara-order">Cara order</a>
   </footer>`;
+}
+
+// Galeri: di HP digeser (scroll-snap) dengan penanda posisi; mulai 900px ada deret foto kecil untuk lompat.
+function galeri(p) {
+  const n = p.foto || 1;
+  const slide = Array.from({ length: n }, (_, i) =>
+    `<li class="slide"><div class="foto" role="img" aria-label="Foto ${i + 1} dari ${n}, belum ada, ini penanda tempat">[FOTO ${i + 1}${n > 1 ? `/${n}` : ""}]</div></li>`).join("");
+  if (n === 1) return `<ul class="galeri" aria-label="Foto produk">${slide}</ul>`;
+  return `<div class="galeri-wadah">
+    <ul class="galeri" id="galeri" tabindex="0" aria-label="Foto produk, geser untuk melihat ${n} foto">${slide}</ul>
+    <p class="posisi angka" aria-hidden="true"><span id="posisi-foto">1</span>/${n}</p>
+  </div>
+  <ul class="jempol" aria-label="Pilih foto">${Array.from({ length: n }, (_, i) =>
+    `<li><button type="button" data-aksi="ke-foto" data-i="${i}" aria-label="Lihat foto ${i + 1}" ${i === 0 ? 'aria-current="true"' : ""}><span class="foto">${i + 1}</span></button></li>`).join("")}</ul>`;
+}
+
+function tandaiFoto(i) {
+  const posisi = document.getElementById("posisi-foto");
+  if (posisi) posisi.textContent = String(i + 1);
+  document.querySelectorAll(".jempol button").forEach((b, j) => (j === i ? b.setAttribute("aria-current", "true") : b.removeAttribute("aria-current")));
 }
 
 /* ---- Layar ---- */
@@ -461,7 +494,7 @@ function layarProduk(id) {
   <main class="produk">
     <a class="jalan" href="#/">${IK.kembali}Katalog</a>
     <div class="produk-grid">
-    <div class="produk-foto">${foto("[FOTO PRODUK]")}</div>
+    <div class="produk-foto">${galeri(p)}</div>
     <div class="produk-info">
     <div class="kepala-produk">
       <p class="merek-kecil">${p.brand}</p>
@@ -594,6 +627,12 @@ function gambar() {
 let fokusSetelah = null;
 function pasang(fokus) { fokusSetelah = fokus || null; gambar(); if (fokusSetelah) { const el = document.querySelector(fokusSetelah); if (el) el.focus(); } }
 
+// Penanda posisi ikut berubah saat foto digeser dengan jari atau tombol panah.
+app.addEventListener("scroll", (e) => {
+  if (e.target.id !== "galeri") return;
+  tandaiFoto(Math.round(e.target.scrollLeft / e.target.clientWidth));
+}, true);
+
 window.addEventListener("hashchange", () => { state.galat = {}; gambar(); window.scrollTo(0, 0); });
 
 app.addEventListener("click", (e) => {
@@ -623,6 +662,10 @@ app.addEventListener("click", (e) => {
   } else if (a === "hapus") {
     state.keranjang.splice(Number(t.dataset.i), 1);
     pasang();
+  } else if (a === "ke-foto") {
+    const g = document.getElementById("galeri");
+    g.scrollTo({ left: Number(t.dataset.i) * g.clientWidth });
+    tandaiFoto(Number(t.dataset.i));
   } else if (a === "ke-daftar") {
     e.preventDefault();
     const judul = document.getElementById("judul-daftar");
