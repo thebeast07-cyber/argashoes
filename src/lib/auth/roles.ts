@@ -13,14 +13,25 @@ export const IZIN = [
   "produk.kelola",
   "order.kelola",
   "pelanggan.lihat",
+  "pengaturan.ubah",
+  "usulan.ajukan",
+  // Fee dan rekening tampil: pemilik mengubah langsung dan memutuskan usulan admin toko.
   "fee.atur",
+  "rekening.atur",
+  "usulan.putuskan",
   "fee.laporan",
   "akun.kelola",
   "analitik.lihat",
 ] as const;
 export type Izin = (typeof IZIN)[number];
 
-const IZIN_ADMIN_TOKO: readonly Izin[] = ["produk.kelola", "order.kelola", "pelanggan.lihat"];
+const IZIN_ADMIN_TOKO: readonly Izin[] = [
+  "produk.kelola",
+  "order.kelola",
+  "pelanggan.lihat",
+  "pengaturan.ubah",
+  "usulan.ajukan",
+];
 
 const IZIN_PER_PERAN: Record<Peran, readonly Izin[]> = {
   admin_toko: IZIN_ADMIN_TOKO,

@@ -1,11 +1,14 @@
 import { wajibLogin } from "@/lib/auth/current";
 import { LABEL_PERAN, punyaIzin } from "@/lib/auth/roles";
+import { getDb } from "@/db";
+import { jumlahUsulanMenunggu } from "@/lib/pengaturan/data";
 import { logout } from "../actions";
 import { NavBawah } from "./nav-bawah";
 
 // Shell admin untuk HP: header ringkas + tab bawah.
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
   const user = await wajibLogin();
+  const usulanMenunggu = punyaIzin(user.peran, "usulan.putuskan") ? await jumlahUsulanMenunggu(await getDb()) : 0;
 
   return (
     <div className="mx-auto min-h-screen max-w-2xl pb-24">
@@ -21,7 +24,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
         </form>
       </header>
       <main className="px-4 py-4">{children}</main>
-      <NavBawah pemilik={punyaIzin(user.peran, "akun.kelola")} />
+      <NavBawah pemilik={punyaIzin(user.peran, "akun.kelola")} usulanMenunggu={usulanMenunggu} />
     </div>
   );
 }

@@ -4,8 +4,24 @@
     {
       "name": "argashoes",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       "port": 3000,
+      "autoPort": true
+    },
+    {
+      "name": "mockup-publik",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "4300",
+        "--directory",
+        "mockup/publik"
+      ],
+      "port": 4300,
       "autoPort": true
     }
   ]

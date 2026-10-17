@@ -109,3 +109,13 @@ export function IkonCoret(p: Props) {
     </Dasar>
   );
 }
+
+/** Pengaturan: tiga penggeser dengan kenop kotak, nilai yang bisa diatur. */
+export function IkonPengaturan(p: Props) {
+  return (
+    <Dasar {...p}>
+      <path d="M3 6h4M11 6h10M3 12h10M17 12h4M3 18h2M9 18h12" />
+      <path d="M7 4h4v4H7zM13 10h4v4h-4zM5 16h4v4H5z" />
+    </Dasar>
+  );
+}

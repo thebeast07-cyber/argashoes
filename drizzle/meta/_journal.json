@@ -15,6 +15,13 @@
       "when": 1792169026623,
       "tag": "0001_log_append_only",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792174634948,
+      "tag": "0002_usulan",
+      "breakpoints": true
     }
   ]
 }
