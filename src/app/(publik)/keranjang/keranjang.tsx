@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { NamaProduk } from "@/components/nama-produk";
 import { useFormState, useFormStatus } from "react-dom";
 import { Gambar } from "@/components/gambar";
 import { IkonChat, IkonKembali, IkonTambah } from "@/components/ikon";
@@ -82,9 +83,9 @@ export function Keranjang({ bisaPesan }: { bisaPesan: boolean }) {
                         <Gambar src={i.foto} alt="" className="aspect-square w-full" />
                       </Link>
                       <div className="min-w-0">
-                        <h2 className="font-bold leading-tight">
+                        <h2 className="font-bold leading-tight [overflow-wrap:anywhere]">
                           <Link href={`/produk/${i.productId}`} className="hover:underline">
-                            {i.brand} {i.nama}
+                            {i.brand} <NamaProduk nama={i.nama} />
                           </Link>
                         </h2>
                         <p className="angka mb-2 mt-0.5 text-sm text-redup">

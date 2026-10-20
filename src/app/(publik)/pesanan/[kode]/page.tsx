@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { NamaProduk } from "@/components/nama-produk";
 import { notFound } from "next/navigation";
 import { IkonChat } from "@/components/ikon";
 import { getDb } from "@/db";
@@ -32,8 +33,8 @@ export default async function HalamanPesanan({ params, searchParams }: { params:
       </div>
       <ul className="mb-2 space-y-1">
         {order.items.map((i) => (
-          <li key={`${i.namaProduk}-${i.size}`} className="angka">
-            {i.jumlah} × {i.namaProduk}, size {i.size}
+          <li key={`${i.namaProduk}-${i.size}`} className="angka [overflow-wrap:anywhere]">
+            {i.jumlah} × <NamaProduk nama={i.namaProduk} />, size {i.size}
           </li>
         ))}
       </ul>

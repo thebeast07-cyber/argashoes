@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { NamaProduk } from "@/components/nama-produk";
 import { BannerOverlay } from "@/components/banner-overlay";
 import { Gambar } from "@/components/gambar";
 import { getDb } from "@/db";
@@ -260,7 +261,9 @@ function Kartu({ item, size, ambang }: { item: ItemKatalog; size?: string; amban
       <div className="px-2.5 pb-3 pt-2.5">
         <p className="sempit text-[13px] font-bold uppercase text-redup">{item.brand}</p>
         {/* Maksimal 3 baris supaya kartu sebaris tidak jauh beda tinggi; nama lengkap ada di halaman produk dan tetap dibaca pembaca layar. */}
-        <h3 className="mb-1.5 mt-0.5 line-clamp-3 font-bold leading-tight [overflow-wrap:anywhere]">{item.nama}</h3>
+        <h3 className="mb-1.5 mt-0.5 line-clamp-3 font-bold leading-tight [overflow-wrap:anywhere]">
+          <NamaProduk nama={item.nama} />
+        </h3>
         <p className="angka text-[17px] font-extrabold">{formatRupiah(item.harga)}</p>
         {item.hargaCoret && item.hargaCoret > item.harga && <p className="angka text-sm text-redup line-through">{formatRupiah(item.hargaCoret)}</p>}
         {size ? (
