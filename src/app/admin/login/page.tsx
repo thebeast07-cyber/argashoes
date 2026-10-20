@@ -15,12 +15,7 @@ export default async function HalamanLogin() {
   if (await getUserSaatIni()) redirect("/admin");
   const akunPertama = !(await adaAkun(await getDb()));
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col px-4 pb-10 pt-3">
-      {/* Setelah keluar, admin mendarat di sini; jalan pulang ke toko harus ada tanpa mengetik alamat. */}
-      <Link href="/" className="-ml-2 inline-flex min-h-11 items-center gap-1 self-start px-2 text-sm font-semibold underline underline-offset-2">
-        <IkonKembali ukuran={18} />
-        Kembali ke toko
-      </Link>
+    <main className="mx-auto flex min-h-screen max-w-sm flex-col px-4 py-10">
       <div className="flex flex-1 flex-col justify-center">
         <Image src="/logo-argashoes.png" alt="Argashoes" width={90} height={72} priority className="mb-6 h-[72px] w-auto self-start" />
         <h1 className="mb-1 text-2xl font-bold">Masuk admin</h1>
@@ -30,6 +25,11 @@ export default async function HalamanLogin() {
             : "Pakai akun masing-masing, jangan berbagi password."}
         </p>
         <FormLogin />
+        {/* Setelah keluar, admin mendarat di sini; jalan pulang ke toko harus ada tanpa mengetik alamat. */}
+        <Link href="/" className="mt-4 inline-flex min-h-11 items-center gap-1 self-center px-2 text-sm font-semibold underline underline-offset-2">
+          <IkonKembali ukuran={18} />
+          Kembali ke toko
+        </Link>
       </div>
     </main>
   );
