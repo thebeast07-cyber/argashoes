@@ -4,7 +4,8 @@ import { PENGETAHUAN_WEB } from "./pengetahuan";
 
 // Panggilan ke Gemini lewat REST, tanpa SDK. Gemini tidak punya jalan untuk menulis apa pun: untuk ubah stok ia hanya
 // mengisi ubahStok, lalu server menyusun kartu konfirmasi dan stok baru berubah setelah pengguna menekan Simpan stok.
-// Yang dikirim: obrolan dan ringkasan katalog + stok. Tanpa order, data pembeli, atau fee.
+// Untuk pesan ke akun lain ia mengisi kirimPesan, lalu pesan terkirim setelah pengguna menekan Kirim.
+// Yang dikirim: obrolan, ringkasan katalog + stok, dan nama + peran akun lain. Tanpa order, data pembeli, fee, atau email.
 
 export class AsistenTidakTersedia extends Error {}
 
@@ -30,6 +31,8 @@ Kamu membaca PENGETAHUAN WEB di bawah (cara kerja semua fitur) dan DATA TOKO (ka
 
 Satu-satunya perubahan yang bisa kamu siapkan adalah stok. Kalau pengguna minta mengubah stok (tambah, kurangi, jadikan angka tertentu, habis = jadi 0), isi ubahStok: satu baris per size dengan nomorModel dari DATA TOKO, size persis seperti di data, cara "tambah", "kurangi", atau "jadi", dan jumlah. Sistem akan menampilkan kartu konfirmasi di bawah balasanmu dan stok baru berubah setelah pengguna menekan Simpan stok, jadi jangan bilang stoknya sudah berubah; bilang saja minta dicek lalu disimpan. Kalau model yang dimaksud tidak jelas (lebih dari satu yang cocok), size tidak ada, atau jumlahnya tidak jelas, tanya balik dan biarkan ubahStok kosong. Jangan isi ubahStok kalau pengguna hanya bertanya. Hal lain (harga, foto, deskripsi, status order, hapus produk) tidak bisa kamu ubah; jelaskan caranya.
 
+Kamu juga bisa menyampaikan pesan ke akun admin lain (daftar AKUN LAIN di bawah DATA TOKO). Kalau pengguna minta menyampaikan, mengingatkan, bilang, atau membalas ke seseorang, isi kirimPesan: nomorAkun dari AKUN LAIN dan isi berupa kalimat langsung dari pengguna untuk penerima, sopan dan jelas, tanpa mengubah maksud (contoh: "bilang ke owner isi nomor WA" → "Tolong isi nomor WhatsApp toko di Pengaturan ya."). Sistem menampilkan kartu dan pesan baru terkirim setelah pengguna menekan tombol kirim di kartu, jadi jangan bilang pesannya sudah terkirim. Kalau penerimanya tidak jelas, tanya balik dan biarkan kirimPesan kosong. Pesan dari akun lain muncul di obrolan sebagai "(Pesan masuk dari Nama: ...)".
+
 Kalau ditanya cara melakukan sesuatu di web, jawab dengan langkah bernomor (1. 2. 3.), sebut nama tombol persis seperti di pengetahuan, dan sertakan tautan ke halamannya dengan format [Nama halaman](/path). Pakai hanya path yang tertulis di pengetahuan. Untuk sepatu tertentu jangan buat tautan sendiri; isi nomorModel, sistem akan menampilkan tautan ke halamannya. Jangan mengarang menu, tombol, atau fitur; kalau sesuatu belum ada, bilang terus terang.
 
 Isi balasan dengan jawabanmu. Boleh pakai baris baru, daftar "- ", langkah "1. ", **tebal**, dan [tautan](/path). Isi nomorModel dengan nomor model dari DATA TOKO yang kamu bahas (maksimal 5), atau kosong.`;
@@ -52,9 +55,29 @@ const SKEMA = {
         required: ["nomorModel", "size", "cara", "jumlah"],
       },
     },
+    kirimPesan: {
+      type: "OBJECT",
+      properties: { nomorAkun: { type: "INTEGER" }, isi: { type: "STRING" } },
+      required: ["nomorAkun", "isi"],
+    },
   },
   required: ["balasan", "nomorModel"],
 };
+
+/**
+ * Giliran berurutan dari pihak yang sama digabung. Pesan masuk dan pesan langsung dicatat sebagai giliran pengguna,
+ * jadi bisa ada dua giliran pengguna berturut-turut, dan sebagian model Gemini menolak itu.
+ */
+function gabungGiliran(giliran: readonly Giliran[]) {
+  const hasil: { role: "user" | "model"; parts: { text: string }[] }[] = [];
+  for (const g of giliran) {
+    const role = g.peran === "user" ? "user" : "model";
+    const akhir = hasil.at(-1);
+    if (akhir?.role === role) akhir.parts[0].text += `\n\n${g.teks}`;
+    else hasil.push({ role, parts: [{ text: g.teks }] });
+  }
+  return hasil;
+}
 
 export async function tanyaGemini(pertanyaan: string, riwayat: readonly Giliran[], dataToko: string): Promise<unknown> {
   const key = process.env.GEMINI_API_KEY;
@@ -63,10 +86,7 @@ export async function tanyaGemini(pertanyaan: string, riwayat: readonly Giliran[
   const model = [...new Set([process.env.GEMINI_MODEL?.trim(), ...MODEL_CADANGAN].filter((m): m is string => Boolean(m)))];
   const body = JSON.stringify({
     systemInstruction: { parts: [{ text: `${INSTRUKSI}\n\nPENGETAHUAN WEB:\n${PENGETAHUAN_WEB}\n\nDATA TOKO:\n${dataToko}` }] },
-    contents: [
-      ...riwayat.map((g) => ({ role: g.peran === "user" ? "user" : "model", parts: [{ text: g.teks }] })),
-      { role: "user", parts: [{ text: pertanyaan }] },
-    ],
+    contents: gabungGiliran([...riwayat, { peran: "user", teks: pertanyaan }]),
     generationConfig: { responseMimeType: "application/json", responseSchema: SKEMA, temperature: 0.8 },
   });
 

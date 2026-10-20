@@ -306,3 +306,27 @@ export const usulan = pgTable(
     check("usulan_keputusan_check", sql`(${t.status} = 'menunggu') = (${t.diputuskanPada} is null)`),
   ],
 );
+
+// --- Pesan antar akun admin lewat Asisten --------------------------------------------
+
+// Pesan singkat antar akun (mis. pemilik web mengingatkan owner). Tampil sebagai notif di tombol Asisten penerima.
+export const pesanAdmin = pgTable(
+  "pesan_admin",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    dariUserId: uuid("dari_user_id")
+      .notNull()
+      .references(() => users.id),
+    keUserId: uuid("ke_user_id")
+      .notNull()
+      .references(() => users.id),
+    isi: text("isi").notNull(),
+    dibuat: dibuat(),
+    dibaca: timestamp("dibaca", { withTimezone: true }),
+  },
+  (t) => [
+    index("pesan_admin_masuk_idx").on(t.keUserId, t.dibaca),
+    check("pesan_admin_isi_check", sql`char_length(${t.isi}) between 1 and 1000`),
+    check("pesan_admin_beda_check", sql`${t.dariUserId} <> ${t.keUserId}`),
+  ],
+);

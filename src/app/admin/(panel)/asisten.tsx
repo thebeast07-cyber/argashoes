@@ -1,14 +1,26 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Fragment, useEffect, useRef, useState, useTransition } from "react";
 import { IkonChat, IkonKirim, IkonTutup } from "@/components/ikon";
 import { LabelSize } from "@/components/label-size";
 import { PesanGalat } from "@/components/pesan";
 import type { RencanaStokAsisten } from "@/lib/domain/asisten-aksi";
 import { BATAS_PERTANYAAN, BATAS_RIWAYAT, uraiTeks, type BarisModel, type Giliran } from "@/lib/domain/asisten-stok";
+import { BATAS_PESAN } from "@/lib/domain/pesan-admin";
 import type { AmbangStok } from "@/lib/domain/stok";
-import { simpanStokAsisten, tanyaAsisten, type HasilSimpanStok, type HasilTanya } from "./asisten-actions";
+import { formatWaktuWib } from "@/lib/domain/waktu";
+import {
+  ambilPesanBaru,
+  cekPesanBaru,
+  kirimPesanAdmin,
+  simpanStokAsisten,
+  tanyaAsisten,
+  type HasilKirimPesan,
+  type HasilSimpanStok,
+  type HasilTanya,
+} from "./asisten-actions";
 
 // Pengecualian dari DESIGN.md atas permintaan pemilik web (18 Okt 2026): panel asisten memakai kaca buram dengan
 // sudut membulat, seperti panel iPhone, supaya terasa sebagai lapisan percakapan di atas alat kerja.
@@ -17,14 +29,44 @@ import { simpanStokAsisten, tanyaAsisten, type HasilSimpanStok, type HasilTanya 
 
 const CONTOH = ["Stok keseluruhan berapa?", "Produk mana yang belum ada foto?", "Cara pasang banner promo?"];
 
+// Jumlah pesan baru dicek ulang tiap pindah halaman, saat tab kembali dilihat, dan tiap menit selama halaman terbuka.
+const JEDA_CEK_PESAN = 60_000;
+
+type Penerima = { id: string; nama: string; peran: string };
 type StatusSimpan = "menyimpan" | "dibatalkan" | HasilSimpanStok;
-type Pesan = { kunci: number; peran: "user" | "asisten"; teks: string; hasil?: HasilTanya; simpan?: StatusSimpan };
+type Pesan = {
+  kunci: number;
+  peran: "user" | "asisten" | "masuk" | "terkirim";
+  teks: string;
+  hasil?: HasilTanya;
+  simpan?: StatusSimpan;
+  kirim?: StatusSimpan;
+  /** Pesan masuk dari akun lain. */
+  dari?: { id: string; nama: string; waktu: string };
+  /** Pesan yang dikirim langsung lewat form Kirim pesan. */
+  keNama?: string;
+};
 
 /** Catatan untuk Gemini di giliran berikutnya, supaya tidak mengusulkan ulang perubahan yang sudah diputuskan. */
 function catatanSimpan(s: StatusSimpan | undefined): string {
   if (s === "dibatalkan") return "\n(Perubahan stok di kartu ini dibatalkan pengguna, stok tidak berubah.)";
   if (typeof s === "object" && s.sukses) return "\n(Perubahan stok di kartu ini sudah disimpan pengguna.)";
   return "";
+}
+
+function catatanKirim(s: StatusSimpan | undefined): string {
+  if (s === "dibatalkan") return "\n(Pesan di kartu ini batal dikirim.)";
+  if (typeof s === "object" && s.sukses) return "\n(Pesan di kartu ini sudah dikirim.)";
+  return "";
+}
+
+/** Pesan masuk dan pesan langsung ikut diceritakan ke Gemini, supaya "balas dia: oke" bisa dipahami. */
+function keRiwayat(p: Pesan): Giliran | null {
+  if (p.peran === "user") return { peran: "user", teks: p.teks };
+  if (p.peran === "masuk") return { peran: "user", teks: `(Pesan masuk dari ${p.dari?.nama}: ${p.teks})` };
+  if (p.peran === "terkirim") return { peran: "user", teks: `(Pengguna mengirim pesan langsung ke ${p.keNama}: ${p.teks})` };
+  if (!p.hasil?.teks) return null;
+  return { peran: "asisten", teks: p.hasil.teks + catatanSimpan(p.simpan) + catatanKirim(p.kirim) };
 }
 
 function TeksBalasan({ teks, tutup }: { teks: string; tutup: () => void }) {
@@ -109,6 +151,125 @@ function KartuStok({ rencana, status, simpan, batal }: { rencana: RencanaStokAsi
   );
 }
 
+// Pesan yang disusun Gemini untuk akun lain. Baru terkirim setelah tombol Kirim ditekan.
+function KartuPesan({
+  pesan,
+  status,
+  kirim,
+  batal,
+}: {
+  pesan: NonNullable<HasilTanya["pesan"]>;
+  status?: StatusSimpan;
+  kirim: () => void;
+  batal: () => void;
+}) {
+  if ("masalah" in pesan) {
+    return (
+      <div className="mt-2">
+        <PesanGalat>{pesan.masalah}</PesanGalat>
+      </div>
+    );
+  }
+  const r = pesan.rencana;
+  const hasil = typeof status === "object" ? status : null;
+  const selesai = status === "dibatalkan" || Boolean(hasil?.sukses);
+  return (
+    <div className="mt-2 space-y-2 rounded-xl border-[1.5px] border-tinta bg-white p-3">
+      <p className="text-sm font-semibold">
+        Pesan untuk {r.keNama} ({r.kePeran})
+      </p>
+      <p className="whitespace-pre-line break-words border-l-[3px] border-tinta/30 pl-3">{r.isi}</p>
+      {status === "dibatalkan" && <p className="text-sm font-semibold">Tidak dikirim.</p>}
+      {hasil?.sukses && <p className="text-sm font-semibold">{hasil.sukses}</p>}
+      {hasil?.galat && <PesanGalat>{hasil.galat}</PesanGalat>}
+      {!selesai && (
+        <div className="flex gap-2">
+          <button type="button" onClick={kirim} disabled={status === "menyimpan"} className="tombol-utama min-h-11 flex-1 rounded-xl">
+            {status === "menyimpan" ? "Mengirim..." : `Kirim ke ${r.keNama}`}
+          </button>
+          <button type="button" onClick={batal} disabled={status === "menyimpan"} className="tombol-garis min-h-11 rounded-xl px-4">
+            Batal
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Tulis pesan sendiri tanpa AI: tetap bisa dipakai saat kuota Gemini habis.
+function FormKirimPesan({
+  penerima,
+  awalKe,
+  batal,
+  terkirim,
+}: {
+  penerima: Penerima[];
+  awalKe: string;
+  batal: () => void;
+  terkirim: (keNama: string, isi: string) => void;
+}) {
+  const [ke, setKe] = useState(awalKe || (penerima.length === 1 ? penerima[0].id : ""));
+  const [isi, setIsi] = useState("");
+  const [galat, setGalat] = useState<string | null>(null);
+  const [mengirim, setMengirim] = useState(false);
+  const area = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    area.current?.focus();
+  }, []);
+
+  async function kirim(e: React.FormEvent) {
+    e.preventDefault();
+    setMengirim(true);
+    setGalat(null);
+    const hasil = await kirimPesanAdmin(ke, isi).catch((): HasilKirimPesan => ({ galat: "Koneksi terputus. Pesan belum terkirim." }));
+    setMengirim(false);
+    if (hasil.sukses) terkirim(penerima.find((a) => a.id === ke)?.nama ?? "", isi.trim());
+    else setGalat(hasil.galat ?? "Pesan belum terkirim. Coba lagi.");
+  }
+
+  return (
+    <form onSubmit={kirim} className="space-y-2 border-t border-tinta/10 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3">
+      <p className="text-sm font-semibold">Kirim pesan langsung, tanpa AI</p>
+      <div className="flex items-center gap-2">
+        <label htmlFor="pesan-ke" className="text-sm">
+          Ke
+        </label>
+        <select id="pesan-ke" value={ke} onChange={(e) => setKe(e.target.value)} className="input min-h-11 flex-1 rounded-xl bg-white">
+          {penerima.length > 1 && <option value="">Pilih akun</option>}
+          {penerima.map((a) => (
+            <option key={a.id} value={a.id}>
+              {a.nama} ({a.peran})
+            </option>
+          ))}
+        </select>
+      </div>
+      <label htmlFor="pesan-isi" className="sr-only">
+        Isi pesan
+      </label>
+      <textarea
+        ref={area}
+        id="pesan-isi"
+        rows={3}
+        value={isi}
+        onChange={(e) => setIsi(e.target.value)}
+        maxLength={BATAS_PESAN}
+        placeholder="Tulis pesan..."
+        className="input resize-none rounded-xl bg-white leading-snug"
+      />
+      {galat && <PesanGalat>{galat}</PesanGalat>}
+      <div className="flex gap-2">
+        <button type="submit" disabled={mengirim || !ke || !isi.trim()} className="tombol-utama min-h-11 flex-1 rounded-xl">
+          {mengirim ? "Mengirim..." : "Kirim pesan"}
+        </button>
+        <button type="button" onClick={batal} disabled={mengirim} className="tombol-garis min-h-11 rounded-xl px-4">
+          Batal
+        </button>
+      </div>
+    </form>
+  );
+}
+
 function DataStok({ data, ambang, tutup }: { data: BarisModel[]; ambang: AmbangStok; tutup: () => void }) {
   return (
     <details className="group mt-2 border-t border-tinta/10 pt-1">
@@ -176,7 +337,7 @@ function useUkuranPanelHp(terbuka: boolean): React.CSSProperties | undefined {
   return gaya;
 }
 
-export function Asisten() {
+export function Asisten({ penerima, pesanBaruAwal }: { penerima: Penerima[]; pesanBaruAwal: number }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const tombolBuka = useRef<HTMLButtonElement>(null);
   const input = useRef<HTMLTextAreaElement>(null);
@@ -187,6 +348,26 @@ export function Asisten() {
   const [pesan, setPesan] = useState<Pesan[]>([]);
   const [sedang, mulai] = useTransition();
   const gayaHp = useUkuranPanelHp(terbuka);
+  const [baru, setBaru] = useState(pesanBaruAwal);
+  /** null = form Kirim pesan tertutup; selain itu id penerima yang dipilih ("" = belum dipilih). */
+  const [tulis, setTulis] = useState<string | null>(null);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const cek = () => {
+      if (document.visibilityState !== "visible" || dialog.current?.open) return;
+      cekPesanBaru()
+        .then(setBaru)
+        .catch(() => {});
+    };
+    cek();
+    const jeda = setInterval(cek, JEDA_CEK_PESAN);
+    document.addEventListener("visibilitychange", cek);
+    return () => {
+      clearInterval(jeda);
+      document.removeEventListener("visibilitychange", cek);
+    };
+  }, [pathname]);
 
   useEffect(() => {
     bawah.current?.scrollIntoView({ block: "end" });
@@ -200,10 +381,20 @@ export function Asisten() {
     el.style.height = `${Math.min(el.scrollHeight, 132)}px`;
   }, [teks]);
 
+  const tambah = (p: Omit<Pesan, "kunci">) => setPesan((s) => [...s, { ...p, kunci: ++urutan.current }].slice(-60));
+
   function buka() {
     dialog.current?.showModal();
     setTerbuka(true);
     input.current?.focus();
+    if (baru > 0) {
+      ambilPesanBaru()
+        .then((daftar) => {
+          setBaru(0);
+          for (const m of daftar) tambah({ peran: "masuk", teks: m.isi, dari: { id: m.dariId, nama: m.dariNama, waktu: formatWaktuWib(new Date(m.dibuat)) } });
+        })
+        .catch(() => {});
+    }
   }
   function tutup() {
     dialog.current?.close();
@@ -212,11 +403,10 @@ export function Asisten() {
   function kirim(pertanyaan: string) {
     const q = pertanyaan.trim();
     if (!q || sedang) return;
-    const riwayat: Giliran[] = pesan
-      .filter((p) => p.peran === "user" || p.hasil?.teks)
-      .map((p) => ({ peran: p.peran, teks: p.peran === "user" ? p.teks : p.hasil!.teks! + catatanSimpan(p.simpan) }))
+    const riwayat = pesan
+      .map(keRiwayat)
+      .filter((g): g is Giliran => g !== null)
       .slice(-BATAS_RIWAYAT);
-    const tambah = (p: Omit<Pesan, "kunci">) => setPesan((s) => [...s, { ...p, kunci: ++urutan.current }].slice(-60));
     tambah({ peran: "user", teks: q });
     setTeks("");
     mulai(async () => {
@@ -232,6 +422,18 @@ export function Asisten() {
 
   function aturSimpan(kunci: number, simpan: StatusSimpan) {
     setPesan((s) => s.map((p) => (p.kunci === kunci ? { ...p, simpan } : p)));
+  }
+  function aturKirim(kunci: number, kirim: StatusSimpan) {
+    setPesan((s) => s.map((p) => (p.kunci === kunci ? { ...p, kirim } : p)));
+  }
+
+  function kirimKartu(p: Pesan) {
+    const r = p.hasil?.pesan && "rencana" in p.hasil.pesan ? p.hasil.pesan.rencana : null;
+    if (!r) return;
+    aturKirim(p.kunci, "menyimpan");
+    kirimPesanAdmin(r.keId, r.isi)
+      .catch((): HasilKirimPesan => ({ galat: "Koneksi terputus. Pesan belum terkirim, coba lagi." }))
+      .then((hasil) => aturKirim(p.kunci, hasil));
   }
 
   function simpanStok(p: Pesan) {
@@ -256,6 +458,12 @@ export function Asisten() {
       >
         <IkonChat ukuran={20} />
         Asisten
+        {baru > 0 && (
+          <span className="angka -mr-1 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-bata px-1.5 text-sm font-bold text-white">
+            {baru > 9 ? "9+" : baru}
+            <span className="sr-only"> pesan baru</span>
+          </span>
+        )}
       </button>
 
       <dialog
@@ -275,8 +483,13 @@ export function Asisten() {
               <h2 id="judul-asisten" className="text-base font-bold">
                 Asisten
               </h2>
-              <p className="truncate text-xs text-redup">Ubah stok selalu lewat konfirmasimu</p>
+              <p className="truncate text-xs text-redup">Ubah stok dan pesan lewat konfirmasimu</p>
             </div>
+            {penerima.length > 0 && tulis === null && (
+              <button type="button" onClick={() => setTulis("")} className="min-h-11 px-2 text-sm font-semibold underline underline-offset-2">
+                Kirim pesan
+              </button>
+            )}
             {pesan.length > 0 && (
               <button type="button" onClick={() => setPesan([])} disabled={sedang} className="min-h-11 px-2 text-sm font-semibold underline underline-offset-2">
                 Mulai ulang
@@ -290,7 +503,7 @@ export function Asisten() {
           <div aria-live="polite" className="flex-1 space-y-3 overflow-y-auto overscroll-contain px-4 py-3 text-[15px] leading-relaxed">
             {pesan.length === 0 && (
               <div className="space-y-3">
-                <p>Mau cek atau ubah stok, tanya cara pakai fitur web, cari ide, atau sekadar ngobrol? Tanya aja. Contoh ubah stok: “AF1 putih 42 tambah 3, 43 jadi 0”. Jangan ketik data pembeli di sini ya.</p>
+                <p>Mau cek atau ubah stok, tanya cara pakai fitur web, titip pesan ke akun lain, atau sekadar ngobrol? Tanya aja. Contoh ubah stok: “AF1 putih 42 tambah 3, 43 jadi 0”. Jangan ketik data pembeli di sini ya.</p>
                 <div className="flex flex-wrap gap-2">
                   {CONTOH.map((c) => (
                     <button key={c} type="button" onClick={() => kirim(c)} className="tombol-garis min-h-11 rounded-xl bg-white/80 px-3 text-sm">
@@ -305,6 +518,23 @@ export function Asisten() {
                 <p key={p.kunci} className="ml-auto w-fit max-w-[85%] whitespace-pre-line break-words rounded-2xl rounded-br-md bg-tinta px-3 py-2 text-kertas">
                   {p.teks}
                 </p>
+              ) : p.peran === "terkirim" ? (
+                <div key={p.kunci} className="ml-auto w-fit max-w-[85%] space-y-0.5 rounded-2xl rounded-br-md bg-tinta px-3 py-2 text-kertas">
+                  <p className="text-xs font-semibold">Terkirim ke {p.keNama}</p>
+                  <p className="whitespace-pre-line break-words">{p.teks}</p>
+                </div>
+              ) : p.peran === "masuk" && p.dari ? (
+                <div key={p.kunci} className="max-w-[92%] space-y-1.5 rounded-2xl rounded-bl-md border-[1.5px] border-tinta bg-white px-3 py-2">
+                  <p className="text-xs font-semibold text-redup">
+                    Pesan dari {p.dari.nama} · {p.dari.waktu}
+                  </p>
+                  <p className="whitespace-pre-line break-words">{p.teks}</p>
+                  {penerima.some((a) => a.id === p.dari?.id) && (
+                    <button type="button" onClick={() => setTulis(p.dari!.id)} className="tombol-garis min-h-11 rounded-xl px-3 text-sm">
+                      Balas
+                    </button>
+                  )}
+                </div>
               ) : (
                 <div key={p.kunci} className="max-w-[92%] rounded-2xl rounded-bl-md border border-tinta/10 bg-white px-3 py-2">
                   {p.hasil?.galat ? (
@@ -320,6 +550,9 @@ export function Asisten() {
                           batal={() => aturSimpan(p.kunci, "dibatalkan")}
                         />
                       )}
+                      {p.hasil?.pesan && (
+                        <KartuPesan pesan={p.hasil.pesan} status={p.kirim} kirim={() => kirimKartu(p)} batal={() => aturKirim(p.kunci, "dibatalkan")} />
+                      )}
                       {p.hasil?.data && p.hasil.data.length > 0 && p.hasil.ambang && <DataStok data={p.hasil.data} ambang={p.hasil.ambang} tutup={tutup} />}
                     </>
                   )}
@@ -334,39 +567,55 @@ export function Asisten() {
             <div ref={bawah} />
           </div>
 
-          <form
-            className="flex items-end gap-2 border-t border-tinta/10 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3"
-            onSubmit={(e) => {
-              e.preventDefault();
-              kirim(teks);
-            }}
-          >
-            <label htmlFor="tanya-asisten" className="sr-only">
-              Pesan untuk asisten
-            </label>
-            <textarea
-              ref={input}
-              id="tanya-asisten"
-              rows={1}
-              value={teks}
-              onChange={(e) => setTeks(e.target.value)}
-              onKeyDown={(e) => {
-                // Enter kirim, Shift+Enter baris baru (keyboard fisik). Di HP, tombol kirim dipakai.
-                if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
-                  e.preventDefault();
-                  kirim(teks);
-                }
+          {tulis !== null ? (
+            <FormKirimPesan
+              key={tulis}
+              penerima={penerima}
+              awalKe={tulis}
+              batal={() => {
+                setTulis(null);
+                input.current?.focus();
               }}
-              maxLength={BATAS_PERTANYAAN}
-              autoComplete="off"
-              enterKeyHint="send"
-              placeholder="Tulis pesan..."
-              className="input resize-none rounded-xl bg-white leading-snug"
+              terkirim={(keNama, isi) => {
+                setTulis(null);
+                tambah({ peran: "terkirim", teks: isi, keNama });
+              }}
             />
-            <button type="submit" disabled={sedang || !teks.trim()} aria-label="Kirim" className="tombol-utama size-11 shrink-0 rounded-xl px-0">
-              <IkonKirim ukuran={20} />
-            </button>
-          </form>
+          ) : (
+            <form
+              className="flex items-end gap-2 border-t border-tinta/10 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3"
+              onSubmit={(e) => {
+                e.preventDefault();
+                kirim(teks);
+              }}
+            >
+              <label htmlFor="tanya-asisten" className="sr-only">
+                Pesan untuk asisten
+              </label>
+              <textarea
+                ref={input}
+                id="tanya-asisten"
+                rows={1}
+                value={teks}
+                onChange={(e) => setTeks(e.target.value)}
+                onKeyDown={(e) => {
+                  // Enter kirim, Shift+Enter baris baru (keyboard fisik). Di HP, tombol kirim dipakai.
+                  if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+                    e.preventDefault();
+                    kirim(teks);
+                  }
+                }}
+                maxLength={BATAS_PERTANYAAN}
+                autoComplete="off"
+                enterKeyHint="send"
+                placeholder="Tulis pesan..."
+                className="input resize-none rounded-xl bg-white leading-snug"
+              />
+              <button type="submit" disabled={sedang || !teks.trim()} aria-label="Kirim" className="tombol-utama size-11 shrink-0 rounded-xl px-0">
+                <IkonKirim ukuran={20} />
+              </button>
+            </form>
+          )}
         </div>
       </dialog>
     </>
