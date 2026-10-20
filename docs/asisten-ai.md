@@ -34,6 +34,17 @@ Pemilik memilih otomasi "Level 2": AI mengisi, manusia mengonfirmasi.
 - Browser mengirim balik isi kartu, bukan token tanda tangan. Itu cukup karena yang boleh menekan Simpan sudah punya izin `produk.kelola`, yang memang boleh mengubah stok berapa pun lewat form.
 - Asisten juga menerima jumlah foto dan ada tidaknya deskripsi per model, jadi bisa menjawab "produk mana yang belum ada foto".
 
+## Pesan antar akun (21 Okt 2026)
+
+Pemilik web tidak bisa mendikte owner, tapi butuh cara menitip pengingat (mis. "isi nomor WA"). Asisten jadi perantara:
+
+- **Kirim lewat AI**: "bilang ke owner …" → Gemini mengisi `kirimPesan` (nomor dari daftar AKUN LAIN: nama + peran, tanpa email) → kartu "Pesan untuk Nama" dengan tombol **Kirim ke Nama**. Terkirim setelah ditekan.
+- **Kirim tanpa AI**: tombol **Kirim pesan** di header panel (pilih penerima, tulis). Tetap jalan saat kuota Gemini habis.
+- **Terima**: angka merah di tombol Asisten (dicek saat pindah halaman, saat tab dilihat lagi, dan tiap menit). Saat panel dibuka, pesan baru tampil dengan tombol **Balas** lalu ditandai dibaca.
+- Tabel `pesan_admin` (`src/lib/pesan/data.ts`), aturan murni di `src/lib/domain/pesan-admin.ts`. Pesan bukan data bisnis, jadi tidak masuk `audit_log`.
+- Pesan masuk ikut riwayat obrolan ke Gemini sebagai giliran pengguna, supaya "balas dia: oke" bisa dipahami. Giliran berurutan dari pihak yang sama digabung (`gabungGiliran`) karena sebagian model menolaknya. Konsekuensinya: isi pesan bisa terkirim ke Gemini, jadi data pembeli tetap tidak boleh ditulis di pesan.
+- Tidak ada notifikasi ke HP. Butuh WhatsApp API (berbayar), email Resend (`RESEND_API_KEY` belum diisi), atau web push (iPhone wajib pasang ke layar utama).
+
 ## Yang tetap dijaga
 
 1. **Gemini tidak menulis.** Satu-satunya yang bisa ia siapkan adalah perubahan stok, dan itu baru tersimpan setelah pengguna menekan Simpan stok. Harga, foto, deskripsi, order, dan akun tetap lewat form.
