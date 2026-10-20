@@ -51,6 +51,8 @@ PGlite hanya bisa dibuka satu proses: hentikan `npm run dev` sebelum menjalankan
 - `src/lib/domain/pengaturan.ts`: editor tier (batas → rentang rapat), nomor WA, rekening, ambang stok. `usulan.ts`: jenis/status usulan, deteksi usulan basi, dampak tier ke produk. `waktu.ts`: tampilan waktu WIB.
 - `src/lib/pengaturan/`: `data.ts` (query pengaturan, usulan, riwayat), `mutasi.ts` (ubah langsung + ajukan/putuskan/tarik usulan, semua dengan `audit_log`), `ringkasan.ts` (teks daftar usulan dan riwayat).
 - `src/lib/auth/`: `roles.ts` (peran → izin, murni), `password.ts` (scrypt), `session.ts` (akun & sesi, tanpa Next), `current.ts` (helper Next: `wajibLogin`, `wajibIzin`). `akun.ts`: reset password dan aktif/nonaktif akun oleh pemilik (aturannya di `src/lib/domain/akun.ts`: tidak bisa menonaktifkan diri sendiri, minimal satu pemilik aktif); keduanya menghapus semua sesi akun itu.
+- Batas login (`src/lib/domain/batas-login.ts`, murni): 5 gagal per email atau 20 gagal per IP dalam 15 menit → login ditolak sampai jumlahnya turun di bawah batas. Gagal dicatat di tabel `percobaan_login` (`src/lib/auth/batas-login.ts`, dibuang setelah sehari); login berhasil menghapus hitungan email itu. Dicek sebelum password diperiksa.
+- `src/app/api/sehat/route.ts`: diagnosa deploy (env terisi, DB, migrasi). Hanya untuk sesi admin yang valid; selain itu 404.
 - `src/app/admin/`: login dan panel admin (mobile, tab bawah). `src/middleware.ts` hanya cek ada-tidaknya cookie; validasi sesi asli di layout panel.
 - `tests/unit/`: test fungsi murni. `tests/db/`: test integrasi dengan PGlite in-memory.
 
@@ -80,7 +82,7 @@ PGlite hanya bisa dibuka satu proses: hentikan `npm run dev` sebelum menjalankan
 
 ## Belum dibangun
 
-Pengaturan nama toko/area kirim/kebijakan retur, halaman audit log untuk stok dan akun, Redis, rate limit login. Catatan per tahap ada di `notes/`.
+Pengaturan nama toko/area kirim/kebijakan retur, halaman audit log untuk stok dan akun, Redis, upgrade Next.js 14 → versi terbaru (ada advisory keamanan di 14.x). Catatan per tahap ada di `notes/`.
 
 <!-- antislop:start -->
 ## antislop

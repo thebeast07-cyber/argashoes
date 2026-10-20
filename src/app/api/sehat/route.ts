@@ -1,4 +1,7 @@
 import { sql } from "drizzle-orm";
+import { cookies } from "next/headers";
+import { getUserSaatIni } from "@/lib/auth/current";
+import { SESSION_COOKIE } from "@/lib/auth/cookie";
 import { getDb } from "@/db";
 import { urlDatabase } from "@/db/url";
 import { kredensialBlob } from "@/lib/foto/kredensial-blob";
@@ -11,7 +14,17 @@ function bersihkan(pesan: string): string {
 }
 
 // Diagnosa deploy tanpa membuka rahasia: hanya ya/tidak dan pesan error yang dibersihkan.
+// Hanya untuk admin yang login; selain itu 404, supaya orang luar tidak tahu halaman ini ada.
 export async function GET() {
+  const tidakAda = () => new Response("Not Found", { status: 404 });
+  if (!cookies().has(SESSION_COOKIE)) return tidakAda();
+  try {
+    if (!(await getUserSaatIni())) return tidakAda();
+  } catch {
+    // Database tidak bisa dihubungi, jadi sesi tidak bisa dicek. Tetap tertutup.
+    return tidakAda();
+  }
+
   const env = (k: string) => Boolean(process.env[k]);
   const hasil: Record<string, unknown> = {
     node: process.version,
