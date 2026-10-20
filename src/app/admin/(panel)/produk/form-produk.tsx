@@ -1,6 +1,7 @@
 "use client";
 
 import { useFormState, useFormStatus } from "react-dom";
+import { InputRupiah } from "@/components/input-rupiah";
 import { PesanGalat, RingkasanGalat } from "@/components/pesan";
 import type { StateForm } from "./actions";
 
@@ -105,11 +106,10 @@ export function FormProduk({
 
       <div className="grid grid-cols-2 gap-3">
         <Kolom id="harga" label="Harga jual" error={e.harga} bantuan="Rupiah, contoh 1.299.000">
-          <input
+          <InputRupiah
             id="harga"
             name="harga"
             defaultValue={awal.harga}
-            inputMode="numeric"
             required
             className="input angka"
             aria-invalid={Boolean(e.harga)}
@@ -117,11 +117,10 @@ export function FormProduk({
           />
         </Kolom>
         <Kolom id="hargaCoret" label="Harga coret (opsional)" error={e.hargaCoret} bantuan="Harga sebelum diskon">
-          <input
+          <InputRupiah
             id="hargaCoret"
             name="hargaCoret"
             defaultValue={awal.hargaCoret}
-            inputMode="numeric"
             className="input angka"
             aria-invalid={Boolean(e.hargaCoret)}
             aria-describedby={desc("hargaCoret", true)}
@@ -131,11 +130,10 @@ export function FormProduk({
 
       {bolehUbahFee ? (
         <Kolom id="feePerPasang" label="Fee per pasang (opsional)" error={e.feePerPasang} bantuan="Rp 50.000 sampai Rp 100.000. Kosongkan untuk ikut tier harga.">
-          <input
+          <InputRupiah
             id="feePerPasang"
             name="feePerPasang"
             defaultValue={awal.feePerPasang}
-            inputMode="numeric"
             className="input angka"
             aria-invalid={Boolean(e.feePerPasang)}
             aria-describedby={desc("feePerPasang", true)}

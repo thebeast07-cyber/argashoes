@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { formatRupiah, parseRupiah, samakanMerek, validasiProduk, validasiVarian, type InputProduk } from "@/lib/domain/produk";
+import { formatRibuanSaatKetik, formatRupiah, parseRupiah, samakanMerek, validasiProduk, validasiVarian, type InputProduk } from "@/lib/domain/produk";
 
 const input = (o: Partial<InputProduk> = {}): InputProduk => ({
   nama: "Air Max 90",
@@ -96,5 +96,24 @@ describe("samakanMerek", () => {
     assert.equal(samakanMerek("  NEW   balance ", ada), "New Balance");
     assert.equal(samakanMerek(" Puma  King ", ada), "Puma King");
     assert.equal(samakanMerek("Puma", []), "Puma");
+  });
+});
+
+describe("formatRibuanSaatKetik", () => {
+  it("titik ribuan muncul saat diketik dan tetap terbaca parseRupiah", () => {
+    const kasus: [string, string][] = [
+      ["1599000", "1.599.000"],
+      ["1.5990.00", "1.599.000"],
+      ["Rp 50000", "50.000"],
+      ["0050000", "50.000"],
+      ["0", "0"],
+      ["", ""],
+      ["abc", ""],
+      ["999", "999"],
+      ["1000", "1.000"],
+    ];
+    for (const [ketik, tampil] of kasus) assert.equal(formatRibuanSaatKetik(ketik), tampil, ketik);
+    assert.equal(parseRupiah(formatRibuanSaatKetik("1599000")), 1_599_000);
+    assert.equal(formatRibuanSaatKetik("1".repeat(20)).replace(/\./g, "").length, 12);
   });
 });
