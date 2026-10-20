@@ -33,7 +33,7 @@ Tambah model baru ([Model sepatu baru](/admin/produk/baru)):
 1. Isi Brand, Nama model, Kategori (opsional), Harga jual, Harga coret (opsional, untuk promo), Deskripsi (opsional).
 2. Centang "Tampil di katalog" kalau model mau langsung tampil. Model nonaktif tidak tampil di web.
 3. Simpan. Size dan stok diisi setelah model tersimpan, lewat "Tambah size" di halaman model itu. Untuk size pertama, isi SKU dengan kode artikel dari label dus, strip, lalu size (mis. HM9451-600-40). Untuk size berikutnya, cukup ketik size-nya: kolom SKU terisi otomatis (kode artikel + strip + size) dan boleh diubah; ada tautan "Pakai SKU otomatis lagi" kalau sudah terlanjur diubah.
-4. Unggah foto lewat "Tambah foto". Maksimal 8 foto per model, foto pertama jadi sampul. Foto otomatis dikecilkan sebelum diunggah.
+4. Unggah foto lewat "Tambah foto". Maksimal 8 foto per model, foto pertama jadi sampul. Foto otomatis dikecilkan sebelum diunggah, dan sistem membuat versi ringan untuk kartu katalog supaya katalog cepat dibuka di HP. Foto lama yang belum punya versi ringan disiapkan otomatis selama halaman Produk terbuka (ada tulisan "Menyiapkan foto katalog versi ringan"); tidak ada yang perlu diklik.
 
 Status stok di web: Ready kalau stok sama dengan atau di atas angka "Ready mulai stok" (bawaan 3), "Sisa N" kalau di bawahnya, Habis kalau 0 (dicoret). Pembeli tidak melihat angka stok persis kalau masih Ready.
 

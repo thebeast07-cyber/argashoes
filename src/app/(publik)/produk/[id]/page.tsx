@@ -53,7 +53,7 @@ export default async function HalamanProduk({ params, searchParams }: Props) {
             </p>
           </div>
           <PilihPesan
-            produk={{ id: p.id, nama: p.nama, brand: p.brand, harga: p.harga, foto: p.foto[0] ?? null }}
+            produk={{ id: p.id, nama: p.nama, brand: p.brand, harga: p.harga, foto: p.sampulKecil }}
             varian={p.varian}
             ambang={ambang}
             sizeAwal={searchParams.size}

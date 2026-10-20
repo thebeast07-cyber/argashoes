@@ -1,6 +1,17 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { FOTO_MAKS, FOTO_UKURAN_MAKS, parseAksiFoto, terapkanAksiFoto, ukuranKecil, validasiFileFoto } from "@/lib/domain/foto";
+import {
+  FOTO_MAKS,
+  FOTO_UKURAN_MAKS,
+  fotoBelumKecil,
+  fotoUntukKartu,
+  parseAksiFoto,
+  rapikanPetaKecil,
+  sumberFotoSendiri,
+  terapkanAksiFoto,
+  ukuranKecil,
+  validasiFileFoto,
+} from "@/lib/domain/foto";
 
 const ABC = ["a", "b", "c"];
 
@@ -70,5 +81,40 @@ describe("ukuranKecil", () => {
     assert.deepEqual(ukuranKecil(4032, 3024), { lebar: 1600, tinggi: 1200 });
     assert.deepEqual(ukuranKecil(3024, 4032), { lebar: 1200, tinggi: 1600 });
     assert.deepEqual(ukuranKecil(800, 600), { lebar: 800, tinggi: 600 });
+  });
+});
+
+describe("versi kecil untuk kartu katalog", () => {
+  it("kartu memakai versi kecil kalau ada, foto asli kalau belum", () => {
+    const peta = { "/foto/a.jpg": "/foto/a-kecil.jpg" };
+    assert.equal(fotoUntukKartu(peta, "/foto/a.jpg"), "/foto/a-kecil.jpg");
+    assert.equal(fotoUntukKartu(peta, "/foto/lama.jpg"), "/foto/lama.jpg");
+    assert.equal(fotoUntukKartu(peta, undefined), null);
+  });
+
+  it("entri foto yang sudah dihapus dibuang dan file kecilnya dilaporkan", () => {
+    assert.deepEqual(rapikanPetaKecil({ a: "a1", b: "b1" }, ["b", "c"]), { peta: { b: "b1" }, dibuang: ["a1"] });
+  });
+
+  it("daftar foto yang belum punya versi kecil", () => {
+    const produk: { id: string; foto: string[]; fotoKecil: Record<string, string> }[] = [
+      { id: "x", foto: ["a", "b"], fotoKecil: { a: "a1" } },
+      { id: "y", foto: ["c"], fotoKecil: {} },
+    ];
+    assert.deepEqual(
+      fotoBelumKecil(produk).map((f) => [f.produk.id, f.url]),
+      [
+        ["x", "b"],
+        ["y", "c"],
+      ],
+    );
+  });
+
+  it("server hanya mengunduh dari folder lokal atau Vercel Blob", () => {
+    assert.equal(sumberFotoSendiri("/foto/0b1c.jpg"), true);
+    assert.equal(sumberFotoSendiri("https://abc123.public.blob.vercel-storage.com/produk/x.jpg"), true);
+    for (const url of ["http://abc.public.blob.vercel-storage.com/x.jpg", "https://evil.com/x.jpg", "https://public.blob.vercel-storage.com.evil.com/x", "file:///etc/passwd", "bukan url"]) {
+      assert.equal(sumberFotoSendiri(url), false, url);
+    }
   });
 });

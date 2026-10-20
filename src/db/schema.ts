@@ -79,6 +79,8 @@ export const products = pgTable(
     // Opsional. Kalau diisi, menimpa tier fee berdasarkan rentang harga.
     feePerPasang: integer("fee_per_pasang"),
     foto: jsonb("foto").$type<string[]>().notNull().default([]),
+    // Versi kecil (600px) untuk kartu katalog: url foto asli → url versi kecil. Foto tanpa entri tampil dengan aslinya.
+    fotoKecil: jsonb("foto_kecil").$type<Record<string, string>>().notNull().default({}),
     aktif: boolean("aktif").notNull().default(true),
     dibuat: dibuat(),
   },
