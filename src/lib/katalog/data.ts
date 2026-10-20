@@ -2,9 +2,11 @@ import { and, eq, inArray } from "drizzle-orm";
 import type { Db } from "@/db";
 import { products, variants } from "@/db/schema";
 import type { ItemKatalog } from "@/lib/domain/katalog";
+import { rapikanHurufBesar } from "@/lib/domain/teks";
 import { bandingkanSize } from "@/lib/domain/stok";
 
 // Query halaman publik. Hanya model aktif; penyaringan dan urutan ada di domain/katalog.ts.
+// Nama yang diketik HURUF BESAR SEMUA dirapikan untuk tampilan publik (rapikanHurufBesar); admin tetap melihat aslinya.
 // Ratusan model masih ringan dibaca sekaligus; kalau katalog jauh membesar, pindahkan saringan ke SQL.
 
 export async function semuaProdukAktif(db: Db): Promise<ItemKatalog[]> {
@@ -27,6 +29,7 @@ export async function semuaProdukAktif(db: Db): Promise<ItemKatalog[]> {
     : [];
   return baris.map(({ foto, ...p }) => ({
     ...p,
+    nama: rapikanHurufBesar(p.nama),
     sampul: foto[0] ?? null,
     varian: semuaVarian.filter((v) => v.productId === p.id).map(({ size, stok }) => ({ size, stok })),
   }));
@@ -60,7 +63,7 @@ export async function produkPublik(db: Db, id: string): Promise<ProdukPublik | n
     .where(and(eq(products.id, id), eq(products.aktif, true)));
   if (!p) return null;
   const varian = await db.select({ size: variants.size, stok: variants.stok }).from(variants).where(eq(variants.productId, id));
-  return { ...p, varian: varian.sort((a, b) => bandingkanSize(a.size, b.size)) };
+  return { ...p, nama: rapikanHurufBesar(p.nama), varian: varian.sort((a, b) => bandingkanSize(a.size, b.size)) };
 }
 
 /** Brand yang tampil di katalog: model aktif yang punya size. Dipakai untuk kalimat di beranda, footer, dan deskripsi situs. */

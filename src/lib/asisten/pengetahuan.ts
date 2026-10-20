@@ -37,7 +37,9 @@ Tambah model baru ([Model sepatu baru](/admin/produk/baru)):
 
 Status stok di web: Ready kalau stok sama dengan atau di atas angka "Ready mulai stok" (bawaan 3), "Sisa N" kalau di bawahnya, Habis kalau 0 (dicoret). Pembeli tidak melihat angka stok persis kalau masih Ready.
 
-Deskripsi produk dirapikan otomatis di halaman produk: baris pendek yang diakhiri titik dua (mis. "Spesifikasi:") jadi subjudul, setiap tanda "•" atau baris yang diawali "- " jadi satu poin, dan bagian sebelum titik dua di poin (mis. "Artikel: DH2987-001") ditebalkan. Jadi teks yang ditempel dari marketplace tetap rapi tanpa diketik ulang.
+Tampilan di web dirapikan otomatis, owner bebas mengetik dengan gaya apa pun dan data aslinya tidak diubah:
+- Nama yang diketik HURUF BESAR SEMUA tampil sebagai Huruf Awal Besar di katalog dan halaman produk (kode berangka seperti AF1/90 dan singkatan seperti OG/SB tetap besar). Di admin tetap terlihat seperti yang diketik.
+- Deskripsi yang ditempel dari Shopee/Tokopedia/IG dipecah jadi subjudul dan poin: tanda "•", emoji seperti ✅ atau ➤, "-", dan "1." jadi poin; judul berakhiran titik dua, HURUF BESAR, atau dibungkus 【】/=== jadi subjudul; "Warna: Hitam" labelnya ditebalkan; hashtag dan garis hiasan disembunyikan.
 
 Harga promo: isi "Harga coret" lebih tinggi dari "Harga jual". Di web tampil harga coret dicoret dan harga jual di sampingnya. Belum ada kode voucher.
 
