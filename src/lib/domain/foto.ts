@@ -62,6 +62,45 @@ export function parseAksiFoto(nilai: unknown): Exclude<AksiFoto, { jenis: "tamba
   return null;
 }
 
+// --- Versi kecil untuk kartu katalog ---------------------------------------------
+// Kartu katalog di HP selebar ~160px, jadi foto 1600px terlalu berat. Tiap foto produk dibuatkan versi 600px di
+// server. Peta url asli → url kecil disimpan di products.foto_kecil; foto lama yang belum punya versi kecil tetap
+// tampil dengan foto aslinya.
+
+export const FOTO_KECIL_SISI = 600;
+export type PetaFotoKecil = Record<string, string>;
+
+export function fotoUntukKartu(peta: PetaFotoKecil, url: string | null | undefined): string | null {
+  if (!url) return null;
+  return peta[url] ?? url;
+}
+
+/** Buang entri foto yang sudah tidak ada di produk. `dibuang` = file versi kecil yang perlu dihapus dari penyimpanan. */
+export function rapikanPetaKecil(peta: PetaFotoKecil, foto: readonly string[]): { peta: PetaFotoKecil; dibuang: string[] } {
+  const tetap: PetaFotoKecil = {};
+  const dibuang: string[] = [];
+  for (const [asli, kecil] of Object.entries(peta)) {
+    if (foto.includes(asli)) tetap[asli] = kecil;
+    else dibuang.push(kecil);
+  }
+  return { peta: tetap, dibuang };
+}
+
+export function fotoBelumKecil<T extends { foto: readonly string[]; fotoKecil: PetaFotoKecil }>(produk: readonly T[]): { produk: T; url: string }[] {
+  return produk.flatMap((p) => p.foto.filter((url) => !p.fotoKecil[url]).map((url) => ({ produk: p, url })));
+}
+
+/** Server hanya mengunduh foto dari penyimpanan sendiri: folder lokal atau Vercel Blob. */
+export function sumberFotoSendiri(url: string): boolean {
+  if (url.startsWith("/foto/")) return true;
+  try {
+    const u = new URL(url);
+    return u.protocol === "https:" && u.hostname.endsWith(".public.blob.vercel-storage.com");
+  } catch {
+    return false;
+  }
+}
+
 /** Ukuran hasil kecilkan: sisi terpanjang paling besar `maks`, rasio tetap, tidak pernah diperbesar. */
 export function ukuranKecil(lebar: number, tinggi: number, maks = FOTO_SISI_MAKS): { lebar: number; tinggi: number } {
   const skala = Math.min(1, maks / Math.max(lebar, tinggi));

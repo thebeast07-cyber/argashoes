@@ -7,6 +7,7 @@ import { wajibIzin } from "@/lib/auth/current";
 import { punyaIzin } from "@/lib/auth/roles";
 import { BATAS_UKURAN_CSV, parseCsv } from "@/lib/csv";
 import { FOTO_MAKS, isTipeFoto, parseAksiFoto, validasiFileFoto } from "@/lib/domain/foto";
+import { bacaFotoAsli, buatFotoKecil } from "@/lib/foto/foto-kecil";
 import { hapusFotoTersimpan, PenyimpananBelumSiap, simpanFoto } from "@/lib/foto/penyimpanan";
 import {
   rencanakanImportKatalog,
@@ -18,10 +19,11 @@ import {
 import { parseBilanganBulat, samakanMerek, skuValid, validasiProduk, validasiVarian, type InputProduk } from "@/lib/domain/produk";
 import { normalisasiSku } from "@/lib/domain/stok";
 import { pesanSkuDipakai } from "@/lib/domain/sku";
-import { daftarMerek, dataUntukImport, fotoProduk, pemakaiSku } from "@/lib/produk/data";
+import { daftarFotoBelumKecil, daftarMerek, dataUntukImport, fotoProduk, pemakaiSku } from "@/lib/produk/data";
 import {
   buatProduk,
   hapusVarian,
+  simpanFotoKecil,
   tambahVarian,
   terapkanImportKatalog,
   terapkanImportStok,
@@ -147,6 +149,8 @@ export async function hapusSize(productId: string, variantId: string): Promise<v
 
 export type HasilAksiFoto = { error?: string };
 
+const FOTO_KECIL_PER_PANGGILAN = 5;
+
 const PESAN_FOTO: Record<Exclude<HasilUbahFoto, { ok: true }>["error"], string> = {
   penuh: `Sudah ${FOTO_MAKS} foto, batas per model. Hapus satu untuk menambah.`,
   tidak_ada: "Foto ini sudah berubah. Muat ulang halaman.",
@@ -180,9 +184,10 @@ export async function unggahFoto(productId: string, form: FormData): Promise<Has
     if (e instanceof PenyimpananBelumSiap) return { error: "Penyimpanan foto belum disiapkan di server. Kabari pemilik web." };
     return { error: "Foto gagal diunggah. Coba lagi." };
   }
-  const hasil = await ubahFotoProduk(db, productId, { jenis: "tambah", url }, user.id);
+  const kecil = await buatFotoKecil(`produk/${productId}`, Buffer.from(await file.arrayBuffer()));
+  const hasil = await ubahFotoProduk(db, productId, { jenis: "tambah", url }, user.id, kecil);
   if (!hasil.ok) {
-    await hapusFotoTersimpan(url).catch(() => {});
+    await Promise.all([url, kecil].map((u) => u && hapusFotoTersimpan(u).catch(() => {})));
     return { error: PESAN_FOTO[hasil.error] };
   }
   segarkanProduk(productId);
@@ -196,8 +201,38 @@ export async function aturFoto(productId: string, aksiMentah: unknown): Promise<
   const hasil = await ubahFotoProduk(await getDb(), productId, aksi, user.id);
   if (!hasil.ok) return { error: PESAN_FOTO[hasil.error] };
   if (aksi.jenis === "hapus") await hapusFotoTersimpan(aksi.url).catch(() => {});
+  await Promise.all((hasil.kecilDibuang ?? []).map((u) => hapusFotoTersimpan(u).catch(() => {})));
   segarkanProduk(productId);
   return {};
+}
+
+export type HasilFotoKecil = { dibuat: number; sisa: number; gagal: string[] };
+
+/**
+ * Membuat versi kecil untuk foto yang diunggah sebelum fitur ini ada. Beberapa foto per panggilan supaya tidak
+ * melewati batas waktu fungsi server; browser memanggil berulang sampai sisa 0. `lewati`: foto yang sudah gagal.
+ */
+export async function lengkapiFotoKecil(lewatiMentah: unknown): Promise<HasilFotoKecil> {
+  await wajibIzin("produk.kelola");
+  const lewati = new Set(Array.isArray(lewatiMentah) ? lewatiMentah.filter((u): u is string => typeof u === "string").slice(0, 500) : []);
+  const db = await getDb();
+  const antre = (await daftarFotoBelumKecil(db)).filter((f) => !lewati.has(f.url));
+  const giliran = antre.slice(0, FOTO_KECIL_PER_PANGGILAN);
+  const gagal: string[] = [];
+  let dibuat = 0;
+  for (const f of giliran) {
+    const asli = await bacaFotoAsli(f.url);
+    const kecil = asli && (await buatFotoKecil(`produk/${f.productId}`, asli));
+    if (!kecil) {
+      gagal.push(f.url);
+      continue;
+    }
+    if (await simpanFotoKecil(db, f.productId, f.url, kecil)) dibuat++;
+    else await hapusFotoTersimpan(kecil).catch(() => {});
+  }
+  // Tanpa revalidatePath: halaman publik selalu dinamis, dan merender ulang halaman Produk di tengah proses akan
+  // melepas komponen yang sedang menjalankan antrean ini.
+  return { dibuat, sisa: antre.length - giliran.length, gagal };
 }
 
 // --- Import CSV -----------------------------------------------------------------

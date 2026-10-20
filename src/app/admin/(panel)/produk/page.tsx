@@ -3,8 +3,9 @@ import { IkonCari, IkonMasukKardus, IkonTambah } from "@/components/ikon";
 import { getDb } from "@/db";
 import { wajibIzin } from "@/lib/auth/current";
 import { formatRupiah } from "@/lib/domain/produk";
-import { daftarProduk, getAmbangStok, opsiFilter, PER_HALAMAN } from "@/lib/produk/data";
+import { daftarFotoBelumKecil, daftarProduk, getAmbangStok, opsiFilter, PER_HALAMAN } from "@/lib/produk/data";
 import { FilterProduk } from "./filter-produk";
+import { FotoKecilOtomatis } from "./foto-kecil-otomatis";
 import { SizeCepat } from "./size-cepat";
 
 export const metadata = { title: "Produk · Admin Argashoes" };
@@ -24,10 +25,11 @@ export default async function HalamanProduk({ searchParams }: { searchParams: Ca
   await wajibIzin("produk.kelola");
   const db = await getDb();
   const halaman = Math.max(1, Number(searchParams.hal) || 1);
-  const [{ items, total }, opsi, ambang] = await Promise.all([
+  const [{ items, total }, opsi, ambang, fotoBelumKecil] = await Promise.all([
     daftarProduk(db, { q: searchParams.q, brand: searchParams.brand, size: searchParams.size, halaman }),
     opsiFilter(db),
     getAmbangStok(db),
+    daftarFotoBelumKecil(db),
   ]);
   const adaFilter = Boolean(searchParams.q || searchParams.brand || searchParams.size);
   const totalHalaman = Math.max(1, Math.ceil(total / PER_HALAMAN));
@@ -48,6 +50,7 @@ export default async function HalamanProduk({ searchParams }: { searchParams: Ca
           </Link>
         </div>
       </div>
+      {fotoBelumKecil.length > 0 && <FotoKecilOtomatis awal={fotoBelumKecil.length} />}
 
       <form role="search" className="space-y-2" action="/admin/produk">
         <label htmlFor="q" className="label-form">

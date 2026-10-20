@@ -3,7 +3,7 @@ import type { Db } from "@/db";
 import { isUniqueViolation } from "@/db/errors";
 import { auditLog, products, variants } from "@/db/schema";
 import { cekStokMasihSama, type PerubahanStok } from "@/lib/domain/asisten-aksi";
-import { terapkanAksiFoto, type AksiFoto, type HasilFoto } from "@/lib/domain/foto";
+import { rapikanPetaKecil, terapkanAksiFoto, type AksiFoto, type HasilFoto } from "@/lib/domain/foto";
 import type { RencanaKatalog, RencanaStok } from "@/lib/domain/import";
 import type { DataProduk, DataVarian } from "@/lib/domain/produk";
 
@@ -142,18 +142,38 @@ export async function hapusVarian(db: Db, variantId: string, olehUserId: string)
   });
 }
 
-/** Urutan foto ditulis ulang utuh di dalam kunci baris, supaya dua admin yang mengatur bersamaan tidak saling menimpa. */
-export type HasilUbahFoto = HasilFoto | { ok: false; error: "produk_tidak_ada" };
+/**
+ * Urutan foto ditulis ulang utuh di dalam kunci baris, supaya dua admin yang mengatur bersamaan tidak saling menimpa.
+ * `kecil`: versi kecil foto yang ditambah. `kecilDibuang`: file versi kecil milik foto yang terhapus, untuk dihapus pemanggil.
+ */
+export type HasilUbahFoto = (HasilFoto & { kecilDibuang?: string[] }) | { ok: false; error: "produk_tidak_ada" };
 
-export async function ubahFotoProduk(db: Db, productId: string, aksi: AksiFoto, olehUserId: string): Promise<HasilUbahFoto> {
+export async function ubahFotoProduk(db: Db, productId: string, aksi: AksiFoto, olehUserId: string, kecil?: string | null): Promise<HasilUbahFoto> {
   return db.transaction(async (tx) => {
-    const [p] = await tx.select({ foto: products.foto }).from(products).where(eq(products.id, productId)).for("update");
+    const [p] = await tx.select({ foto: products.foto, fotoKecil: products.fotoKecil }).from(products).where(eq(products.id, productId)).for("update");
     if (!p) return { ok: false, error: "produk_tidak_ada" } as const;
     const hasil = terapkanAksiFoto(p.foto, aksi);
     if (!hasil.ok) return hasil;
-    await tx.update(products).set({ foto: hasil.foto }).where(eq(products.id, productId));
+    const peta = rapikanPetaKecil(aksi.jenis === "tambah" && kecil ? { ...p.fotoKecil, [aksi.url]: kecil } : p.fotoKecil, hasil.foto);
+    await tx.update(products).set({ foto: hasil.foto, fotoKecil: peta.peta }).where(eq(products.id, productId));
     await catat(tx, olehUserId, { aksi: `foto.${aksi.jenis}`, entitas: "products", entitasId: productId, data: { url: aksi.url, urutan: hasil.foto } });
-    return hasil;
+    return { ...hasil, kecilDibuang: peta.dibuang };
+  });
+}
+
+/**
+ * Versi kecil untuk foto lama. Data turunan (foto aslinya tidak berubah), jadi tidak dicatat di audit_log.
+ * false kalau foto itu sudah dihapus atau sudah punya versi kecil; pemanggil lalu menghapus file kecil yang baru dibuat.
+ */
+export async function simpanFotoKecil(db: Db, productId: string, url: string, kecil: string): Promise<boolean> {
+  return db.transaction(async (tx) => {
+    const [p] = await tx.select({ foto: products.foto, fotoKecil: products.fotoKecil }).from(products).where(eq(products.id, productId)).for("update");
+    if (!p || !p.foto.includes(url) || p.fotoKecil[url]) return false;
+    await tx
+      .update(products)
+      .set({ fotoKecil: { ...p.fotoKecil, [url]: kecil } })
+      .where(eq(products.id, productId));
+    return true;
   });
 }
 

@@ -3,6 +3,7 @@ import type { Db } from "@/db";
 import { products, settings, variants } from "@/db/schema";
 import type { VarianAksi } from "@/lib/domain/asisten-aksi";
 import type { ModelStok } from "@/lib/domain/asisten-stok";
+import { fotoBelumKecil } from "@/lib/domain/foto";
 import type { ProdukAda, VarianAda } from "@/lib/domain/import";
 import { AMBANG_STOK_DEFAULT, bandingkanSize, isAmbangStok, type AmbangStok } from "@/lib/domain/stok";
 
@@ -139,6 +140,15 @@ export async function daftarSizeHabis(db: Db, batas: number): Promise<{ items: S
     .sort((a, b) => a.brand.localeCompare(b.brand) || a.nama.localeCompare(b.nama) || bandingkanSize(a.size, b.size))
     .slice(0, batas);
   return { items, total };
+}
+
+/** Foto yang belum punya versi kecil, untuk tombol "Buat versi kecil" di halaman Produk. */
+export async function daftarFotoBelumKecil(db: Db) {
+  const baris = await db
+    .select({ id: products.id, foto: products.foto, fotoKecil: products.fotoKecil })
+    .from(products)
+    .where(sql`jsonb_array_length(${products.foto}) > 0`);
+  return fotoBelumKecil(baris).map(({ produk, url }) => ({ productId: produk.id, url }));
 }
 
 export async function fotoProduk(db: Db, id: string): Promise<string[] | null> {

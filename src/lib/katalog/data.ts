@@ -1,6 +1,7 @@
 import { and, eq, inArray } from "drizzle-orm";
 import type { Db } from "@/db";
 import { products, variants } from "@/db/schema";
+import { fotoUntukKartu } from "@/lib/domain/foto";
 import type { ItemKatalog } from "@/lib/domain/katalog";
 import { rapikanHurufBesar } from "@/lib/domain/teks";
 import { bandingkanSize } from "@/lib/domain/stok";
@@ -19,6 +20,7 @@ export async function semuaProdukAktif(db: Db): Promise<ItemKatalog[]> {
       harga: products.harga,
       hargaCoret: products.hargaCoret,
       foto: products.foto,
+      fotoKecil: products.fotoKecil,
       dibuat: products.dibuat,
     })
     .from(products)
@@ -27,10 +29,10 @@ export async function semuaProdukAktif(db: Db): Promise<ItemKatalog[]> {
   const semuaVarian = ids.length
     ? await db.select({ productId: variants.productId, size: variants.size, stok: variants.stok }).from(variants).where(inArray(variants.productId, ids))
     : [];
-  return baris.map(({ foto, ...p }) => ({
+  return baris.map(({ foto, fotoKecil, ...p }) => ({
     ...p,
     nama: rapikanHurufBesar(p.nama),
-    sampul: foto[0] ?? null,
+    sampul: fotoUntukKartu(fotoKecil, foto[0]),
     varian: semuaVarian.filter((v) => v.productId === p.id).map(({ size, stok }) => ({ size, stok })),
   }));
 }
@@ -44,6 +46,8 @@ export type ProdukPublik = {
   harga: number;
   hargaCoret: number | null;
   foto: string[];
+  /** Versi kecil foto pertama, untuk keranjang. */
+  sampulKecil: string | null;
   varian: { size: string; stok: number }[];
 };
 
@@ -58,12 +62,19 @@ export async function produkPublik(db: Db, id: string): Promise<ProdukPublik | n
       harga: products.harga,
       hargaCoret: products.hargaCoret,
       foto: products.foto,
+      fotoKecil: products.fotoKecil,
     })
     .from(products)
     .where(and(eq(products.id, id), eq(products.aktif, true)));
   if (!p) return null;
   const varian = await db.select({ size: variants.size, stok: variants.stok }).from(variants).where(eq(variants.productId, id));
-  return { ...p, nama: rapikanHurufBesar(p.nama), varian: varian.sort((a, b) => bandingkanSize(a.size, b.size)) };
+  const { fotoKecil, ...isi } = p;
+  return {
+    ...isi,
+    nama: rapikanHurufBesar(p.nama),
+    sampulKecil: fotoUntukKartu(fotoKecil, p.foto[0]),
+    varian: varian.sort((a, b) => bandingkanSize(a.size, b.size)),
+  };
 }
 
 /** Brand yang tampil di katalog: model aktif yang punya size. Dipakai untuk kalimat di beranda, footer, dan deskripsi situs. */
