@@ -12,9 +12,9 @@ import {
 } from "@/lib/domain/asisten-stok";
 
 const MODEL: ModelStok[] = [
-  { id: "af1", brand: "Nike", nama: "Air Force 1 '07 White", kategori: "Lifestyle", harga: 1_599_000, hargaCoret: null, aktif: true },
-  { id: "samba", brand: "Adidas", nama: "Samba OG Black", kategori: null, harga: 1_800_000, hargaCoret: 2_200_000, aktif: true },
-  { id: "lama", brand: "Nike", nama: "Air Max 90", kategori: null, harga: 1_900_000, hargaCoret: null, aktif: false },
+  { id: "af1", brand: "Nike", nama: "Air Force 1 '07 White", kategori: "Lifestyle", harga: 1_599_000, hargaCoret: null, aktif: true, jumlahFoto: 3, adaDeskripsi: true },
+  { id: "samba", brand: "Adidas", nama: "Samba OG Black", kategori: null, harga: 1_800_000, hargaCoret: 2_200_000, aktif: true, jumlahFoto: 0, adaDeskripsi: true },
+  { id: "lama", brand: "Nike", nama: "Air Max 90", kategori: null, harga: 1_900_000, hargaCoret: null, aktif: false, jumlahFoto: 0, adaDeskripsi: false },
 ];
 const VARIAN: VarianStok[] = [
   { productId: "af1", size: "42", stok: 0 },
@@ -29,9 +29,10 @@ describe("ringkasanUntukAi", () => {
   it("total dihitung server, model bernomor dengan size urut", () => {
     const r = ringkasanUntukAi(MODEL, VARIAN, AMBANG);
     assert.match(r, /Total: 3 model \(2 aktif tampil di web\), 5 size, 14 pasang\. 1 size habis, 1 size sisa sedikit\./);
-    assert.match(r, /^1\. Nike Air Force 1 '07 White \| Lifestyle \| Rp1\.599\.000 \| aktif \| total 8 \| 40:3 41:5 42:0$/m);
-    assert.match(r, /^2\. Adidas Samba OG Black \| tanpa kategori \| Rp1\.800\.000 \(coret Rp2\.200\.000\) \| aktif \| total 6 \| 41 1\/3:2 42:4$/m);
-    assert.match(r, /^3\. Nike Air Max 90 .*\| nonaktif \| total 0 \| belum ada size$/m);
+    assert.match(r, /2 model belum ada foto, 1 model belum ada deskripsi\./);
+    assert.match(r, /^1\. Nike Air Force 1 '07 White \| Lifestyle \| Rp1\.599\.000 \| aktif \| foto 3 \| deskripsi ada \| total 8 \| 40:3 41:5 42:0$/m);
+    assert.match(r, /^2\. Adidas Samba OG Black \| tanpa kategori \| Rp1\.800\.000 \(coret Rp2\.200\.000\) \| aktif \| foto 0 \| deskripsi ada \| total 6 \| 41 1\/3:2 42:4$/m);
+    assert.match(r, /^3\. Nike Air Max 90 .*\| nonaktif \| foto 0 \| deskripsi kosong \| total 0 \| belum ada size$/m);
   });
 });
 

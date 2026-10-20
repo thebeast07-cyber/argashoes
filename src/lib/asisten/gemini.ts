@@ -2,8 +2,9 @@ import "server-only";
 import type { Giliran } from "@/lib/domain/asisten-stok";
 import { PENGETAHUAN_WEB } from "./pengetahuan";
 
-// Panggilan ke Gemini lewat REST, tanpa SDK. Gemini hanya bisa membaca data yang dikirim di sini dan tidak punya
-// jalan untuk menulis apa pun. Yang dikirim: obrolan dan ringkasan katalog + stok. Tanpa order, data pembeli, atau fee.
+// Panggilan ke Gemini lewat REST, tanpa SDK. Gemini tidak punya jalan untuk menulis apa pun: untuk ubah stok ia hanya
+// mengisi ubahStok, lalu server menyusun kartu konfirmasi dan stok baru berubah setelah pengguna menekan Simpan stok.
+// Yang dikirim: obrolan dan ringkasan katalog + stok. Tanpa order, data pembeli, atau fee.
 
 export class AsistenTidakTersedia extends Error {}
 
@@ -25,7 +26,9 @@ export function asistenAktif(): boolean {
 
 const INSTRUKSI = `Kamu asisten di panel admin Argashoes, toko sepatu Nike dan Adidas. Yang mengajakmu ngobrol adalah pemilik web atau admin toko. Ngobrol seperti rekan kerja yang paham betul web ini: santai, sopan, hangat, Bahasa Indonesia sehari-hari. Variasikan kalimatmu, jangan membuka setiap balasan dengan cara yang sama, dan langsung ke inti. Boleh membahas apa saja, tidak harus soal sepatu.
 
-Kamu hanya bisa membaca: PENGETAHUAN WEB di bawah (cara kerja semua fitur) dan DATA TOKO (katalog dan stok terbaru dari database). Kamu tidak bisa mengubah apa pun. Kalau diminta mengubah sesuatu, jelaskan caranya.
+Kamu membaca PENGETAHUAN WEB di bawah (cara kerja semua fitur) dan DATA TOKO (katalog, stok, jumlah foto, dan ada tidaknya deskripsi, terbaru dari database).
+
+Satu-satunya perubahan yang bisa kamu siapkan adalah stok. Kalau pengguna minta mengubah stok (tambah, kurangi, jadikan angka tertentu, habis = jadi 0), isi ubahStok: satu baris per size dengan nomorModel dari DATA TOKO, size persis seperti di data, cara "tambah", "kurangi", atau "jadi", dan jumlah. Sistem akan menampilkan kartu konfirmasi di bawah balasanmu dan stok baru berubah setelah pengguna menekan Simpan stok, jadi jangan bilang stoknya sudah berubah; bilang saja minta dicek lalu disimpan. Kalau model yang dimaksud tidak jelas (lebih dari satu yang cocok), size tidak ada, atau jumlahnya tidak jelas, tanya balik dan biarkan ubahStok kosong. Jangan isi ubahStok kalau pengguna hanya bertanya. Hal lain (harga, foto, deskripsi, status order, hapus produk) tidak bisa kamu ubah; jelaskan caranya.
 
 Kalau ditanya cara melakukan sesuatu di web, jawab dengan langkah bernomor (1. 2. 3.), sebut nama tombol persis seperti di pengetahuan, dan sertakan tautan ke halamannya dengan format [Nama halaman](/path). Pakai hanya path yang tertulis di pengetahuan. Untuk sepatu tertentu jangan buat tautan sendiri; isi nomorModel, sistem akan menampilkan tautan ke halamannya. Jangan mengarang menu, tombol, atau fitur; kalau sesuatu belum ada, bilang terus terang.
 
@@ -36,6 +39,19 @@ const SKEMA = {
   properties: {
     balasan: { type: "STRING" },
     nomorModel: { type: "ARRAY", items: { type: "INTEGER" } },
+    ubahStok: {
+      type: "ARRAY",
+      items: {
+        type: "OBJECT",
+        properties: {
+          nomorModel: { type: "INTEGER" },
+          size: { type: "STRING" },
+          cara: { type: "STRING", enum: ["tambah", "kurangi", "jadi"] },
+          jumlah: { type: "INTEGER" },
+        },
+        required: ["nomorModel", "size", "cara", "jumlah"],
+      },
+    },
   },
   required: ["balasan", "nomorModel"],
 };

@@ -1,6 +1,6 @@
 # Asisten AI untuk stok dan produk
 
-Status: dibangun. Tombol Asisten melayang di admin, ngobrol bebas dengan data katalog dan stok terbaru, hanya membaca.
+Status: dibangun. Tombol Asisten melayang di admin, ngobrol bebas dengan data katalog dan stok terbaru. Bisa menyiapkan perubahan stok yang baru tersimpan setelah dikonfirmasi pengguna.
 
 ## Masalah
 
@@ -23,9 +23,20 @@ Versi pertama memakai template (Gemini hanya memilah pertanyaan, jawaban disusun
 
 Pemilik ingin asisten bisa menjawab cara pakai fitur seperti chat biasa, lengkap dengan langkah dan tautan. Gemini menerima `src/lib/asisten/pengetahuan.ts`: semua halaman admin dan publik, label tombol persis, alur order dan import, banner, akun, laporan fee, dan daftar fitur yang belum ada. Jawaban cara pakai berupa langkah bernomor dengan tautan `[Nama halaman](/path)`; hanya tautan ke halaman web ini yang dirender jadi tautan. File ini wajib diperbarui setiap ada fitur baru, kalau tidak asisten akan menjelaskan versi lama.
 
+## Ubah stok lewat chat (20 Okt 2026)
+
+Pemilik memilih otomasi "Level 2": AI mengisi, manusia mengonfirmasi.
+
+- Pengguna mengetik, misalnya "AF1 putih 42 tambah 3, 43 jadi 0". Gemini mengisi `ubahStok` (nomor model, size, `tambah`/`kurangi`/`jadi`, jumlah). Kalau modelnya tidak jelas, Gemini diminta bertanya balik.
+- Server mencocokkan perintah ke DB (`rencanaStokAsisten` di `src/lib/domain/asisten-aksi.ts`): size dikenali walau ditulis "42,5" atau "EU 42.5", perintah untuk size yang sama dijalankan berurutan, stok minus dan size yang belum ada jadi pesan masalah.
+- Di bawah balasan muncul kartu "stok lama → baru" dengan tombol **Simpan stok** dan **Batal**. Simpan tidak memanggil Gemini lagi.
+- Saat Simpan, server mengunci baris size itu dan mengecek stoknya masih sama dengan "lama" di kartu (`ubahStokLewatAsisten`). Kalau sudah berubah, tidak ada yang disimpan dan pengguna diminta minta ulang. Semua atau tidak sama sekali, tercatat di `audit_log` dengan `sumber: "asisten"`.
+- Browser mengirim balik isi kartu, bukan token tanda tangan. Itu cukup karena yang boleh menekan Simpan sudah punya izin `produk.kelola`, yang memang boleh mengubah stok berapa pun lewat form.
+- Asisten juga menerima jumlah foto dan ada tidaknya deskripsi per model, jadi bisa menjawab "produk mana yang belum ada foto".
+
 ## Yang tetap dijaga
 
-1. **Hanya membaca.** Gemini tidak punya jalan untuk menulis apa pun. Perubahan stok dan produk tetap lewat form dan import CSV.
+1. **Gemini tidak menulis.** Satu-satunya yang bisa ia siapkan adalah perubahan stok, dan itu baru tersimpan setelah pengguna menekan Simpan stok. Harga, foto, deskripsi, order, dan akun tetap lewat form.
 2. **Data yang dikirim ke Gemini**: obrolan (12 giliran terakhir), pengetahuan tentang fitur web, dan katalog: brand, nama, kategori, harga, harga coret, status tampil, stok per size, total. **Tidak dikirim**: order, data pembeli, fee, rekening, akun. Free tier Gemini boleh memakai data yang dikirim untuk melatih model, jadi data pembeli tidak boleh ikut.
 3. **Tetap jalan tanpa AI.** Kalau Gemini gagal atau kuota habis, muncul pesan jelas. Sisa admin tetap bisa dipakai.
 
@@ -35,7 +46,8 @@ Satu pesan = satu permintaan. Per 18 Okt 2026 AI Studio akun toko menampilkan 3.
 
 ## Nanti
 
-- Update stok lewat kalimat dan tambah produk dari foto label dus: hanya kalau pemilik memutuskan, selalu lewat pratinjau, tercatat di `audit_log`.
+- Ubah status order lewat chat (PR berikutnya): server mencari order dari kodenya, data pembeli tetap tidak dikirim ke Gemini.
+- Tambah produk dari foto label dus: hasilnya mengisi form Tambah produk, bukan langsung menyimpan.
 - Ringkasan order (jumlah per status, order hari ini) tanpa data pribadi pembeli, kalau dibutuhkan.
 
 ## Fase 2: asisten untuk pembeli

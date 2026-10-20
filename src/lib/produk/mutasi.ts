@@ -2,6 +2,7 @@ import { eq, inArray, sql } from "drizzle-orm";
 import type { Db } from "@/db";
 import { isUniqueViolation } from "@/db/errors";
 import { auditLog, products, variants } from "@/db/schema";
+import { cekStokMasihSama, type PerubahanStok } from "@/lib/domain/asisten-aksi";
 import { terapkanAksiFoto, type AksiFoto, type HasilFoto } from "@/lib/domain/foto";
 import type { RencanaKatalog, RencanaStok } from "@/lib/domain/import";
 import type { DataProduk, DataVarian } from "@/lib/domain/produk";
@@ -84,6 +85,37 @@ export async function ubahStok(
   });
 }
 
+/** Perubahan stok dari kartu konfirmasi asisten: semua atau tidak sama sekali, dan hanya kalau stok belum berubah sejak kartu dibuat. */
+export async function ubahStokLewatAsisten(
+  db: Db,
+  perubahan: readonly PerubahanStok[],
+  olehUserId: string,
+): Promise<"ok" | "berubah" | "tidak_ada"> {
+  return db.transaction(async (tx) => {
+    const lama = await tx
+      .select({ id: variants.id, stok: variants.stok, sku: variants.sku })
+      .from(variants)
+      .where(inArray(variants.id, perubahan.map((p) => p.variantId)))
+      .for("update");
+    const hasil = cekStokMasihSama(perubahan, new Map(lama.map((v) => [v.id, v.stok])));
+    if (hasil !== "ok") return hasil;
+
+    const berubah = perubahan.filter((p) => p.dari !== p.ke);
+    await updateStokMassal(tx, berubah);
+    await catat(
+      tx,
+      olehUserId,
+      berubah.map((p) => ({
+        aksi: "stok.diubah",
+        entitas: "variants",
+        entitasId: p.variantId,
+        data: { sku: lama.find((v) => v.id === p.variantId)!.sku, dari: p.dari, ke: p.ke, sumber: "asisten" },
+      })),
+    );
+    return "ok";
+  });
+}
+
 /** SKU boleh dibetulkan (mis. lupa menambah size di belakang kode artikel). Riwayat order menyimpan nama dan size, bukan SKU. */
 export async function ubahSku(db: Db, variantId: string, sku: string, olehUserId: string): Promise<"ok" | "sku_dipakai" | "tidak_ada"> {
   try {
@@ -134,7 +166,7 @@ function auditStok(perubahan: RencanaStok["perubahan"]): Audit[] {
   }));
 }
 
-async function updateStokMassal(tx: Tx, perubahan: RencanaStok["perubahan"]) {
+async function updateStokMassal(tx: Tx, perubahan: readonly { variantId: string; ke: number }[]) {
   if (perubahan.length === 0) return;
   // Satu UPDATE untuk ratusan baris: CASE per id.
   const kasus = sql.join(

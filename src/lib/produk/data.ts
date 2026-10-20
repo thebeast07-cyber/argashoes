@@ -1,7 +1,8 @@
 import { and, asc, count, eq, exists, ilike, inArray, ne, or, sql } from "drizzle-orm";
 import type { Db } from "@/db";
 import { products, settings, variants } from "@/db/schema";
-import type { ModelStok, VarianStok } from "@/lib/domain/asisten-stok";
+import type { VarianAksi } from "@/lib/domain/asisten-aksi";
+import type { ModelStok } from "@/lib/domain/asisten-stok";
 import type { ProdukAda, VarianAda } from "@/lib/domain/import";
 import { AMBANG_STOK_DEFAULT, bandingkanSize, isAmbangStok, type AmbangStok } from "@/lib/domain/stok";
 
@@ -195,8 +196,8 @@ export async function barisEkspor(db: Db) {
 }
 
 /** Untuk asisten admin: semua model (aktif dan nonaktif), harga, dan stok per size. Tanpa fee. */
-export async function dataStokAsisten(db: Db): Promise<{ model: ModelStok[]; varian: VarianStok[] }> {
-  const [model, varian] = await Promise.all([
+export async function dataStokAsisten(db: Db): Promise<{ model: ModelStok[]; varian: VarianAksi[] }> {
+  const [baris, varian] = await Promise.all([
     db
       .select({
         id: products.id,
@@ -206,11 +207,14 @@ export async function dataStokAsisten(db: Db): Promise<{ model: ModelStok[]; var
         harga: products.harga,
         hargaCoret: products.hargaCoret,
         aktif: products.aktif,
+        foto: products.foto,
+        deskripsi: products.deskripsi,
       })
       .from(products)
       .orderBy(asc(products.brand), asc(products.nama)),
-    db.select({ productId: variants.productId, size: variants.size, stok: variants.stok }).from(variants),
+    db.select({ id: variants.id, productId: variants.productId, size: variants.size, stok: variants.stok }).from(variants),
   ]);
+  const model = baris.map(({ foto, deskripsi, ...m }) => ({ ...m, jumlahFoto: foto.length, adaDeskripsi: Boolean(deskripsi?.trim()) }));
   return { model, varian };
 }
 
