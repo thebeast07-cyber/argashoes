@@ -130,7 +130,8 @@ export default async function Beranda({ searchParams }: { searchParams: Record<s
           <>
             <ul className="grid grid-cols-2 gap-3 min-[600px]:grid-cols-3 min-[600px]:gap-4 min-[900px]:grid-cols-4 min-[900px]:gap-5">
               {halaman.items.map((it) => (
-                <li key={it.id} className="flex">
+                // min-w-0: kata panjang di nama (mis. BLUE/SILVER/OBSIDIAN) tidak boleh melebarkan kolom.
+                <li key={it.id} className="flex min-w-0">
                   <Kartu item={it} size={cari.size} ambang={ambang} />
                 </li>
               ))}
@@ -253,11 +254,13 @@ function Kartu({ item, size, ambang }: { item: ItemKatalog; size?: string; amban
   const stokSize = size ? (item.varian.find((v) => v.size === size)?.stok ?? 0) : 0;
   const href = size ? `/produk/${item.id}?size=${encodeURIComponent(size)}` : `/produk/${item.id}`;
   return (
-    <Link href={href} className="flex flex-1 flex-col rounded-label border border-tinta/25 bg-white hover:border-tinta">
-      <Gambar src={item.sampul} alt={`${item.brand} ${item.nama}`} className="aspect-[4/5] w-full min-[900px]:aspect-square" />
+    <Link href={href} className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-label border border-tinta/25 bg-white hover:border-tinta">
+      {/* Persegi dan utuh: foto sepatu biasanya mendatar, dipotong ke kotak tegak membuang ujung sepatu. */}
+      <Gambar src={item.sampul} alt={`${item.brand} ${item.nama}`} utuh className="aspect-square w-full" />
       <div className="px-2.5 pb-3 pt-2.5">
         <p className="sempit text-[13px] font-bold uppercase text-redup">{item.brand}</p>
-        <h3 className="mb-1.5 mt-0.5 font-bold leading-tight">{item.nama}</h3>
+        {/* Maksimal 3 baris supaya kartu sebaris tidak jauh beda tinggi; nama lengkap ada di halaman produk dan tetap dibaca pembaca layar. */}
+        <h3 className="mb-1.5 mt-0.5 line-clamp-3 font-bold leading-tight [overflow-wrap:anywhere]">{item.nama}</h3>
         <p className="angka text-[17px] font-extrabold">{formatRupiah(item.harga)}</p>
         {item.hargaCoret && item.hargaCoret > item.harga && <p className="angka text-sm text-redup line-through">{formatRupiah(item.hargaCoret)}</p>}
         {size ? (
@@ -268,12 +271,8 @@ function Kartu({ item, size, ambang }: { item: ItemKatalog; size?: string; amban
           <>
             <ul aria-label="Size yang ada" className="mt-2 flex flex-wrap gap-1">
               {ringkas.tampil.map((v) => (
-                <li
-                  key={v.size}
-                  className={`sempit angka min-w-[30px] rounded-label border-[1.5px] px-1.5 py-0.5 text-center text-sm font-bold leading-tight ${
-                    v.sisaSedikit ? "border-sedikit-teks bg-sedikit-latar text-sedikit-teks" : "border-tinta"
-                  }`}
-                >
+                // Kotak size netral; sisa sedikit cukup disebut sekali di baris teks di bawahnya.
+                <li key={v.size} className="sempit angka min-w-[30px] rounded-label border-[1.5px] border-tinta px-1.5 py-0.5 text-center text-sm font-bold leading-tight">
                   {v.size}
                 </li>
               ))}
