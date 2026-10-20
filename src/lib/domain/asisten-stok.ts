@@ -12,6 +12,8 @@ export type ModelStok = {
   harga: number;
   hargaCoret: number | null;
   aktif: boolean;
+  jumlahFoto: number;
+  adaDeskripsi: boolean;
 };
 export type VarianStok = { productId: string; size: string; stok: number };
 export type Giliran = { peran: "user" | "asisten"; teks: string };
@@ -44,14 +46,18 @@ export function ringkasanUntukAi(model: readonly ModelStok[], varian: readonly V
       (n, s) => n + s.stok,
       0,
     )} pasang. ${semuaSize.filter((s) => s.status === "habis").length} size habis, ${semuaSize.filter((s) => s.status === "sisa_sedikit").length} size sisa sedikit.`,
+    `${model.filter((m) => m.jumlahFoto === 0).length} model belum ada foto, ${model.filter((m) => !m.adaDeskripsi).length} model belum ada deskripsi.`,
   ];
   const isi = baris.map((b, i) => {
     const m = b.model;
     const harga = m.hargaCoret ? `${rupiah(m.harga)} (coret ${rupiah(m.hargaCoret)})` : rupiah(m.harga);
     const size = b.size.map((s) => `${s.size}:${s.stok}`).join(" ") || "belum ada size";
-    return `${i + 1}. ${m.brand} ${m.nama} | ${m.kategori ?? "tanpa kategori"} | ${harga} | ${m.aktif ? "aktif" : "nonaktif"} | total ${b.total} | ${size}`;
+    const kelengkapan = `foto ${m.jumlahFoto} | deskripsi ${m.adaDeskripsi ? "ada" : "kosong"}`;
+    return `${i + 1}. ${m.brand} ${m.nama} | ${m.kategori ?? "tanpa kategori"} | ${harga} | ${m.aktif ? "aktif" : "nonaktif"} | ${kelengkapan} | total ${b.total} | ${size}`;
   });
-  return [...kepala, "", "Format: nomor. brand nama | kategori | harga | status tampil | total pasang | size:stok", ...isi].join("\n");
+  return [...kepala, "", "Format: nomor. brand nama | kategori | harga | status tampil | jumlah foto | deskripsi | total pasang | size:stok", ...isi].join(
+    "\n",
+  );
 }
 
 /** Balasan AI diperlakukan sebagai input tak tepercaya: bentuk dicek, nomor di luar daftar dibuang. */

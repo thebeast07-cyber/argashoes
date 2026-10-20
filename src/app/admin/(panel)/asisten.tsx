@@ -5,18 +5,27 @@ import { Fragment, useEffect, useRef, useState, useTransition } from "react";
 import { IkonChat, IkonKirim, IkonTutup } from "@/components/ikon";
 import { LabelSize } from "@/components/label-size";
 import { PesanGalat } from "@/components/pesan";
+import type { RencanaStokAsisten } from "@/lib/domain/asisten-aksi";
 import { BATAS_PERTANYAAN, BATAS_RIWAYAT, uraiTeks, type BarisModel, type Giliran } from "@/lib/domain/asisten-stok";
 import type { AmbangStok } from "@/lib/domain/stok";
-import { tanyaAsisten, type HasilTanya } from "./asisten-actions";
+import { simpanStokAsisten, tanyaAsisten, type HasilSimpanStok, type HasilTanya } from "./asisten-actions";
 
 // Pengecualian dari DESIGN.md atas permintaan pemilik web (18 Okt 2026): panel asisten memakai kaca buram dengan
 // sudut membulat, seperti panel iPhone, supaya terasa sebagai lapisan percakapan di atas alat kerja.
 // Dosis kaca dibatasi ke panel ini saja (R-10); tombol pembukanya tetap padat supaya kontrasnya aman di atas halaman apa pun.
 // Putih 85%: teks redup tetap di atas 4.5:1 walau yang di belakang panel elemen gelap (mis. foto sepatu hitam).
 
-const CONTOH = ["Stok keseluruhan berapa?", "Cara pasang banner promo?", "Gimana nandain order udah dikirim?"];
+const CONTOH = ["Stok keseluruhan berapa?", "Produk mana yang belum ada foto?", "Cara pasang banner promo?"];
 
-type Pesan = { kunci: number; peran: "user" | "asisten"; teks: string; hasil?: HasilTanya };
+type StatusSimpan = "menyimpan" | "dibatalkan" | HasilSimpanStok;
+type Pesan = { kunci: number; peran: "user" | "asisten"; teks: string; hasil?: HasilTanya; simpan?: StatusSimpan };
+
+/** Catatan untuk Gemini di giliran berikutnya, supaya tidak mengusulkan ulang perubahan yang sudah diputuskan. */
+function catatanSimpan(s: StatusSimpan | undefined): string {
+  if (s === "dibatalkan") return "\n(Perubahan stok di kartu ini dibatalkan pengguna, stok tidak berubah.)";
+  if (typeof s === "object" && s.sukses) return "\n(Perubahan stok di kartu ini sudah disimpan pengguna.)";
+  return "";
+}
 
 function TeksBalasan({ teks, tutup }: { teks: string; tutup: () => void }) {
   const baris = uraiTeks(teks);
@@ -57,6 +66,47 @@ function TeksBalasan({ teks, tutup }: { teks: string; tutup: () => void }) {
     }
   }
   return <div className="space-y-2 break-words">{blok}</div>;
+}
+
+// Stok baru berubah setelah tombol Simpan stok ditekan. Kartu sekali pakai: setelah disimpan atau dibatalkan, tombolnya hilang.
+function KartuStok({ rencana, status, simpan, batal }: { rencana: RencanaStokAsisten; status?: StatusSimpan; simpan: () => void; batal: () => void }) {
+  const perModel = new Map<string, RencanaStokAsisten["baris"]>();
+  for (const b of rencana.baris) perModel.set(b.productId, [...(perModel.get(b.productId) ?? []), b]);
+  const hasil = typeof status === "object" ? status : null;
+  const selesai = status === "dibatalkan" || Boolean(hasil?.sukses);
+  return (
+    <div className="mt-2 space-y-2 rounded-xl border-[1.5px] border-tinta bg-white p-3">
+      {rencana.baris.length > 0 && <p className="text-sm font-semibold">Perubahan stok, cek dulu sebelum disimpan</p>}
+      {[...perModel.values()].map((baris) => (
+        <div key={baris[0].productId}>
+          <p className="font-semibold">{baris[0].model}</p>
+          <ul className="angka text-sm">
+            {baris.map((b) => (
+              <li key={b.variantId}>
+                Size {b.size}: {b.dari} → <strong>{b.ke}</strong>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+      {rencana.masalah.map((m) => (
+        <PesanGalat key={m}>{m}</PesanGalat>
+      ))}
+      {status === "dibatalkan" && <p className="text-sm font-semibold">Dibatalkan. Stok tidak berubah.</p>}
+      {hasil?.sukses && <p className="text-sm font-semibold">{hasil.sukses}</p>}
+      {hasil?.galat && <PesanGalat>{hasil.galat}</PesanGalat>}
+      {rencana.baris.length > 0 && !selesai && (
+        <div className="flex gap-2">
+          <button type="button" onClick={simpan} disabled={status === "menyimpan"} className="tombol-utama min-h-11 flex-1 rounded-xl">
+            {status === "menyimpan" ? "Menyimpan..." : "Simpan stok"}
+          </button>
+          <button type="button" onClick={batal} disabled={status === "menyimpan"} className="tombol-garis min-h-11 rounded-xl px-4">
+            Batal
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function DataStok({ data, ambang, tutup }: { data: BarisModel[]; ambang: AmbangStok; tutup: () => void }) {
@@ -164,7 +214,7 @@ export function Asisten() {
     if (!q || sedang) return;
     const riwayat: Giliran[] = pesan
       .filter((p) => p.peran === "user" || p.hasil?.teks)
-      .map((p) => ({ peran: p.peran, teks: p.peran === "user" ? p.teks : p.hasil!.teks! }))
+      .map((p) => ({ peran: p.peran, teks: p.peran === "user" ? p.teks : p.hasil!.teks! + catatanSimpan(p.simpan) }))
       .slice(-BATAS_RIWAYAT);
     const tambah = (p: Omit<Pesan, "kunci">) => setPesan((s) => [...s, { ...p, kunci: ++urutan.current }].slice(-60));
     tambah({ peran: "user", teks: q });
@@ -178,6 +228,19 @@ export function Asisten() {
       }
       tambah({ peran: "asisten", teks: "", hasil });
     });
+  }
+
+  function aturSimpan(kunci: number, simpan: StatusSimpan) {
+    setPesan((s) => s.map((p) => (p.kunci === kunci ? { ...p, simpan } : p)));
+  }
+
+  function simpanStok(p: Pesan) {
+    const baris = p.hasil?.rencana?.baris;
+    if (!baris || baris.length === 0) return;
+    aturSimpan(p.kunci, "menyimpan");
+    simpanStokAsisten(baris.map(({ variantId, dari, ke }) => ({ variantId, dari, ke })))
+      .catch((): HasilSimpanStok => ({ galat: "Koneksi terputus. Stok belum tersimpan, coba lagi." }))
+      .then((hasil) => aturSimpan(p.kunci, hasil));
   }
 
   return (
@@ -212,7 +275,7 @@ export function Asisten() {
               <h2 id="judul-asisten" className="text-base font-bold">
                 Asisten
               </h2>
-              <p className="truncate text-xs text-redup">Hanya baca, tidak ubah data</p>
+              <p className="truncate text-xs text-redup">Ubah stok selalu lewat konfirmasimu</p>
             </div>
             {pesan.length > 0 && (
               <button type="button" onClick={() => setPesan([])} disabled={sedang} className="min-h-11 px-2 text-sm font-semibold underline underline-offset-2">
@@ -227,7 +290,7 @@ export function Asisten() {
           <div aria-live="polite" className="flex-1 space-y-3 overflow-y-auto overscroll-contain px-4 py-3 text-[15px] leading-relaxed">
             {pesan.length === 0 && (
               <div className="space-y-3">
-                <p>Mau cek stok, tanya cara pakai fitur web, cari ide, atau sekadar ngobrol? Tanya aja. Jangan ketik data pembeli di sini ya.</p>
+                <p>Mau cek atau ubah stok, tanya cara pakai fitur web, cari ide, atau sekadar ngobrol? Tanya aja. Contoh ubah stok: “AF1 putih 42 tambah 3, 43 jadi 0”. Jangan ketik data pembeli di sini ya.</p>
                 <div className="flex flex-wrap gap-2">
                   {CONTOH.map((c) => (
                     <button key={c} type="button" onClick={() => kirim(c)} className="tombol-garis min-h-11 rounded-xl bg-white/80 px-3 text-sm">
@@ -249,6 +312,14 @@ export function Asisten() {
                   ) : (
                     <>
                       {p.hasil?.teks && <TeksBalasan teks={p.hasil.teks} tutup={tutup} />}
+                      {p.hasil?.rencana && (
+                        <KartuStok
+                          rencana={p.hasil.rencana}
+                          status={p.simpan}
+                          simpan={() => simpanStok(p)}
+                          batal={() => aturSimpan(p.kunci, "dibatalkan")}
+                        />
+                      )}
                       {p.hasil?.data && p.hasil.data.length > 0 && p.hasil.ambang && <DataStok data={p.hasil.data} ambang={p.hasil.ambang} tutup={tutup} />}
                     </>
                   )}
