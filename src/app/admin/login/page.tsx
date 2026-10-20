@@ -15,7 +15,8 @@ export default async function HalamanLogin() {
   if (await getUserSaatIni()) redirect("/admin");
   const akunPertama = !(await adaAkun(await getDb()));
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col px-4 py-10">
+    <main className="mx-auto flex min-h-dvh max-w-sm flex-col px-4 py-6">
+      {/* dvh, bukan 100vh: di HP 100vh ikut menghitung area address bar sehingga halaman satu layar ini bisa digulir. */}
       <div className="flex flex-1 flex-col justify-center">
         <Image src="/logo-argashoes.png" alt="Argashoes" width={90} height={72} priority className="mb-6 h-[72px] w-auto self-start" />
         <h1 className="mb-1 text-2xl font-bold">Masuk admin</h1>
