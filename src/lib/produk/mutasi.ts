@@ -84,6 +84,23 @@ export async function ubahStok(
   });
 }
 
+/** SKU boleh dibetulkan (mis. lupa menambah size di belakang kode artikel). Riwayat order menyimpan nama dan size, bukan SKU. */
+export async function ubahSku(db: Db, variantId: string, sku: string, olehUserId: string): Promise<"ok" | "sku_dipakai" | "tidak_ada"> {
+  try {
+    return await db.transaction(async (tx) => {
+      const [lama] = await tx.select({ sku: variants.sku }).from(variants).where(eq(variants.id, variantId)).for("update");
+      if (!lama) return "tidak_ada" as const;
+      if (lama.sku === sku) return "ok" as const;
+      await tx.update(variants).set({ sku }).where(eq(variants.id, variantId));
+      await catat(tx, olehUserId, { aksi: "varian.sku_diubah", entitas: "variants", entitasId: variantId, data: { dari: lama.sku, ke: sku } });
+      return "ok" as const;
+    });
+  } catch (e) {
+    if (isUniqueViolation(e, "variants_sku_unique")) return "sku_dipakai";
+    throw e;
+  }
+}
+
 export async function hapusVarian(db: Db, variantId: string, olehUserId: string): Promise<"ok" | "tidak_ada"> {
   return db.transaction(async (tx) => {
     const [lama] = await tx.delete(variants).where(eq(variants.id, variantId)).returning();

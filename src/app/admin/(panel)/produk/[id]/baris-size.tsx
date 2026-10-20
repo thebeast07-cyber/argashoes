@@ -1,9 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { IkonCoret } from "@/components/ikon";
 import { PesanGalat } from "@/components/pesan";
-import { hapusSize, simpanStok, tandaiHabis, type StateForm } from "../actions";
+import { hapusSize, simpanSku, simpanStok, tandaiHabis, type StateForm } from "../actions";
 
 function Tombol({ children, kelas, proses }: { children: React.ReactNode; kelas: string; proses: string }) {
   const { pending } = useFormStatus();
@@ -24,14 +25,59 @@ export function BarisSize({
   label: React.ReactNode;
 }) {
   const [state, aksiStok] = useFormState<StateForm, FormData>(simpanStok.bind(null, productId, varian.id), {});
+  const [stateSku, aksiSku] = useFormState<StateForm, FormData>(simpanSku.bind(null, productId, varian.id), {});
+  const [ubahSku, setUbahSku] = useState(false);
   const idStok = `stok-${varian.id}`;
+  const idSku = `sku-${varian.id}`;
+  useEffect(() => {
+    if (stateSku.sukses) setUbahSku(false);
+  }, [stateSku]);
 
   return (
     <li className="space-y-2 py-3">
       <div className="flex items-start gap-3">
         {label}
         <div className="min-w-0 flex-1">
-          <p className="sempit truncate text-sm font-semibold">{varian.sku}</p>
+          {ubahSku ? (
+            <form action={aksiSku} className="flex items-center gap-2">
+              <label htmlFor={idSku} className="sr-only">
+                SKU size {varian.size}
+              </label>
+              <input
+                id={idSku}
+                name="sku"
+                defaultValue={varian.sku}
+                autoCapitalize="characters"
+                autoCorrect="off"
+                autoFocus
+                aria-invalid={Boolean(stateSku.pesan)}
+                className="input sempit min-w-0 flex-1 px-2"
+              />
+              <Tombol kelas="tombol-garis px-3 text-sm" proses="Menyimpan...">
+                Simpan
+              </Tombol>
+              <button type="button" onClick={() => setUbahSku(false)} className="min-h-11 px-1 text-sm font-semibold underline underline-offset-2">
+                Batal
+              </button>
+            </form>
+          ) : (
+            <div className="flex items-center gap-2">
+              <p className="sempit truncate text-sm font-semibold">{varian.sku}</p>
+              <button type="button" onClick={() => setUbahSku(true)} className="min-h-11 shrink-0 px-1 text-sm text-redup underline underline-offset-2 hover:text-tinta">
+                Ubah SKU
+              </button>
+            </div>
+          )}
+          {ubahSku && stateSku.pesan && (
+            <div className="mt-1">
+              <PesanGalat umumkan>{stateSku.pesan}</PesanGalat>
+            </div>
+          )}
+          {!ubahSku && stateSku.sukses && (
+            <p role="status" className="text-sm font-semibold">
+              {stateSku.sukses}
+            </p>
+          )}
           <form action={aksiStok} className="mt-1 flex items-center gap-2">
             <label htmlFor={idStok} className="text-sm text-redup">
               Stok

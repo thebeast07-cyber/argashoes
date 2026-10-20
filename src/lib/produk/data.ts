@@ -213,3 +213,13 @@ export async function dataStokAsisten(db: Db): Promise<{ model: ModelStok[]; var
   ]);
   return { model, varian };
 }
+
+/** Siapa yang sudah memakai SKU ini, untuk pesan galat yang bisa ditindaklanjuti. */
+export async function pemakaiSku(db: Db, sku: string): Promise<{ productId: string; nama: string; brand: string; size: string } | null> {
+  const [v] = await db
+    .select({ productId: variants.productId, nama: products.nama, brand: products.brand, size: variants.size })
+    .from(variants)
+    .innerJoin(products, eq(variants.productId, products.id))
+    .where(eq(variants.sku, sku));
+  return v ?? null;
+}
