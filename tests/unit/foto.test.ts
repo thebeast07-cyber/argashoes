@@ -97,7 +97,7 @@ describe("versi kecil untuk kartu katalog", () => {
   });
 
   it("daftar foto yang belum punya versi kecil", () => {
-    const produk = [
+    const produk: { id: string; foto: string[]; fotoKecil: Record<string, string> }[] = [
       { id: "x", foto: ["a", "b"], fotoKecil: { a: "a1" } },
       { id: "y", foto: ["c"], fotoKecil: {} },
     ];
