@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { NamaProduk } from "@/components/nama-produk";
 import { notFound } from "next/navigation";
 import { IkonKembali } from "@/components/ikon";
 import { getDb } from "@/db";
@@ -39,10 +40,13 @@ export default async function HalamanProduk({ params, searchParams }: Props) {
         <div className="min-[900px]:sticky min-[900px]:top-4">
           <Galeri foto={p.foto} alt={nama} />
         </div>
-        <div className="flex flex-col">
+        <div className="flex min-w-0 flex-col">
           <div className="px-4 pt-[18px] min-[900px]:order-1 min-[900px]:px-0 min-[900px]:pt-0">
             <p className="sempit text-[13px] font-bold uppercase text-redup">{p.brand}</p>
-            <h1 className="mb-2 mt-0.5 text-[32px] font-black leading-[1.02] tracking-tight min-[900px]:text-[44px]">{p.nama}</h1>
+            {/* Kata panjang tanpa spasi (BLUE/SILVER/OBSIDIAN) di ukuran 32px lebih lebar dari layar HP; boleh dipatah di mana saja. */}
+            <h1 className="mb-2 mt-0.5 text-[32px] font-black leading-[1.02] tracking-tight [overflow-wrap:anywhere] min-[900px]:text-[44px]">
+              <NamaProduk nama={p.nama} />
+            </h1>
             <p className="angka text-2xl font-extrabold">
               {formatRupiah(p.harga)}
               {p.hargaCoret && p.hargaCoret > p.harga && <span className="ml-1.5 text-base font-normal text-redup line-through">{formatRupiah(p.hargaCoret)}</span>}
