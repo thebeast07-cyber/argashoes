@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { InputRupiah } from "@/components/input-rupiah";
 import { useFormState } from "react-dom";
 import { IkonTambah } from "@/components/ikon";
 import { PesanGalat } from "@/components/pesan";
@@ -67,12 +68,11 @@ export function EditorTier({ awal, mode }: { awal: BarisTier[]; mode: "langsung"
                   </div>
                 ) : (
                   <Kolom id={`batas-${i}`} label="Sampai di bawah" error={eBatas}>
-                    <input
+                    <InputRupiah
                       id={`batas-${i}`}
                       name={`batas.${i}`}
                       value={b.batasAtas}
                       onChange={(e) => ubah(i, "batasAtas", e.target.value)}
-                      inputMode="numeric"
                       placeholder="Contoh 1.000.000"
                       className="input angka"
                       aria-invalid={Boolean(eBatas)}
@@ -81,12 +81,11 @@ export function EditorTier({ awal, mode }: { awal: BarisTier[]; mode: "langsung"
                   </Kolom>
                 )}
                 <Kolom id={`fee-${i}`} label="Fee per pasang" error={eFee}>
-                  <input
+                  <InputRupiah
                     id={`fee-${i}`}
                     name={`fee.${i}`}
                     value={b.fee}
                     onChange={(e) => ubah(i, "fee", e.target.value)}
-                    inputMode="numeric"
                     placeholder="50.000 sampai 100.000"
                     className="input angka"
                     aria-invalid={Boolean(eFee)}

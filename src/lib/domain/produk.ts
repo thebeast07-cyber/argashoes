@@ -11,6 +11,18 @@ export function parseRupiah(teks: string): number | null {
   return null;
 }
 
+/** Batas digit kolom rupiah: sampai ratusan miliar, jauh di atas harga sepatu mana pun. */
+export const DIGIT_RUPIAH_MAKS = 12;
+
+/**
+ * Isi kolom rupiah saat diketik: hanya angka, diberi titik ribuan ("1599000" → "1.599.000").
+ * Hasilnya tetap terbaca parseRupiah. Nol di depan dibuang supaya "0050000" tidak tampil aneh.
+ */
+export function formatRibuanSaatKetik(teks: string): string {
+  const digit = teks.replace(/\D/g, "").replace(/^0+(?=\d)/, "").slice(0, DIGIT_RUPIAH_MAKS);
+  return digit.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
 export function parseBilanganBulat(teks: string): number | null {
   const bersih = teks.trim();
   return /^\d+$/.test(bersih) ? Number(bersih) : null;

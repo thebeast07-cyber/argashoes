@@ -2,6 +2,7 @@ import Link from "next/link";
 import { NamaProduk } from "@/components/nama-produk";
 import { BannerOverlay } from "@/components/banner-overlay";
 import { Gambar } from "@/components/gambar";
+import { InputRupiah } from "@/components/input-rupiah";
 import { getDb } from "@/db";
 import { bannerBeranda } from "@/lib/banner/data";
 import {
@@ -207,13 +208,13 @@ function FormCari({ cari, kategori, terbuka }: { cari: CariKatalog; kategori: st
               <label htmlFor="min" className="label-form">
                 Harga dari
               </label>
-              <input id="min" name="min" inputMode="numeric" defaultValue={cari.hargaMin?.toLocaleString("id-ID")} className="input angka" />
+              <InputRupiah id="min" name="min" defaultValue={cari.hargaMin ?? undefined} className="input angka" />
             </div>
             <div>
               <label htmlFor="maks" className="label-form">
                 Sampai
               </label>
-              <input id="maks" name="maks" inputMode="numeric" defaultValue={cari.hargaMax?.toLocaleString("id-ID")} className="input angka" />
+              <InputRupiah id="maks" name="maks" defaultValue={cari.hargaMax ?? undefined} className="input angka" />
             </div>
           </div>
           <div>
