@@ -52,4 +52,4 @@ Memakai data katalog yang sama, dengan batas:
 
 - `GEMINI_API_KEY` di env Vercel (Production dan Preview). Kosong berarti tombol Asisten tidak tampil.
 - `GEMINI_MODEL` (opsional): nama model Gemini. Kalau kosong atau modelnya tidak ada, dicoba berurutan `gemini-3.5-flash-lite`, `gemini-flash-lite-latest`, `gemini-2.5-flash-lite`, `gemini-3.5-flash`, `gemini-flash-latest`, `gemini-2.5-flash`.
-- `/api/sehat` menampilkan apakah key terisi (ya/tidak, tanpa nilainya).
+- `/api/sehat` menampilkan apakah key terisi (ya/tidak, tanpa nilainya). Buka sambil login admin; tanpa login jawabannya 404.

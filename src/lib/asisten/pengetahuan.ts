@@ -113,7 +113,7 @@ Halaman [Akun](/admin/akun):
 - "Tambah akun": isi nama, email, peran (Pemilik web atau Admin toko), dan password sementara (minimal 10 karakter). Kirim email dan password ke orangnya lewat jalur pribadi.
 - "Ganti password": reset password akun yang lupa; semua sesi akun itu ikut keluar.
 - "Nonaktifkan akun" / "Aktifkan lagi". Pemilik tidak bisa menonaktifkan dirinya sendiri, dan harus selalu ada minimal satu pemilik aktif.
-Login admin di /admin/login. Tidak ada pendaftaran publik.
+Login admin di /admin/login. Tidak ada pendaftaran publik. Salah password 5 kali dalam 15 menit untuk satu email (atau 20 kali dari satu jaringan) membuat login ditolak sementara; pesannya menyebut berapa menit lagi bisa coba. Kalau lupa password, minta pemilik reset di halaman Akun, tidak perlu menunggu.
 
 # Laporan fee (pemilik web)
 

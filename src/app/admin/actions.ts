@@ -1,13 +1,15 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getDb } from "@/db";
 import { auditLog } from "@/db/schema";
 import { resetSandi as resetSandiDb, ubahAktif } from "@/lib/auth/akun";
+import { catatGagalLogin, cekBlokirLogin, hapusGagalLogin } from "@/lib/auth/batas-login";
 import { wajibIzin } from "@/lib/auth/current";
 import { isPeran } from "@/lib/auth/roles";
+import { pesanBatasLogin } from "@/lib/domain/batas-login";
 import { buatPemilikPertama, buatSesi, buatUser, cekLogin, hapusSesi, SESSION_COOKIE } from "@/lib/auth/session";
 
 export type StateForm = { error?: string; sukses?: string };
@@ -18,10 +20,18 @@ export async function login(_prev: StateForm, form: FormData): Promise<StateForm
   if (!email || !password) return { error: "Email dan password wajib diisi." };
 
   const db = await getDb();
+  const ip = headers().get("x-forwarded-for")?.split(",")[0]?.trim() || "tanpa-ip";
+  const blokir = await cekBlokirLogin(db, email, ip);
+  if (!blokir.boleh) return { error: pesanBatasLogin(blokir.tungguMenit) };
+
   const user =
     (await cekLogin(db, email, password)) ??
     (await buatPemilikPertama(db, { email, password, sandiAwal: process.env.ADMIN_PASSWORD }));
-  if (!user) return { error: "Email atau password salah." };
+  if (!user) {
+    await catatGagalLogin(db, email, ip);
+    return { error: "Email atau password salah." };
+  }
+  await hapusGagalLogin(db, email);
 
   const { token, kedaluwarsa } = await buatSesi(db, user.id);
   cookies().set(SESSION_COOKIE, token, {

@@ -52,6 +52,18 @@ export const sessions = pgTable(
   (t) => [index("sessions_user_idx").on(t.userId)],
 );
 
+// Login yang gagal, untuk membatasi tebak password (src/lib/domain/batas-login.ts). Dihapus setelah sehari.
+export const percobaanLogin = pgTable(
+  "percobaan_login",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    email: text("email").notNull(),
+    ip: text("ip").notNull(),
+    waktu: timestamp("waktu", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("percobaan_login_email_idx").on(t.email, t.waktu), index("percobaan_login_ip_idx").on(t.ip, t.waktu)],
+);
+
 // --- Katalog ----------------------------------------------------------------
 
 export const products = pgTable(
