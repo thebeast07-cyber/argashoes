@@ -15,8 +15,10 @@ import {
   type RencanaKatalog,
   type RencanaStok,
 } from "@/lib/domain/import";
-import { parseBilanganBulat, samakanMerek, validasiProduk, validasiVarian, type InputProduk } from "@/lib/domain/produk";
-import { daftarMerek, dataUntukImport, fotoProduk } from "@/lib/produk/data";
+import { parseBilanganBulat, samakanMerek, skuValid, validasiProduk, validasiVarian, type InputProduk } from "@/lib/domain/produk";
+import { normalisasiSku } from "@/lib/domain/stok";
+import { pesanSkuDipakai } from "@/lib/domain/sku";
+import { daftarMerek, dataUntukImport, fotoProduk, pemakaiSku } from "@/lib/produk/data";
 import {
   buatProduk,
   hapusVarian,
@@ -25,6 +27,7 @@ import {
   terapkanImportStok,
   ubahFotoProduk,
   ubahProduk,
+  ubahSku,
   ubahStok,
   type HasilUbahFoto,
 } from "@/lib/produk/mutasi";
@@ -93,11 +96,27 @@ export async function simpanVarianBaru(productId: string, _prev: StateForm, form
   });
   if (!hasil.ok) return { error: hasil.error };
 
-  const status = await tambahVarian(await getDb(), productId, hasil.data, user.id);
+  const db = await getDb();
+  const status = await tambahVarian(db, productId, hasil.data, user.id);
+  if (status === "sku_dipakai") return { error: { sku: pesanSkuDipakai(hasil.data.sku, await pemakaiSku(db, hasil.data.sku), productId) } };
   if (status !== "ok") return { error: { ...PESAN_VARIAN[status] } };
   revalidatePath(`/admin/produk/${productId}`);
   revalidatePath("/admin/produk");
   return { sukses: `Size ${hasil.data.size} ditambahkan.` };
+}
+
+export async function simpanSku(productId: string, variantId: string, _prev: StateForm, form: FormData): Promise<StateForm> {
+  const user = await wajibIzin("produk.kelola");
+  const sku = normalisasiSku(String(form.get("sku") ?? ""));
+  if (!sku) return { pesan: "SKU wajib diisi." };
+  if (!skuValid(sku)) return { pesan: "SKU hanya huruf, angka, titik, strip, garis miring." };
+  const db = await getDb();
+  const status = await ubahSku(db, variantId, sku, user.id);
+  if (status === "sku_dipakai") return { pesan: pesanSkuDipakai(sku, await pemakaiSku(db, sku), productId) };
+  if (status === "tidak_ada") return { pesan: "Size ini sudah dihapus." };
+  revalidatePath(`/admin/produk/${productId}`);
+  revalidatePath("/admin/produk");
+  return { sukses: "SKU tersimpan." };
 }
 
 export async function simpanStok(productId: string, variantId: string, _prev: StateForm, form: FormData): Promise<StateForm> {

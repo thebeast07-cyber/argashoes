@@ -26,11 +26,13 @@ Ada juga tombol Asisten (kamu) di kanan bawah semua halaman admin.
 Daftar produk ([Produk](/admin/produk)):
 - Bisa cari nama, brand, atau SKU, dan menyaring per brand atau size lewat "Filter".
 - Ketuk kotak size di daftar untuk "Ubah stok" atau "Tandai habis". Ini cara tercepat saat ada yang laku di marketplace.
+- Di halaman model, tiap size punya tombol "Ubah SKU" untuk membetulkan SKU yang salah (mis. lupa menambah size di belakang kode artikel). Mengubah SKU tidak memengaruhi riwayat order.
+- Pesan "SKU ... sudah dipakai size ..." berarti SKU itu sudah dipakai size lain; satu SKU hanya untuk satu size. Tambahkan strip dan size di belakang kode artikel.
 
 Tambah model baru ([Model sepatu baru](/admin/produk/baru)):
 1. Isi Brand, Nama model, Kategori (opsional), Harga jual, Harga coret (opsional, untuk promo), Deskripsi (opsional).
 2. Centang "Tampil di katalog" kalau model mau langsung tampil. Model nonaktif tidak tampil di web.
-3. Simpan. Size dan stok diisi setelah model tersimpan, lewat "Tambah size" di halaman model itu.
+3. Simpan. Size dan stok diisi setelah model tersimpan, lewat "Tambah size" di halaman model itu. Untuk size pertama, isi SKU dengan kode artikel dari label dus, strip, lalu size (mis. HM9451-600-40). Untuk size berikutnya, cukup ketik size-nya: kolom SKU terisi otomatis (kode artikel + strip + size) dan boleh diubah; ada tautan "Pakai SKU otomatis lagi" kalau sudah terlanjur diubah.
 4. Unggah foto lewat "Tambah foto". Maksimal 8 foto per model, foto pertama jadi sampul. Foto otomatis dikecilkan sebelum diunggah.
 
 Status stok di web: Ready kalau stok sama dengan atau di atas angka "Ready mulai stok" (bawaan 3), "Sisa N" kalau di bawahnya, Habis kalau 0 (dicoret). Pembeli tidak melihat angka stok persis kalau masih Ready.

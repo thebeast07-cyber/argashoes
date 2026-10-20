@@ -14,6 +14,7 @@ import { FormProduk } from "../form-produk";
 import { BarisSize } from "./baris-size";
 import { FotoProduk } from "./foto-produk";
 import { FormSizeBaru } from "./form-size-baru";
+import { kodeArtikel } from "@/lib/domain/sku";
 import { FormUsulFee } from "./form-usul-fee";
 
 export const dynamic = "force-dynamic";
@@ -21,11 +22,6 @@ export const dynamic = "force-dynamic";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Saran SKU size berikutnya: SKU terakhir tanpa bagian size-nya, mis. "NK-AM90-42" → "NK-AM90-". */
-function awalanSku(skus: string[]): string {
-  const terakhir = skus.at(-1);
-  return terakhir?.includes("-") ? terakhir.slice(0, terakhir.lastIndexOf("-") + 1) : "";
-}
-
 export default async function HalamanDetailProduk({ params, searchParams }: { params: { id: string }; searchParams: { baru?: string } }) {
   const user = await wajibIzin("produk.kelola");
   if (!UUID.test(params.id)) notFound();
@@ -74,7 +70,7 @@ export default async function HalamanDetailProduk({ params, searchParams }: { pa
             ))}
           </ul>
         )}
-        <FormSizeBaru productId={produk.id} skuAwal={awalanSku(produk.varian.map((v) => v.sku))} />
+        <FormSizeBaru productId={produk.id} kodeArtikel={kodeArtikel(produk.varian)} />
       </section>
 
       <FotoProduk productId={produk.id} foto={produk.foto} />
