@@ -5,6 +5,7 @@ import { getDb } from "@/db";
 import { formatRupiah } from "@/lib/domain/produk";
 import { produkPublik } from "@/lib/katalog/data";
 import { getAmbangStok } from "@/lib/produk/data";
+import { Deskripsi } from "./deskripsi";
 import { Galeri } from "./galeri";
 import { PilihPesan } from "./pilih-pesan";
 
@@ -58,7 +59,7 @@ export default async function HalamanProduk({ params, searchParams }: Props) {
               <h2 id="judul-deskripsi" className="mb-1.5 text-lg font-bold">
                 Tentang model ini
               </h2>
-              <p className="whitespace-pre-line text-redup">{p.deskripsi}</p>
+              <Deskripsi teks={p.deskripsi} />
             </section>
           )}
         </div>

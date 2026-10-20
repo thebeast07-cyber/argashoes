@@ -37,6 +37,8 @@ Tambah model baru ([Model sepatu baru](/admin/produk/baru)):
 
 Status stok di web: Ready kalau stok sama dengan atau di atas angka "Ready mulai stok" (bawaan 3), "Sisa N" kalau di bawahnya, Habis kalau 0 (dicoret). Pembeli tidak melihat angka stok persis kalau masih Ready.
 
+Deskripsi produk dirapikan otomatis di halaman produk: baris pendek yang diakhiri titik dua (mis. "Spesifikasi:") jadi subjudul, setiap tanda "•" atau baris yang diawali "- " jadi satu poin, dan bagian sebelum titik dua di poin (mis. "Artikel: DH2987-001") ditebalkan. Jadi teks yang ditempel dari marketplace tetap rapi tanpa diketik ulang.
+
 Harga promo: isi "Harga coret" lebih tinggi dari "Harga jual". Di web tampil harga coret dicoret dan harga jual di sampingnya. Belum ada kode voucher.
 
 Fee per pasang per produk: pemilik web bisa mengisi fee khusus di halaman produk. Admin toko mengusulkan lewat "Kirim usulan fee". Kalau kosong, fee mengikuti tier di Pengaturan.
