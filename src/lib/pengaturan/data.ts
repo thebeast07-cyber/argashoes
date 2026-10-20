@@ -3,8 +3,9 @@ import { and, asc, count, desc, eq, inArray, or, sql } from "drizzle-orm";
 import type { Db } from "@/db";
 import { auditLog, feeTiers, products, settings, users, usulan } from "@/db/schema";
 import type { FeeTier } from "@/lib/domain/fee";
+import type { DataKelengkapan } from "@/lib/domain/kelengkapan";
 import { isRekening, type Rekening } from "@/lib/domain/pengaturan";
-import type { JenisUsulan, NilaiUsulan, ProdukUntukDampak } from "@/lib/domain/usulan";
+import { kunciUsulan, type JenisUsulan, type NilaiUsulan, type ProdukUntukDampak } from "@/lib/domain/usulan";
 import { getAmbangStok } from "@/lib/produk/data";
 
 export const KUNCI_SETTING = { nomorWa: "nomor_wa", rekening: "rekening", ambangStok: "ambang_stok" } as const;
@@ -154,4 +155,32 @@ export async function riwayatPengaturan(db: Db, batas: number) {
     )
     .orderBy(desc(auditLog.waktu))
     .limit(batas);
+}
+
+// --- Kotak "Belum lengkap" di beranda ------------------------------------------------
+
+const CONTOH_TANPA_FOTO = 5;
+
+export async function dataKelengkapan(db: Db): Promise<DataKelengkapan> {
+  const tanpaFoto = and(eq(products.aktif, true), sql`jsonb_array_length(${products.foto}) = 0`);
+  const [nomorWa, rekening, menunggu, [tier], [jumlah], contoh] = await Promise.all([
+    getNomorWa(db),
+    getRekening(db),
+    usulanMenungguUntuk(db, kunciUsulan("rekening")),
+    db.select({ n: count() }).from(feeTiers),
+    db.select({ n: count() }).from(products).where(tanpaFoto),
+    db
+      .select({ id: products.id, brand: products.brand, nama: products.nama })
+      .from(products)
+      .where(tanpaFoto)
+      .orderBy(desc(products.dibuat))
+      .limit(CONTOH_TANPA_FOTO),
+  ]);
+  return {
+    adaNomorWa: Boolean(nomorWa),
+    adaRekening: Boolean(rekening),
+    rekeningMenunggu: Boolean(menunggu),
+    adaTier: (tier?.n ?? 0) > 0,
+    modelTanpaFoto: { total: jumlah?.n ?? 0, contoh: contoh.map((m) => ({ id: m.id, nama: `${m.brand} ${m.nama}` })) },
+  };
 }

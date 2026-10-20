@@ -20,6 +20,7 @@ Stok dipakai bareng marketplace (Shopee, Tokopedia, offline), jadi stok di web p
 - [Pengaturan](/admin/pengaturan): fee, rekening, nomor WhatsApp, ambang stok, banner promo, usulan, riwayat.
 - [Akun](/admin/akun): hanya pemilik web. Kelola akun admin.
 Ada juga tombol Asisten (kamu) di kanan bawah semua halaman admin.
+Beranda admin (/admin) menampilkan kotak "Belum lengkap" kalau ada data yang masih kosong, hanya untuk akun yang bisa mengisinya: nomor WhatsApp toko (pembeli belum bisa memesan), rekening (pemilik web mengisi langsung lewat "Isi rekening", admin toko lewat "Ajukan rekening" lalu disetujui pemilik web), tabel fee (khusus pemilik web), dan model aktif yang belum ada foto. Butirnya hilang sendiri setelah diisi.
 
 # Produk dan stok
 

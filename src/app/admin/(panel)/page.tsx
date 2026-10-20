@@ -1,15 +1,16 @@
 import Link from "next/link";
-import { IkonCari, IkonMasukKardus } from "@/components/ikon";
+import { IkonCari, IkonGalat, IkonMasukKardus } from "@/components/ikon";
 import { getDb } from "@/db";
 import { wajibLogin } from "@/lib/auth/current";
 import { punyaIzin } from "@/lib/auth/roles";
 import { periodeFee } from "@/lib/domain/fee";
+import { daftarBelumLengkap, type ButirKelengkapan } from "@/lib/domain/kelengkapan";
 import { labelBulan } from "@/lib/domain/laporan-fee";
 import { awalHariWib, umur } from "@/lib/domain/order-admin";
 import { formatRupiah } from "@/lib/domain/produk";
 import { rekapBulan } from "@/lib/fee/data";
 import { ringkasanBerandaOrder } from "@/lib/orders/data";
-import { jumlahUsulanMenunggu } from "@/lib/pengaturan/data";
+import { dataKelengkapan, jumlahUsulanMenunggu } from "@/lib/pengaturan/data";
 import { daftarSizeHabis } from "@/lib/produk/data";
 
 export const metadata = { title: "Admin · Argashoes" };
@@ -17,17 +18,57 @@ export const dynamic = "force-dynamic";
 
 const BATAS_HABIS = 12;
 
+// Data yang masih kosong, hanya ke akun yang bisa mengisinya. Butir hilang sendiri setelah diisi.
+function BelumLengkap({ butir }: { butir: ButirKelengkapan[] }) {
+  return (
+    <section aria-labelledby="judul-lengkap" className="space-y-2 rounded-label border-[1.5px] border-tinta bg-white p-3">
+      <h2 id="judul-lengkap" className="font-bold">
+        Belum lengkap
+      </h2>
+      <ul className="divide-y divide-tinta/15">
+        {butir.map((b) => (
+          <li key={b.kunci} className="space-y-1.5 py-2.5 first:pt-1 last:pb-0">
+            <p className={`flex gap-2 text-sm ${b.penting ? "font-semibold text-sedikit-teks" : ""}`}>
+              {b.penting && <IkonGalat ukuran={18} className="mt-px shrink-0" />}
+              <span>{b.teks}</span>
+            </p>
+            {b.aksi && (
+              <Link href={b.aksi.href} className="tombol-garis min-h-11 px-3 text-sm">
+                {b.aksi.label}
+              </Link>
+            )}
+            {b.model && (
+              <ul className="text-sm">
+                {b.model.map((m) => (
+                  <li key={m.id}>
+                    <Link href={`/admin/produk/${m.id}`} className="inline-flex min-h-11 items-center font-semibold underline underline-offset-2">
+                      {m.nama}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {Boolean(b.modelLain) && <p className="text-sm text-redup">dan {b.modelLain} model lain.</p>}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 export default async function BerandaAdmin({ searchParams }: { searchParams: { akses?: string } }) {
   const user = await wajibLogin();
   const db = await getDb();
   const kelolaProduk = punyaIzin(user.peran, "produk.kelola");
   const sekarang = new Date();
-  const [usulanMenunggu, habis, order, fee] = await Promise.all([
+  const [usulanMenunggu, habis, order, fee, kelengkapan] = await Promise.all([
     punyaIzin(user.peran, "usulan.putuskan") ? jumlahUsulanMenunggu(db) : 0,
     kelolaProduk ? daftarSizeHabis(db, BATAS_HABIS) : null,
     punyaIzin(user.peran, "order.kelola") ? ringkasanBerandaOrder(db, awalHariWib(sekarang), sekarang) : null,
     punyaIzin(user.peran, "fee.laporan") ? rekapBulan(db, periodeFee(sekarang)) : null,
+    dataKelengkapan(db),
   ]);
+  const belumLengkap = daftarBelumLengkap(kelengkapan, (izin) => punyaIzin(user.peran, izin));
 
   return (
     <div className="space-y-6">
@@ -37,6 +78,7 @@ export default async function BerandaAdmin({ searchParams }: { searchParams: { a
         </p>
       )}
       <h1 className="text-xl font-bold">Halo, {user.nama}</h1>
+      {belumLengkap.length > 0 && <BelumLengkap butir={belumLengkap} />}
       {usulanMenunggu > 0 && (
         <div className="space-y-3 rounded-label border-[1.5px] border-tinta bg-white p-3">
           <p className="font-semibold">{usulanMenunggu} usulan dari admin toko menunggu keputusanmu.</p>
