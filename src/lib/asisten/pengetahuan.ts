@@ -125,6 +125,7 @@ Login admin di /admin/login. Setelah Keluar, halaman login punya tautan "Kembali
 - [Beranda](/): pencari size ("Cari size kamu."), lalu katalog dengan cari, filter brand/kategori/harga, dan urutan.
 - Halaman produk /produk/ID: galeri foto, harga, status stok per size, tombol masuk keranjang.
 - [Cara order](/cara-order): penjelasan cara pesan untuk pembeli.
+- [Tautan](/link): halaman tautan untuk bio Instagram/TikTok, isinya tombol Lihat katalog, Chat WhatsApp, dan Instagram. Tidak ada keranjang atau stok di halaman ini.
 - [Keranjang](/keranjang): isi data pengiriman. Harga dan stok dibaca ulang dari database saat dikirim, jadi harga di keranjang lama tetap mengikuti harga terbaru.
 - Halaman pesanan /pesanan/WEB-XXXX: ringkasan pesanan dan tombol WhatsApp.
 Pembeli dibatasi 3 pesanan per nomor WhatsApp per jam untuk mencegah spam.
