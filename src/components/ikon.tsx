@@ -140,6 +140,17 @@ export function IkonChat(p: Props) {
   );
 }
 
+/** Instagram: badan kamera persegi dengan lensa bulat dan lampu kilat kecil, bukan logo merek. */
+export function IkonKamera(p: Props) {
+  return (
+    <Dasar {...p}>
+      <path d="M4 4h16v16H4z" />
+      <circle cx="12" cy="12" r="3.75" />
+      <path d="M16.5 7.5h.5" />
+    </Dasar>
+  );
+}
+
 /** Tutup: silang dengan ujung siku. */
 export function IkonTutup(p: Props) {
   return (
